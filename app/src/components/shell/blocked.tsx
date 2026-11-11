@@ -1,5 +1,5 @@
 "use client";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { ShieldX } from "lucide-react";
 import { useCopy } from "./copy";
@@ -8,8 +8,12 @@ import { useCopy } from "./copy";
 export function Blocked({ code, message, children }: { code: string; message: string; children?: ReactNode }) {
   const { common } = useCopy();
   const b = common.blocked;
+  const ref = useRef<HTMLDivElement>(null);
+  // A refusal must never be missed below the fold.
+  useEffect(() => { ref.current?.scrollIntoView({ block: "center", behavior: "smooth" }); }, [code, message]);
   return (
     <motion.div
+      ref={ref}
       role="alert"
       initial={{ opacity: 0, x: 0 }} animate={{ opacity: 1, x: [0, -6, 6, -4, 4, 0] }} transition={{ duration: 0.45 }}
       className="rounded-lg border-2 border-danger/60 bg-danger-soft p-4"

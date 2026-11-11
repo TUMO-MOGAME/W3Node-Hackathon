@@ -232,6 +232,8 @@ p { text-wrap: pretty; }
   border-radius: 6px;
 }
 
+[data-sheet-title]:focus-visible { outline: none; }
+
 ::selection {
   background: var(--accent);
   color: var(--accent-ink);

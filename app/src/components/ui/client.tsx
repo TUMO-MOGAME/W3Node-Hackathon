@@ -18,7 +18,7 @@ export function Sheet({
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
-    if (open && !d.open) d.showModal();
+    if (open && !d.open) { d.showModal(); if (!(document.activeElement instanceof HTMLInputElement)) d.querySelector<HTMLElement>("[data-sheet-title]")?.focus(); }
     if (!open && d.open) d.close();
   }, [open]);
   return (
@@ -34,7 +34,7 @@ export function Sheet({
         <>
           <div className="flex shrink-0 items-start gap-3 border-b border-line px-4 pb-3 pt-4 sm:px-5">
             <div className="min-w-0 flex-1">
-              <h2 id={titleId} className="text-h3">{title}</h2>
+              <h2 id={titleId} data-sheet-title tabIndex={-1} className="text-h3 outline-none">{title}</h2>
               {description && <p className="mt-1 text-small text-ink-2">{description}</p>}
             </div>
             {headerExtra}

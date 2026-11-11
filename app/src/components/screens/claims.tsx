@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Banknote, Check, CircleX, Clock, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Banknote, Check, CircleX, Clock, Plus, Zap } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Claim, Role, WalletSession } from "@/lib/types";
@@ -12,6 +12,7 @@ import { Badge, Button, ButtonLink, Card, Consent, EmptyState, ExplorerLink, Fie
 import { FilePicker } from "@/components/ui/client";
 import { ReportCard, Reviewing } from "@/components/agent/report-card";
 import { Blocked } from "@/components/shell/blocked";
+import { usePay } from "@/components/pay/payment";
 import { fmt, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
 import { categoryIcon } from "./estate";
@@ -26,8 +27,11 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
   const { common } = useCopy();
   const { intent, setIntent } = useEstate();
   const e = snap.estate;
-  const myRules = snap.rules.filter((r) => r.beneficiary === session.address);
-  const canClaim = role === "beneficiary" && myRules.length > 0 && e.status === "Unlocked";
+  const myRules = snap.rules.filter((r) => r.beneficiary === session.address && r.recurringAmount === BigInt(0));
+  const open = (r: (typeof myRules)[number]) => e.status === "Unlocked" || (r.startsNow && e.status === "Active");
+  const canClaim = role === "beneficiary" && myRules.some(open);
+  const ownerName = e.ownerName.split(" ")[0];
+  const forOwner = role === "owner" && e.status === "Active" ? snap.claims.filter((c) => c.status === "Open" && c.agentVerdict === "Approved" && snap.rules.find((r) => r.address === c.rule)?.startsNow) : [];
   const [wizard, setWizard] = useState<{ rule?: string; payee?: string; amount?: number } | null>(null);
   const claims = role === "beneficiary" ? snap.claims.filter((c) => c.beneficiary === session.address) : snap.claims;
 
@@ -44,7 +48,17 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
         action={canClaim && !wizard ? <Button onClick={() => setWizard({})}><Plus className="size-5" aria-hidden="true" />{copy.newCta}</Button> : undefined}
       />
 
-      {role === "beneficiary" && e.status !== "Unlocked" && (
+      {role === "owner" && (
+        <section aria-labelledby="owner-approvals" className="mb-6">
+          <h2 id="owner-approvals" className="text-h3">{copy.owner.title}</h2>
+          <p className="mb-3 text-small text-ink-2">{copy.owner.body}</p>
+          {forOwner.length === 0 ? <p className="text-ink-2">{copy.owner.empty}</p> : (
+            <ul className="grid gap-3">{forOwner.map((c) => <OwnerApproval key={c.address} claim={c} snap={snap} copy={copy} />)}</ul>
+          )}
+        </section>
+      )}
+      {canClaim && e.status === "Active" && <Notice icon={<Zap className="size-5" aria-hidden="true" />} className="mb-5"><p className="text-body">{fmt(copy.living, { owner: ownerName })}</p></Notice>}
+      {role === "beneficiary" && !canClaim && myRules.length > 0 && (
         <Notice tone="warn" icon={<Clock className="size-5" aria-hidden="true" />} title={copy.locked.title} className="mb-5">
           <p>{fmt(copy.locked.body, { status: common.status.estate[e.status].toLowerCase() })}</p>
           <ButtonLink href="/family" small variant="secondary" className="mt-3">{copy.locked.cta}</ButtonLink>
@@ -72,14 +86,14 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
 
 /* ---------- A claim and its progress ---------- */
 
-export function ClaimTracker({ claim, need, copy }: { claim: Claim; need: number; copy: Copy }) {
+export function ClaimTracker({ claim, need, copy, waitingFor }: { claim: Claim; need: number; copy: Copy; waitingFor?: string }) {
   const t = copy.tracker;
   const got = claim.approvals.filter(Boolean).length;
   const declined = claim.status === "Rejected";
   const steps = [
     { label: t.submitted, done: true },
     { label: declined ? t.declined : t.checked, done: claim.agentVerdict !== "Pending", bad: declined },
-    { label: t.approved, done: claim.status === "Paid" || got >= need, note: !declined && claim.status === "Open" ? fmt(t.approvals, { got, need }) : undefined },
+    { label: t.approved, done: claim.status === "Paid" || got >= need, note: !declined && claim.status === "Open" ? (waitingFor ?? fmt(t.approvals, { got, need })) : undefined },
     { label: t.paid, done: claim.status === "Paid" },
   ];
   const current = steps.findIndex((s) => !s.done);
@@ -120,16 +134,16 @@ function ClaimCard({ claim, snap, copy }: { claim: Claim; snap: EstateSnapshot; 
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold tabular-nums">{formatUsdt(claim.amount)}{rate ? <span className="ml-2 text-small font-normal text-ink-2">≈ {formatZar(claim.amount, rate)}</span> : null}</p>
-          <p className="truncate text-small text-ink-2">{fmt(copy.card.to, { payee })} · {fmt(copy.card.forWho, { name: who })}</p>
+          <p className="font-semibold tabular-nums">{formatUsdt(claim.amount)}{rate ? <span className="block text-small font-normal text-ink-2">≈ {formatZar(claim.amount, rate)}</span> : null}</p>
+          <p className="text-small text-ink-2">{fmt(copy.card.to, { payee })} · {fmt(copy.card.forWho, { name: who })}</p>
         </div>
         <Badge tone={tone}>{common.status.claim[claim.status]}</Badge>
       </div>
-      <div className="mt-4"><ClaimTracker claim={claim} need={snap.estate.claimThreshold} copy={copy} /></div>
+      <div className="mt-4"><ClaimTracker claim={claim} need={snap.estate.claimThreshold} copy={copy} waitingFor={snap.estate.status === "Active" && rule?.startsNow ? fmt(copy.card.waitingOwner, { owner: snap.estate.ownerName.split(" ")[0] }) : undefined} /></div>
       {claim.status === "Paid" && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-md border border-ok/30 bg-ok-soft p-3">
           <p className="flex items-center gap-2 font-semibold text-ok"><Check className="size-5" aria-hidden="true" />{fmt(copy.card.paidOn, { payee })}</p>
-          {rate && <p className="mt-1 text-small">{fmt(copy.card.settlement, { zar: formatZar(claim.amount, rate), payee })}</p>}
+          {rate && <p className="mt-1 flex flex-wrap items-center gap-2 text-small">{fmt(copy.card.settlement, { zar: formatZar(claim.amount, rate), payee })}<Badge tone="warn">{copy.card.simulated}</Badge></p>}
           <p className="text-[0.75rem] text-ink-2">{copy.card.settlementNote}</p>
           {claim.txSignature && <ExplorerLink signature={claim.txSignature} label={copy.card.receipt} srLabel={copy.card.receiptSr} />}
         </motion.div>
@@ -151,8 +165,10 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
   const { fx, run, busy } = useEstate();
   const w = copy.wizard;
   const rate = fx?.usdtZar ?? null;
-  const rules = snap.rules.filter((r) => r.beneficiary === session.address);
-  const [ruleAddr, setRuleAddr] = useState(preset.rule && rules.some((r) => r.address === preset.rule) ? preset.rule : rules.length === 1 ? rules[0].address : "");
+  const live = snap.estate.status;
+  const usable = (r: { startsNow: boolean }) => live === "Unlocked" || (r.startsNow && live === "Active");
+  const rules = snap.rules.filter((r) => r.beneficiary === session.address && r.recurringAmount === BigInt(0)).sort((a, b) => Number(usable(b)) - Number(usable(a)));
+  const [ruleAddr, setRuleAddr] = useState(preset.rule && rules.some((r) => r.address === preset.rule && usable(r)) ? preset.rule : rules.filter(usable).length === 1 ? rules.filter(usable)[0].address : "");
   const rule = rules.find((r) => r.address === ruleAddr);
   const payees = rule ? snap.payees.filter((p) => p.kind === rule.allowedPayeeKind) : [];
   const [payee, setPayee] = useState(preset.payee ?? "");
@@ -197,7 +213,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
     return (
       <Card>
         <h2 className="text-h3" role="status">{ok ? copy.result.submitted : copy.result.declined}</h2>
-        <p className="mt-1 text-ink-2">{ok ? copy.result.submittedBody : copy.result.declinedBody}</p>
+        <p className="mt-1 text-ink-2">{!ok ? copy.result.declinedBody : live === "Active" ? fmt(copy.result.submittedBodyOwner, { owner: snap.estate.ownerName.split(" ")[0] }) : copy.result.submittedBody}</p>
         {claim && <div className="mt-4"><ClaimTracker claim={claim} need={snap.estate.claimThreshold} copy={copy} /></div>}
         <div className="mt-4"><ReportCard report={result.report} /></div>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -231,11 +247,12 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
               {rules.map((r) => {
                 const Icon = categoryIcon[r.category];
                 return (
-                  <label key={r.address} className={clsx("flex min-h-16 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", ruleAddr === r.address ? "border-accent bg-accent-soft" : "border-line-strong/60")}>
-                    <input type="radio" name="claim-rule" className="sr-only" checked={ruleAddr === r.address} onChange={() => { setRuleAddr(r.address); setPayee(""); }} />
+                  <label key={r.address} className={clsx("flex min-h-16 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", ruleAddr === r.address ? "border-accent bg-accent-soft" : "border-line-strong/60", !usable(r) && "cursor-not-allowed opacity-60")}>
+                    <input type="radio" name="claim-rule" className="sr-only" disabled={!usable(r)} checked={ruleAddr === r.address} onChange={() => { setRuleAddr(r.address); setPayee(""); }} />
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-accent"><Icon className="size-5" aria-hidden="true" /></span>
                     <span className="min-w-0 flex-1">
-                      <span className="block font-semibold">{common.status.category[r.category]}</span>
+                      <span className="flex flex-wrap items-center gap-2 font-semibold">{common.status.category[r.category]}<Badge tone={r.startsNow ? "accent" : "neutral"}>{r.startsNow ? w.rule.now : w.rule.later}</Badge></span>
+                      {!usable(r) && <span className="block text-small font-medium text-brass">{w.rule.notYet}</span>}
                       <span className="block text-small text-ink-2">{fmt(w.rule.left, { amount: formatUsdt(r.lifetimeCap - r.spentTotal, { decimals: 0 }) })} · {fmt(w.rule.perClaim, { amount: formatUsdt(r.maxPerClaim, { decimals: 0 }) })}</span>
                     </span>
                     {ruleAddr === r.address && <Check className="size-5 shrink-0 text-accent" aria-hidden="true" />}
@@ -307,5 +324,35 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
           : <Button className="flex-1" onClick={submit}>{w.submit}</Button>}
       </div>
     </Card>
+  );
+}
+
+/* ---------- Owner: approve a living-plan claim, then the vault pays the institution ---------- */
+
+function OwnerApproval({ claim, snap, copy }: { claim: Claim; snap: EstateSnapshot; copy: Copy }) {
+  const { common } = useCopy();
+  const { fx, busy } = useEstate();
+  const { pay } = usePay();
+  const rate = fx?.usdtZar ?? null;
+  const rule = snap.rules.find((r) => r.address === claim.rule);
+  const payee = snap.payees.find((p) => p.wallet === claim.payee)?.name ?? "";
+  const who = snap.beneficiaries.find((b) => b.wallet === claim.beneficiary)?.label ?? "";
+  return (
+    <motion.li layout className="rounded-xl border border-accent/40 bg-surface p-4 shadow-card">
+      <p className="text-h3 font-display tabular-nums">{formatUsdt(claim.amount)}{rate ? <span className="ml-2 font-sans text-small text-ink-2">≈ {formatZar(claim.amount, rate)}</span> : null}</p>
+      <p className="font-semibold">{fmt(copy.card.to, { payee })}</p>
+      <p className="text-small text-ink-2">{fmt(copy.owner.forWho, { name: who, category: rule ? common.status.category[rule.category].toLowerCase() : "" })}</p>
+      {claim.agentReport && <div className="mt-3"><ReportCard report={claim.agentReport} compact /></div>}
+      <Button
+        className="mt-3" block disabled={!!busy}
+        onClick={() => void pay({
+          kind: "claim-payout", source: "vault", to: claim.payee, toLabel: payee, amount: claim.amount,
+          execute: async (svc, est) => { await svc.ownerApproveClaim(est, claim.address); return svc.executeClaim(est, claim.address); },
+          successText: fmt(copy.owner.done, { payee }),
+        })}
+      >
+        <Check className="size-5" aria-hidden="true" />{copy.owner.approve}
+      </Button>
+    </motion.li>
   );
 }

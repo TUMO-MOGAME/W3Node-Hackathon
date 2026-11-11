@@ -44,6 +44,8 @@ export const site = {
       { term: "Email", value: "[Email address]" },
     ],
     builtWith: "Built with Tether USD₮ and WDK on Solana",
+    program: "Program on Solana devnet",
+    programId: process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID ?? "b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY",
     rights: "Heirloom. Hackathon prototype, W3Node Cape Town 2026.",
   },
   notFound: {

@@ -11,6 +11,7 @@ import { useNow } from "@/lib/hooks/use-now";
 import { Button, ButtonLink, Card, ExplorerLink, Field, inputClass, Meter, Money, Notice, PageHeader } from "@/components/ui/primitives";
 import { fmt, timeAgo, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
+import { usePay } from "@/components/pay/payment";
 
 type Copy = ScreensCopy["vault"];
 
@@ -22,6 +23,8 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
   const { common } = useCopy();
   const { fx, run, busy, walletUsdt } = useEstate();
   const now = useNow(10000);
+  const { pay } = usePay();
+  const { session } = useEstate();
   const e = snap.estate;
   const rate = fx?.usdtZar ?? null;
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
@@ -40,8 +43,10 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
     if (!valid) { setError(copy.amountError); return; }
     if (toBase(n) > limit) { setError(tab === "deposit" ? copy.tooMuchWallet : copy.tooMuchVault); return; }
     setError(null);
-    const res = await run(tab, (s, est) => (tab === "deposit" ? s.deposit(est, n) : s.withdraw(est, n)), tab === "deposit" ? copy.deposited : copy.withdrawn);
-    if (res.ok) { setLast(res.value.signature); setAmount(""); }
+    const res = tab === "deposit"
+      ? await pay({ kind: "vault-deposit", to: e.address, toLabel: copy.payVault, amount: toBase(n), execute: (s, est) => s.deposit(est, n), successText: copy.deposited })
+      : await pay({ kind: "program", source: "vault", to: session?.address ?? "", toLabel: copy.payWallet, amount: toBase(n), execute: (s, est) => s.withdraw(est, n), successText: copy.withdrawn });
+    if (res.ok) { setLast(res.signature ?? null); setAmount(""); }
   };
 
   const quick = tab === "deposit" ? [1000, 5000, 10000] : [500, 1000, 5000];
@@ -99,7 +104,7 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
               ))}
               <button type="button" onClick={() => { setAmount(String(fromBase(limit))); setError(null); }} className="min-h-11 rounded-full border border-line-strong/70 px-4 text-small font-medium hover:bg-surface-2">{copy.max}</button>
             </div>
-            <Button type="submit" loading={busy === tab} className="mt-1 min-h-13!">{tab === "deposit" ? copy.deposit : copy.withdraw}</Button>
+            <Button type="submit" disabled={!!busy} className="mt-1 min-h-13!">{tab === "deposit" ? copy.deposit : copy.withdraw}</Button>
             {last && (
               <p className="flex flex-wrap items-center gap-x-3 text-small text-ink-2">{copy.last}: <ExplorerLink signature={last} label={copy.receipt} srLabel={copy.receiptSr} /></p>
             )}

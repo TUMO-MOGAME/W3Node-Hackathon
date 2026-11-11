@@ -16,6 +16,7 @@ import { SpecialistChip } from "@/components/agent/chat-parts";
 import { Blocked } from "@/components/shell/blocked";
 import { fmt, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
+import { usePay } from "@/components/pay/payment";
 import { clock } from "./family";
 
 type Copy = ScreensCopy["car"];
@@ -186,6 +187,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
   };
 
   const statusOf = (addr: string, amount: bigint) => {
+    if (car.status === "Sold") return { tone: "neutral" as const, text: copy.offers.notChosen };
     if (ranking?.bestOffer === addr) return { tone: "ok" as const, text: copy.offers.leading };
     const el = ranking?.eligible.find((x) => x.offer === addr);
     if (el) return { tone: "accent" as const, text: copy.offers.canWin };
@@ -193,12 +195,12 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
     if (amount < (car.hardshipBeneficiary ? car.hardshipFloor : car.floorPrice)) return { tone: "danger" as const, text: copy.offers.blocked };
     return { tone: "accent" as const, text: copy.offers.canWin };
   };
-  const reasonOf = (addr: string) => ranking?.eligible.find((x) => x.offer === addr)?.reason ?? ranking?.ineligible.find((x) => x.offer === addr)?.reason;
+  const reasonOf = (addr: string) => car.status === "Sold" ? undefined : ranking?.eligible.find((x) => x.offer === addr)?.reason ?? ranking?.ineligible.find((x) => x.offer === addr)?.reason;
   const remaining = car.status === "Listed" && car.listingEnds && now !== null ? car.listingEnds - now : null;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr] lg:items-start">
-      <div className="grid gap-5">
+    <div className="grid gap-5 *:min-w-0 lg:grid-cols-[1.1fr_1fr] lg:items-start">
+      <div className="grid gap-5 *:min-w-0">
         <Card className="overflow-hidden p-0! sm:p-0!">
           <div className="relative aspect-[32/15] w-full bg-surface-2">
             <Image src={car.imageUrl ?? "/car-corolla.svg"} alt={fmt(copy.imageAlt, { title: car.title })} fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" unoptimized priority />
@@ -243,7 +245,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
         <Protect copy={copy} car={car} offers={offers.map((o) => ({ amount: o.amount, name: o.buyerName ?? "", mine: o.buyer === session.address }))} owner={e.ownerName.split(" ")[0]} rate={rate} hardshipName={hardshipName} />
       </div>
 
-      <div className="grid gap-5">
+      <div className="grid gap-5 *:min-w-0">
         {/* What this person can do */}
         {car.status === "Held" && (
           isVerifier && e.status === "Unlocked" ? (
@@ -306,7 +308,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
                 })}
               </ul>
             )}
-            {offers.length > 0 && (
+            {offers.length > 0 && car.status !== "Sold" && (
               <p className="mt-2 flex items-center gap-1.5 text-[0.75rem] text-ink-2" role="status">
                 {ranking ? <ShieldCheck className="size-4 text-accent" aria-hidden="true" /> : <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
                 {ranking ? copy.offers.ranking : copy.offers.rankingLoading}
@@ -408,6 +410,7 @@ function OfferForm({ copy, car, mine }: { copy: Copy; car: Asset; mine: bigint |
   const { common } = useCopy();
   const { fx, run, busy, walletUsdt } = useEstate();
   const o = copy.offer;
+  const { pay } = usePay();
   const rate = fx?.usdtZar ?? null;
   const [amount, setAmount] = useState("");
   const [consent, setConsent] = useState(false);
@@ -421,7 +424,11 @@ function OfferForm({ copy, car, mine }: { copy: Copy; car: Asset; mine: bigint |
     if (!valid || toBase(n) > spendable) { setError(o.error); return; }
     if (!consent) { setError(common.consentRequired); return; }
     setError(null);
-    const res = await run("offer", (s, est) => s.placeOffer(est, car.address, n), o.placed);
+    const res = await pay({
+      kind: "offer", to: car.address, toLabel: `${o.escrowLabel}: ${car.title}`, amount: toBase(n),
+      warnings: toBase(n) < car.floorPrice ? [fmt(o.belowFloor, { floor: formatUsdt(car.floorPrice, { decimals: 0 }) })] : [],
+      execute: (s, est) => s.placeOffer(est, car.address, n), successText: o.placed,
+    });
     if (res.ok) setAmount("");
   };
 
@@ -451,7 +458,7 @@ function OfferForm({ copy, car, mine }: { copy: Copy; car: Asset; mine: bigint |
           <Notice tone="warn"><p role="status">{fmt(o.belowFloor, { floor: formatUsdt(car.floorPrice, { decimals: 0 }) })}</p></Notice>
         )}
         <Consent id="offer-consent" checked={consent} onChange={(v) => { setConsent(v); setError(null); }} copy={common.consent} />
-        <Button type="submit" loading={busy === "offer"} className="min-h-13!"><Lock className="size-5" aria-hidden="true" />{mine !== null ? o.update : o.submit}</Button>
+        <Button type="submit" disabled={!!busy} className="min-h-13!"><Lock className="size-5" aria-hidden="true" />{mine !== null ? o.update : o.submit}</Button>
       </form>
     </Card>
   );

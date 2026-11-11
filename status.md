@@ -24,6 +24,15 @@
 - No on-chain IDL (the IDL upload needs Linux node in WSL); the app uses the bundled IDL
 - Repo: github.com/TUMO-MOGAME/W3Node-Hackathon (private for now; Tumo will make it public)
 
+## Backend: DONE (2026-11-11). Devnet demo seeded
+- `tsc` clean; **90/90 vitest tests pass**; API routes smoke-tested (live VALR rate R16.69/USD₮)
+- Gemini default model `gemini-4-argon` (override with `GEMINI_MODEL`)
+- Devnet: test USD₮ mint `8qp8uFHeJMgwQPWCYAKh9mpYw6FgU4iwu6psKiKViKK5`; car title NFT `F9FVooHEzRu92UXDmeUTNK7c1Wxgxi6xwWBRjqub5fLm`; agent wallet `261pQudaK5J4v1WCtcGjWidWU9ww3KyYC4TiU8jDsjNg`
+- **Demo estate `JBdsDy67YBfpV8YAc2H1h7w95h8uJ2XUzTDh9vt34G9E`**: 3 beneficiaries, 3 payees (UCT, Tugwell Residence, Westerford), 4 rules, vault deposit, car registered
+- 13 demo WDK wallets: seeds in `scripts/.demo-wallets.json` (gitignored); env in `scripts/.env.devnet` (gitignored, includes the agent seed)
+- **Tumo must create `app/.env.local`** (Claude is blocked from writing secret files): `Copy-Item scripts\.env.devnet app\.env.local`, then add the GEMINI / ELEVENLABS / SUPABASE keys (names in `app/.env.example`)
+- Open gaps: `Claim.ownerApproved` isn't exposed in types; recurring rules created from a new will become claim-based until a payee wallet is known; in-memory rate limits
+
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |
 |---|---|---|

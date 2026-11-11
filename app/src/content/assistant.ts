@@ -14,7 +14,7 @@ export const assistant = {
   },
   specialists: {
     Orchestrator: "Heirloom",
-    WillWriter: "Will writer",
+    WillWriter: "Plan builder",
     DocumentReviewer: "Document reviewer",
     ClaimsGuide: "Claims guide",
     CarBroker: "Car broker",
@@ -54,11 +54,12 @@ export const assistant = {
       "/inbox": "your inbox",
       "/privacy": "the privacy policy",
       "/start": "the start",
+      "/send": "send to family",
     } as Record<string, string>,
     fallbackPage: "that page",
   },
   greeting: {
-    owner: "Hello {name}. I'm Heirloom. I can help you write your wishes, explain how the vault protects them, or check anything about your estate. What's on your mind?",
+    owner: "Hello {name}. I'm Heirloom. I can help you build your family plan, explain what pays now and what waits, or check anything about your estate. What's on your mind?",
     beneficiary: "Hello {name}. I'm Heirloom. I can explain what your dad's rules cover, help you claim fees, or walk you through what happens next. How can I help?",
     verifier: "Hello {name}. I'm Heirloom. I read each document before it reaches you and can explain any request waiting in your inbox.",
     buyer: "Hello {name}. I'm Heirloom, acting for the estate. I can explain the listing, how escrowed offers work, and what you receive when a sale completes.",

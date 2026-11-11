@@ -23,7 +23,7 @@ export const landing = {
   },
   problem: {
     eyebrow: "The problem",
-    title: "Good intentions get lost. And an estate can take a year to wind up."
+    title: "Good intentions get lost. And an estate can take a year to wind up.",
     body: "Money set aside for school has a way of going elsewhere, and children can't prove what was promised. Then, when a parent dies in South Africa, bank accounts freeze while the estate is reported, an executor is appointed and creditors are paid. Families often wait twelve months or longer. In that gap, registration is blocked, rent falls behind and the family car is sold in a hurry for far less than it is worth.",
     stats: [
       { value: "12+ months", label: "is a common wait before heirs see any money from a deceased estate" },
@@ -41,7 +41,7 @@ export const landing = {
       },
       {
         title: "Sign and fund the vault",
-        body: "Create a self-custodial wallet in the app with Tether WDK, sign your plan and deposit USD₮. Rules you marked \"now\" start paying approved institutions on schedule. The rest wait. You can withdraw at any time."
+        body: "Create a self-custodial wallet in the app with Tether WDK, sign your plan and deposit USD₮. Rules you marked \"now\" start paying approved institutions on schedule. The rest wait. You can withdraw at any time.",
       },
       {
         title: "The plan outlives you",

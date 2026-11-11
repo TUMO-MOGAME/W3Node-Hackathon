@@ -12,6 +12,7 @@ import { Quorum } from "@/components/ui/client";
 import { ReportCard } from "@/components/agent/report-card";
 import { fmt, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
+import { usePay } from "@/components/pay/payment";
 
 type Copy = ScreensCopy["inbox"];
 
@@ -37,6 +38,7 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
   const { common } = useCopy();
   const { fx, run, busy } = useEstate();
   const [declined, setDeclined] = useState<string[]>([]);
+  const { pay } = usePay();
   const e = snap.estate;
   const rate = fx?.usdtZar ?? null;
   const me = e.verifiers.indexOf(session.address);
@@ -70,10 +72,15 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
       report: c.agentReport, approvals: c.approvals, need: e.claimThreshold, mine: !!c.approvals[me], approveLabel: copy.claim.approve,
       act: async () => {
         // Approve, and if that completes the quorum, release the payment in the same breath.
-        await run(c.address, async (s, est) => {
-          await s.approveClaim(est, c.address);
-          if (got + 1 >= e.claimThreshold) await s.executeClaim(est, c.address);
-        }, got + 1 >= e.claimThreshold ? fmt(copy.claim.done, { payee }) : copy.hardship.done);
+        if (got + 1 >= e.claimThreshold) {
+          await pay({
+            kind: "claim-payout", source: "vault", to: c.payee, toLabel: payee, amount: c.amount,
+            execute: async (s, est) => { await s.approveClaim(est, c.address); return s.executeClaim(est, c.address); },
+            successText: fmt(copy.claim.done, { payee }),
+          });
+        } else {
+          await run(c.address, (s, est) => s.approveClaim(est, c.address), copy.hardship.done);
+        }
       },
     });
   }

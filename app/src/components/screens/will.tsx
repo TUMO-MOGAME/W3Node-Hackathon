@@ -1,8 +1,8 @@
 "use client";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, CarFront, Check, Clock, GraduationCap, Lock, PenLine, Phone, ShieldCheck, Sparkles, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarClock, CarFront, Check, Clock, GraduationCap, Hourglass, Lock, PenLine, Phone, ShieldCheck, Sparkles, UsersRound, Zap } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
 import type { EstateSnapshot, TxResult } from "@/lib/service";
 import type { WalletSession, WillChatMessage, WillDraft } from "@/lib/types";
@@ -65,7 +65,13 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
   const { service, run, busy, openAgent } = useEstate();
   const first = session.label.split(/[ (]/)[0];
   const [messages, setMessages] = useState<Msg[]>([{ id: 0, role: "agent", text: fmt(copy.greeting, { name: first }) }]);
-  const [draft, setDraft] = useState<WillDraft | null>(null);
+  const [rawDraft, setDraft] = useState<WillDraft | null>(null);
+  // The owner's own Now / After-I'm-gone choices, kept when the agent sends a fresh draft.
+  const [starts, setStarts] = useState<Record<number, boolean>>({});
+  const draft = useMemo<WillDraft | null>(
+    () => (rawDraft ? { ...rawDraft, rules: rawDraft.rules.map((r, i) => (i in starts ? { ...r, startsNow: starts[i] } : r)) } : null),
+    [rawDraft, starts],
+  );
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
@@ -113,7 +119,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
         eyebrow={copy.eyebrow} title={copy.title} body={copy.body}
         action={<Button variant="secondary" small onClick={() => openAgent("call")}><Phone className="size-4" aria-hidden="true" />{copy.talk}</Button>}
       />
-      <div className="grid gap-5 lg:grid-cols-[1.2fr_1fr] lg:items-start">
+      <div className="grid gap-5 *:min-w-0 lg:grid-cols-[1.2fr_1fr] lg:items-start">
         <section aria-label={copy.eyebrow} className="flex min-w-0 flex-col rounded-xl border border-line bg-surface p-3 shadow-card sm:p-4">
           <ul role="log" aria-live="polite" aria-relevant="additions" className="flex flex-col gap-4">
             {messages.map((m) => (
@@ -143,7 +149,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
         </section>
 
         <div className="lg:sticky lg:top-[calc(var(--header-h)+4.5rem)]">
-          <Preview copy={copy} draft={draft} />
+          <Preview copy={copy} draft={draft} onStart={(i, now) => setStarts((prev) => ({ ...prev, [i]: now }))} />
           <AnimatePresence>
             {complete && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4">
@@ -171,7 +177,7 @@ function Slot({ icon, title, filled, pending, children }: { icon: ReactNode; tit
   );
 }
 
-function Preview({ copy, draft }: { copy: Copy; draft: WillDraft | null }) {
+function Preview({ copy, draft, onStart }: { copy: Copy; draft: WillDraft | null; onStart: (index: number, now: boolean) => void }) {
   const { common } = useCopy();
   const p = copy.preview;
   const parts = [!!draft?.beneficiaries.length, !!draft?.rules.length, (draft?.verifiers.length ?? 0) >= 3, !!draft?.assets.length];
@@ -193,13 +199,37 @@ function Preview({ copy, draft }: { copy: Copy; draft: WillDraft | null }) {
           </ul>
         </Slot>
         <Slot icon={<GraduationCap className="size-4" aria-hidden="true" />} title={p.rules} filled={parts[1]} pending={p.pending}>
-          <ul className="flex flex-col gap-1.5">
+          <p className="mb-2 text-[0.75rem] text-ink-2">{p.startHint}</p>
+          <ul className="flex flex-col gap-2">
             {draft?.rules.map((r, i) => {
               const Icon = categoryIcon[r.category];
+              const cat = common.status.category[r.category];
               return (
-                <motion.li key={`${r.beneficiaryLabel}-${r.category}`} {...item} transition={{ delay: i * 0.08 }} className="flex items-start gap-2">
-                  <Icon className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-                  <span><span className="font-semibold">{r.beneficiaryLabel}</span> · {fmt(p.ruleLine, { category: common.status.category[r.category], max: usd(r.maxPerClaimUsdt), cap: usd(r.lifetimeCapUsdt) })}</span>
+                <motion.li key={`${r.beneficiaryLabel}-${r.category}-${i}`} {...item} transition={{ delay: i * 0.08 }} className="rounded-md border border-line bg-surface-2/50 p-2.5">
+                  <div className="flex items-start gap-2">
+                    <Icon className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
+                    <div className="min-w-0 flex-1">
+                      <p><span className="font-semibold">{r.beneficiaryLabel}</span> · {cat}</p>
+                      <p className="text-ink-2">
+                        {r.recurring
+                          ? fmt(p.recurringLine, { amount: usd(r.recurring.amountUsdt), every: p.every[r.recurring.every], payee: r.recurring.payeeName })
+                          : fmt(p.ruleLine, { category: p.onClaim, max: usd(r.maxPerClaimUsdt), cap: usd(r.lifetimeCapUsdt) })}
+                      </p>
+                    </div>
+                    {r.recurring && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brass-soft px-2 py-0.5 text-[0.7rem] font-semibold text-brass"><CalendarClock className="size-3" aria-hidden="true" />{p.scheduled}</span>}
+                  </div>
+                  <fieldset className="mt-2">
+                    <legend className="sr-only">{fmt(p.startLabel, { category: cat.toLowerCase(), name: r.beneficiaryLabel })}</legend>
+                    <div className="flex rounded-full bg-surface p-0.5 ring-1 ring-line">
+                      {[true, false].map((now) => (
+                        <label key={String(now)} className={clsx("flex min-h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-[0.8rem] font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", r.startsNow === now ? (now ? "bg-accent text-accent-ink" : "bg-ink text-bg") : "text-ink-2")}>
+                          <input type="radio" name={`start-${i}`} className="sr-only" checked={r.startsNow === now} onChange={() => onStart(i, now)} />
+                          {now ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}
+                          {now ? p.now : p.later}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
                 </motion.li>
               );
             })}
@@ -245,23 +275,35 @@ function Review({ copy, draft, onBack, onSign, signing }: { copy: Copy; draft: W
         <p className="mt-2 text-lead">{draft.plainLanguageSummary}</p>
       </Card>
 
-      <section className="mt-6">
-        <h2 className="text-h3">{r.rulesTitle}</h2>
-        <ol className="mt-3 grid gap-2.5">
-          {draft.rules.map((rule, i) => {
-            const Icon = categoryIcon[rule.category];
-            return (
-              <li key={i} className="flex gap-3 rounded-md border border-line bg-surface p-3.5">
-                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
-                <p>{fmt(r.rule, {
+      {([true, false] as const).map((now) => {
+        const group = draft.rules.filter((rule) => rule.startsNow === now);
+        return (
+          <section key={String(now)} className="mt-6">
+            <h2 className="flex items-center gap-2 text-h3">
+              {now ? <Zap className="size-5 text-accent" aria-hidden="true" /> : <Hourglass className="size-5 text-brass" aria-hidden="true" />}
+              {now ? r.nowTitle : r.laterTitle}
+            </h2>
+            <p className="mt-1 text-small text-ink-2">{now ? (group.length ? r.nowBody : r.noneNow) : r.laterBody}</p>
+            <ol className="mt-3 grid gap-2.5">
+              {group.map((rule, i) => {
+                const Icon = categoryIcon[rule.category];
+                const base = {
                   name: rule.beneficiaryLabel, category: common.status.category[rule.category].toLowerCase(), kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase(),
                   max: usd(rule.maxPerClaimUsdt), cap: usd(rule.lifetimeCapUsdt), date: longDate(rule.validUntil),
-                })}</p>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+                };
+                return (
+                  <li key={i} className="flex gap-3 rounded-md border border-line bg-surface p-3.5">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
+                    <p>{rule.recurring
+                      ? fmt(r.recurringRule, { ...base, amount: usd(rule.recurring.amountUsdt), payee: rule.recurring.payeeName, every: copy.preview.every[rule.recurring.every] })
+                      : fmt(r.rule, base)}</p>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        );
+      })}
 
       <section className="mt-6">
         <h2 className="text-h3">{r.trustedTitle}</h2>
@@ -314,13 +356,20 @@ function Locked({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
         {snap.rules.map((rule) => {
           const Icon = categoryIcon[rule.category];
           const who = snap.beneficiaries.find((b) => b.wallet === rule.beneficiary)?.label ?? "";
+          const base = {
+            name: who, category: common.status.category[rule.category].toLowerCase(), kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase(),
+            max: formatUsdt(rule.maxPerClaim, { decimals: 0 }), cap: formatUsdt(rule.lifetimeCap, { decimals: 0 }), date: longDate(rule.validUntil),
+          };
+          const recurring = rule.recurringAmount > BigInt(0);
           return (
             <li key={rule.address} className="flex gap-3 rounded-md border border-line bg-surface p-3.5 shadow-card">
               <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
-              <p>{fmt(copy.review.rule, {
-                name: who, category: common.status.category[rule.category].toLowerCase(), kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase(),
-                max: formatUsdt(rule.maxPerClaim, { decimals: 0 }), cap: formatUsdt(rule.lifetimeCap, { decimals: 0 }), date: longDate(rule.validUntil),
-              })}</p>
+              <div className="min-w-0">
+                <Badge tone={rule.startsNow ? "accent" : "neutral"}>{rule.startsNow ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}{rule.startsNow ? copy.preview.now : copy.preview.later}</Badge>
+                <p className="mt-1.5">{recurring
+                  ? fmt(copy.review.recurringRule, { ...base, amount: formatUsdt(rule.recurringAmount, { decimals: 0 }), payee: snap.payees.find((x) => x.wallet === rule.fixedPayee)?.name ?? "", every: copy.preview.every[rule.intervalSecs <= 60 ? "minute" : "month"] })
+                  : fmt(copy.review.rule, base)}</p>
+              </div>
             </li>
           );
         })}

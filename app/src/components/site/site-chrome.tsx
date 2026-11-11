@@ -30,6 +30,7 @@ export function SiteFooter({ site }: { site: SiteCopy }) {
           <Logo name={site.name} />
           <p className="mt-3 max-w-sm text-small text-ink-2">{f.blurb}</p>
           <p className="mt-4 inline-flex rounded-full border border-line-strong/60 px-3 py-1.5 text-small font-semibold">{f.builtWith}</p>
+          <p className="mt-3 text-small text-ink-2">{f.program}:{" "}<a href={`https://explorer.solana.com/address/${f.programId}?cluster=devnet`} target="_blank" rel="noreferrer noopener" className="break-all font-mono text-ink underline underline-offset-4">{f.programId}</a></p>
         </div>
         <nav aria-label={f.linksTitle}>
           <h2 className="font-sans text-small font-semibold uppercase tracking-[0.12em] text-ink-2">{f.linksTitle}</h2>

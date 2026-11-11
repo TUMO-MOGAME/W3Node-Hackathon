@@ -1,12 +1,13 @@
 "use client";
-import { useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { motion } from "motion/react";
 import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
 import type { AssistantCopy } from "@/content/assistant";
 import type { SpecialistName } from "@/lib/voice/types";
-import type { AgentAction } from "@/lib/hooks/agent-types";
+import { mapAgentPath, type AgentAction } from "@/lib/hooks/agent-types";
+import { onAgentAction } from "@/lib/agent/actions";
 import { useEstate } from "@/lib/hooks/estate";
 import { LogoMark } from "@/components/ui/primitives";
 import { Typewriter } from "@/components/ui/client";
@@ -114,24 +115,40 @@ export function Composer({ onSend, disabled, copy, autoFocus }: { onSend: (text:
   );
 }
 
+/** Performs an agent UI action: used by the buttons under a reply and by intents the agent emits itself (voice tools). */
+export function usePerformAction() {
+  const router = useRouter();
+  const { setIntent, setProofOpen } = useEstate();
+  return useCallback((x: AgentAction) => {
+    if (x.type === "navigate") {
+      const to = mapAgentPath(x.to);
+      if (to.includes("proof=1")) setProofOpen(true);
+      router.push(to.split("?proof=1")[0]);
+    } else if (x.type === "openClaimForm") { setIntent({ kind: "claim", rule: x.rule, payee: x.payee, amount: x.amount }); router.push("/claims"); }
+    else if (x.type === "showRule") { setIntent({ kind: "rule", rule: x.rule }); router.push("/estate"); }
+    else { setIntent({ kind: "upload", purpose: x.purpose }); router.push(x.purpose === "death" ? "/family" : x.purpose === "claim" ? "/claims" : "/hardship"); }
+  }, [router, setIntent, setProofOpen]);
+}
+
+/** Listens for UI intents emitted by the agent (text orchestrator or voice client tools). Renders nothing. */
+export function AgentActionBridge() {
+  const perform = usePerformAction();
+  useEffect(() => onAgentAction((a) => perform(a.type === "navigate" ? { type: "navigate", to: a.path } : a)), [perform]);
+  return null;
+}
+
 /** Turns orchestrator actions into buttons and performs them. */
 export function ActionButtons({ actions, copy, onDone }: { actions: AgentAction[]; copy: AssistantCopy; onDone?: () => void }) {
-  const router = useRouter();
-  const { setIntent, role } = useEstate();
+  const run = usePerformAction();
+  const { role } = useEstate();
   if (!actions.length) return null;
   const a = copy.actions;
   const label = (x: AgentAction) =>
-    x.type === "navigate" ? fmt(a.navigate, { page: a.pages[x.to] ?? a.fallbackPage })
+    x.type === "navigate" ? fmt(a.navigate, { page: a.pages[x.to.split("?")[0]] ?? a.fallbackPage })
       : x.type === "openClaimForm" ? a.openClaimForm
         : x.type === "showRule" ? a.showRule
           : x.purpose === "death" ? a.startUploadDeath : x.purpose === "claim" ? a.startUploadClaim : a.startUploadHardship;
-  const perform = (x: AgentAction) => {
-    if (x.type === "navigate") router.push(x.to);
-    else if (x.type === "openClaimForm") { setIntent({ kind: "claim", rule: x.rule, payee: x.payee, amount: x.amount }); router.push("/claims"); }
-    else if (x.type === "showRule") { setIntent({ kind: "rule", rule: x.rule }); router.push("/estate"); }
-    else { setIntent({ kind: "upload", purpose: x.purpose }); router.push(x.purpose === "death" ? "/family" : x.purpose === "claim" ? "/claims" : "/hardship"); }
-    onDone?.();
-  };
+  const perform = (x: AgentAction) => { run(x); onDone?.(); };
   const visible = actions.filter((x) => !(x.type === "openClaimForm" && role !== "beneficiary"));
   return (
     <div role="group" aria-label={copy.chat.actionsLabel} className="mt-2 flex flex-wrap gap-2">

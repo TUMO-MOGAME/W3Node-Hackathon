@@ -8,6 +8,8 @@ import { Sheet } from "@/components/ui/client";
 import { ExplorerLink, Notice } from "@/components/ui/primitives";
 import { timeAgo, useCopy } from "./copy";
 
+const PROGRAM_ID = process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID ?? "";
+
 function CopyValue({ value, copyLabel, copiedLabel }: { value: string; copyLabel: string; copiedLabel: string }) {
   const [done, setDone] = useState(false);
   return (
@@ -33,6 +35,7 @@ export function ProofDrawer() {
   const now = useNow(15000);
   const e = snap?.estate;
   const facts = e ? [
+    ...(PROGRAM_ID ? [{ term: c.facts.program, value: PROGRAM_ID }] : []),
     { term: c.facts.estate, value: e.address },
     { term: c.facts.will, value: e.willHash },
     { term: c.facts.mint, value: e.usdtMint },

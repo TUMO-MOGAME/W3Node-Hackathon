@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, BookOpen, CarFront, CircleDot, FileCheck2, GraduationCap, HeartPulse, House, Landmark, Plus, Stethoscope, UsersRound, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarClock, CarFront, CircleDot, FileCheck2, GraduationCap, HeartPulse, Hourglass, House, Landmark, Milestone, Plus, Send, Stethoscope, UsersRound, Zap, type LucideIcon } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
 import type { EstateSnapshot } from "@/lib/service";
 import type { Category, EstateStatus, Role, Rule, WalletSession } from "@/lib/types";
@@ -10,7 +11,9 @@ import { formatUsdt, formatZar } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
 import { useNow } from "@/lib/hooks/use-now";
 import { Badge, Button, ButtonLink, Card, Eyebrow, ExplorerLink, Meter, type Tone } from "@/components/ui/primitives";
-import { pendingFor } from "@/components/shell/app-shell";
+import { ownerPending, pendingFor } from "@/components/shell/app-shell";
+import { usePay } from "@/components/pay/payment";
+import { clock } from "./family";
 import { fmt, timeAgo, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
 import { InstallBanner } from "@/components/shell/install";
@@ -33,8 +36,8 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
   const first = e.ownerName.split(" ")[0];
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1.35fr_1fr] lg:items-start">
-      <div className="grid gap-5">
+    <div className="grid gap-5 *:min-w-0 lg:grid-cols-[1.35fr_1fr] lg:items-start">
+      <div className="grid gap-5 *:min-w-0">
         <InstallBanner copy={common.install} />
 
         {/* Vault hero */}
@@ -63,6 +66,7 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
               {role === "owner" && e.status === "Active" && (
                 <ButtonLink href="/vault" className="bg-accent-ink! text-accent! hover:opacity-90"><Plus className="size-5" aria-hidden="true" />{copy.addFunds}</ButtonLink>
               )}
+              <Link href="/send" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-accent-ink/50 px-5 font-medium hover:bg-accent-ink/10"><Send className="size-5" aria-hidden="true" />{copy.send}</Link>
               <button type="button" onClick={() => setProofOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-accent-ink/50 px-5 font-medium hover:bg-accent-ink/10">
                 <FileCheck2 className="size-5" aria-hidden="true" />{copy.openProof}
               </button>
@@ -72,6 +76,8 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
 
         <ForYou copy={copy} snap={snap} session={session} role={role} now={now} onHeartbeat={() => run("heartbeat", (s, est) => s.heartbeat(est), copy.forYou.owner.done)} busy={busy === "heartbeat"} walletUsdt={walletUsdt} rate={rate} />
 
+        <Scheduled copy={copy} snap={snap} rate={rate} />
+
         {/* Rules */}
         <section aria-labelledby="rules-title">
           <div className="mb-3">
@@ -79,14 +85,14 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
             <p className="text-small text-ink-2">{copy.rules.body}</p>
           </div>
           {snap.rules.length === 0 ? <p className="text-ink-2">{copy.rules.empty}</p> : (
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid gap-3 *:min-w-0 sm:grid-cols-2">
               {snap.rules.map((r) => <RuleCard key={r.address} rule={r} snap={snap} copy={copy} rate={rate} now={now} />)}
             </ul>
           )}
         </section>
       </div>
 
-      <div className="grid gap-5">
+      <div className="grid gap-5 *:min-w-0">
         {/* Car */}
         <Card>
           <div className="flex items-center justify-between gap-3">
@@ -181,6 +187,11 @@ function RuleCard({ rule, snap, copy, rate, now }: { rule: Rule; snap: EstateSna
           <h3 className="font-sans text-body font-semibold tracking-normal">{common.status.category[rule.category]}</h3>
           <p className="truncate text-small text-ink-2">{fmt(copy.rules.forWho, { name: who })}</p>
         </div>
+        <Badge tone={rule.startsNow ? "accent" : "neutral"} className="ml-auto shrink-0">
+          {rule.startsNow ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}
+          <span className="sr-only">{rule.startsNow ? copy.rules.nowSr : copy.rules.laterSr}</span>
+          <span aria-hidden="true">{rule.startsNow ? copy.rules.now : copy.rules.later}</span>
+        </Badge>
       </div>
       <p className="mt-3 text-small"><span className="font-medium">{fmt(copy.rules.paidTo, { kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase() })}</span> · {fmt(copy.rules.perClaim, { amount: formatUsdt(rule.maxPerClaim, { decimals: 0 }) })}</p>
       <div className="mt-3">
@@ -204,9 +215,11 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
   const reported = !!e.death.certHash || e.status === "DeathPending";
   let block: { title: string; body: string; cta: string; href: string } | null = null;
   if (role === "owner") {
+    const mine = ownerPending(snap);
     if (reported && e.status !== "Unlocked") block = { ...f.ownerPending, href: "/family" };
+    else if (mine > 0) block = { title: fmt(f.ownerClaims.title, { count: mine === 1 ? f.countOne : fmt(f.countMany, { n: mine }) }), body: f.ownerClaims.body, cta: f.ownerClaims.cta, href: "/claims" };
   } else if (role === "beneficiary") {
-    block = e.status === "Unlocked" ? { ...f.beneficiaryUnlocked, href: "/claims" } : e.status === "DeathPending" ? { ...f.beneficiaryPending, href: "/family" } : { ...f.beneficiaryActive, href: "/family" };
+    block = e.status === "Unlocked" ? { ...f.beneficiaryUnlocked, href: "/claims" } : e.status === "DeathPending" ? { ...f.beneficiaryPending, href: "/family" } : { ...f.beneficiaryActive, href: "/claims" };
   } else if (role === "verifier") {
     const n = pendingFor(snap, session.address);
     block = n > 0
@@ -215,7 +228,7 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
   } else if (role === "buyer") block = { ...f.buyer, href: "/car" };
 
   return (
-    <Card aria-label={f.title} className={clsx(block && role === "owner" && "border-danger/50 bg-danger-soft")}>
+    <Card aria-label={f.title} className={clsx(block && role === "owner" && reported && "border-danger/50 bg-danger-soft")}>
       <Eyebrow>{f.title}</Eyebrow>
       {block ? (
         <div className="mt-1.5 flex flex-wrap items-end justify-between gap-3">
@@ -225,6 +238,8 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
           </div>
           <ButtonLink href={block.href}>{block.cta}<ArrowRight className="size-5" aria-hidden="true" /></ButtonLink>
         </div>
+      ) : e.status === "Unlocked" ? (
+        <p className="mt-1.5 text-ink-2">{common.status.estateHint.Unlocked}</p>
       ) : (
         <div className="mt-1.5 flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0 max-w-md">
@@ -232,11 +247,14 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
             <p className="mt-1 text-ink-2">{f.owner.body}</p>
             <p className="mt-1 min-h-5 text-small text-ink-2">{now !== null ? fmt(f.owner.last, { when: timeAgo(e.lastHeartbeat, now, common.time) }) : ""}</p>
           </div>
-          {e.status !== "Unlocked" && <Button onClick={onHeartbeat} loading={busy}><HeartPulse className="size-5" aria-hidden="true" />{f.owner.heartbeat}</Button>}
+          <Button onClick={onHeartbeat} loading={busy}><HeartPulse className="size-5" aria-hidden="true" />{f.owner.heartbeat}</Button>
         </div>
       )}
+      <p className="mt-3 border-t border-line/70 pt-1">
+        <Link href="/family" className="inline-flex min-h-11 items-center gap-2 text-small font-semibold text-accent underline-offset-4 hover:underline"><Milestone className="size-4" aria-hidden="true" />{copy.timeline}<ArrowRight className="size-4" aria-hidden="true" /></Link>
+      </p>
       {(role === "owner" || role === "buyer") && (
-        <p className="mt-3 border-t border-line/70 pt-3 text-small text-ink-2">
+        <p className="text-small text-ink-2">
           {copy.walletBalance}: <span className="font-semibold text-ink tabular-nums">{formatUsdt(walletUsdt)}</span>{rate ? ` (≈ ${formatZar(walletUsdt, rate)})` : ""}
         </p>
       )}
@@ -244,3 +262,65 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
   );
 }
 
+
+/* ---------- Scheduled payments: living rules pay now, legacy schedules start at unlock ---------- */
+
+function everyLabel(secs: number, t: Copy["scheduled"]["intervals"]): string {
+  if (secs < 86400) return fmt(t.seconds, { n: secs });
+  if (secs <= 8 * 86400) return t.week;
+  if (secs <= 32 * 86400) return t.month;
+  if (secs <= 200 * 86400) return t.term;
+  if (secs <= 370 * 86400) return t.year;
+  return fmt(t.days, { n: Math.round(secs / 86400) });
+}
+
+function Scheduled({ copy, snap, rate }: { copy: Copy; snap: EstateSnapshot; rate: number | null }) {
+  const { busy } = useEstate();
+  const { pay } = usePay();
+  const now = useNow();
+  const c = copy.scheduled;
+  const e = snap.estate;
+  const rules = snap.rules.filter((r) => r.recurringAmount > BigInt(0));
+  if (rules.length === 0) return null;
+  return (
+    <section aria-labelledby="scheduled-title">
+      <div className="mb-3">
+        <h2 id="scheduled-title" className="flex items-center gap-2 text-h3"><CalendarClock className="size-5 text-accent" aria-hidden="true" />{c.title}</h2>
+        <p className="text-small text-ink-2">{c.body}</p>
+      </div>
+      <ul className="grid gap-3">
+        {rules.map((r) => {
+          const payee = snap.payees.find((p) => p.wallet === r.fixedPayee)?.name ?? "";
+          const who = snap.beneficiaries.find((b) => b.wallet === r.beneficiary)?.label.replace(/\s*\(.*\)$/, "") ?? "";
+          const live = e.status === "Unlocked" || (r.startsNow && e.status === "Active");
+          const capped = r.spentTotal + r.recurringAmount > r.lifetimeCap;
+          const ended = now !== null && now > r.validUntil;
+          const left = r.nextDue !== null && now !== null ? r.nextDue - now : null;
+          const due = live && !capped && !ended && left !== null && left <= 0;
+          const state = capped ? c.capReached : ended ? c.ended : !live ? (r.startsNow || e.status === "DeathPending" ? (e.status === "DeathPending" && r.startsNow ? c.paused : c.startsAfter) : c.startsAfter) : left === null ? "" : due ? c.dueNow : fmt(c.nextIn, { time: clock(left) });
+          return (
+            <li key={r.address} className={clsx("flex flex-wrap items-center gap-3 rounded-lg border bg-surface p-4 shadow-card", due ? "border-brass/60" : "border-line")}>
+              <span className={clsx("grid size-10 shrink-0 place-items-center rounded-full", r.startsNow ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2")}>
+                {r.startsNow ? <Zap className="size-5" aria-hidden="true" /> : <Hourglass className="size-5" aria-hidden="true" />}
+              </span>
+              <div className="min-w-0 flex-1 basis-40">
+                <p className="font-semibold">{fmt(c.line, { amount: formatUsdt(r.recurringAmount, { decimals: 0 }), payee })}</p>
+                <p className="text-small text-ink-2">{fmt(c.forWho, { name: who, every: everyLabel(r.intervalSecs, c.intervals) })}{rate ? ` · ≈ ${formatZar(r.recurringAmount, rate)}` : ""}</p>
+                <p className={clsx("mt-0.5 min-h-5 text-small font-semibold tabular-nums", due ? "text-brass" : "text-ink-2")} role="timer" aria-live="off">{state}</p>
+              </div>
+              {live && !capped && !ended && (
+                <Button
+                  small variant={due ? "primary" : "secondary"} disabled={!due || !!busy}
+                  onClick={() => void pay({ kind: "scheduled", source: "vault", to: r.fixedPayee ?? "", toLabel: payee, amount: r.recurringAmount, execute: (svc, est) => svc.executeScheduled(est, r.address), successText: fmt(c.paid, { payee }) })}
+                >
+                  {c.payNow}
+                </Button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      <p className="mt-2 text-[0.75rem] text-ink-2">{c.anyone}</p>
+    </section>
+  );
+}

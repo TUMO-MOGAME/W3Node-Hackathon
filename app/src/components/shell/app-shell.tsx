@@ -7,11 +7,14 @@ import { MotionConfig } from "motion/react";
 import { CarFront, ChevronDown, FileCheck2, HandCoins, House, Inbox, Landmark, MessageCircle, Milestone, Phone, ScrollText, Users, type LucideIcon } from "lucide-react";
 import type { CommonCopy } from "@/content/common";
 import type { AssistantCopy } from "@/content/assistant";
+import type { PayCopy } from "@/content/pay";
+import { ConnectionBars, PaymentProvider } from "@/components/pay/payment";
 import type { Role } from "@/lib/types";
 import { EstateProvider, useEstate } from "@/lib/hooks/estate";
 import { LogoMark } from "@/components/ui/primitives";
 import { Toaster } from "@/components/ui/client";
 import { AgentSheet } from "@/components/agent/agent-sheet";
+import { AgentActionBridge } from "@/components/agent/chat-parts";
 import { CopyProvider, fmt, useCopy } from "./copy";
 import { PinGate } from "./pin-gate";
 import { PersonaSheet } from "./persona-sheet";
@@ -38,13 +41,13 @@ const TABS: Record<Role | "none", NavKey[]> = {
   none: ["estate"],
 };
 
-export function AppShell({ common, assistant, siteName, children }: { common: CommonCopy; assistant: AssistantCopy; siteName: string; children: ReactNode }) {
+export function AppShell({ common, assistant, pay, siteName, children }: { common: CommonCopy; assistant: AssistantCopy; pay: PayCopy; siteName: string; children: ReactNode }) {
   return (
-    <CopyProvider value={{ common, assistant, siteName }}>
+    <CopyProvider value={{ common, assistant, pay, siteName }}>
       <MotionConfig reducedMotion="user">
         <PinGate>
           <EstateProvider errors={common.errors}>
-            <Chrome>{children}</Chrome>
+            <PaymentProvider><Chrome>{children}</Chrome></PaymentProvider>
           </EstateProvider>
         </PinGate>
       </MotionConfig>
@@ -131,11 +134,11 @@ function Chrome({ children }: { children: ReactNode }) {
               <button
                 type="button" onClick={() => setPersonaOpen(true)}
                 aria-label={fmt(common.persona.switchLabel, { name: session.label, role: common.roles[session.role] })}
-                className="flex min-h-11 min-w-0 items-center gap-2 rounded-full border border-line-strong/70 bg-surface py-1 pl-1 pr-2.5 shadow-card hover:bg-surface-2"
+                className="flex min-h-11 min-w-0 items-center gap-2 rounded-full border border-line-strong/70 bg-surface py-1 pl-1 pr-2.5 shadow-card hover:bg-surface-2 md:shrink-0"
               >
                 <Avatar name={session.label} role={session.role} />
                 <span className="flex min-w-0 flex-col items-start leading-tight">
-                  <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-brass">{common.roles[session.role]}</span>
+                  <span className="max-w-[7.5rem] truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wider text-brass sm:max-w-[11rem]">{common.roles[session.role]}</span>
                   <span className="max-w-[7.5rem] truncate text-small font-semibold sm:max-w-[11rem]">{session.label.replace(/\s*\(.*\)$/, "")}</span>
                 </span>
                 <ChevronDown className="size-4 shrink-0 text-ink-2" aria-hidden="true" />
@@ -143,6 +146,7 @@ function Chrome({ children }: { children: ReactNode }) {
             )}
           </div>
         </div>
+        <ConnectionBars />
         {!onboarding && isMock && session && <DemoGuide />}
       </header>
 
@@ -152,13 +156,13 @@ function Chrome({ children }: { children: ReactNode }) {
 
       {!onboarding && session && (
         <>
-          <button
+          {pathname !== "/will" && <button
             type="button" onClick={() => openAgent("chat")}
             className="fixed bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.875rem)] right-4 z-40 inline-flex h-14 items-center gap-2 rounded-full bg-accent pl-4 pr-5 font-semibold text-accent-ink shadow-float transition-transform active:scale-95 md:hidden"
           >
             <MessageCircle className="size-6" aria-hidden="true" />
             <span className="text-small">{assistant.sheet.fabLabel}</span>
-          </button>
+          </button>}
           <nav aria-label={common.nav.label} className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur-md md:hidden">
             <div className="mx-auto flex h-[var(--tabbar-h)] max-w-lg items-stretch px-1">{tabs.map((k) => navLink(k, "tab"))}</div>
           </nav>
@@ -168,6 +172,7 @@ function Chrome({ children }: { children: ReactNode }) {
       <PersonaSheet open={personaOpen} onClose={() => setPersonaOpen(false)} />
       <ProofDrawer />
       <AgentSheet />
+      <AgentActionBridge />
       <Toaster dismissLabel={common.toast.dismiss} />
     </div>
   );
