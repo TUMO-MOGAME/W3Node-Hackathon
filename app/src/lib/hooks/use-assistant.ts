@@ -2,13 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AssistantCopy } from "@/content/assistant";
 import { useEstate } from "./estate";
-import { normaliseReply, type AssistantMessage, type OrchestratorReply } from "./agent-types";
-import { mockOrchestrate } from "./mock-orchestrator";
-import { looksLikeSend } from "@/lib/assistant/intent";
-import { describeResult, interpretRequest, reviewLabel } from "@/lib/assistant/client";
+import type { AssistantMessage } from "./agent-types";
 import { useLocale } from "@/lib/i18n/client";
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { runAssistantTurn, turnText } from "../chat/pipeline";
 
 /** General assistant chat. Mock mode answers on-device; chain mode calls the orchestrator and falls back on-device. */
 export function useAssistant(copy: AssistantCopy, page: string) {
@@ -17,8 +13,8 @@ export function useAssistant(copy: AssistantCopy, page: string) {
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [pending, setPending] = useState(false);
   const id = useRef(0);
-  const ctx = useRef({ snap, fx, session, role, page, isMock, locale, ready: !!service });
-  useEffect(() => { ctx.current = { snap, fx, session, role, page, isMock, locale, ready: !!service }; });
+  const ctx = useRef({ snap, fx, session, role, page, isMock, locale, service });
+  useEffect(() => { ctx.current = { snap, fx, session, role, page, isMock, locale, service }; });
 
   const name = session?.label.split(/[ (]/)[0] ?? "";
   const greetKey = role === "agent" || !role ? "none" : role;
@@ -38,56 +34,14 @@ export function useAssistant(copy: AssistantCopy, page: string) {
     setMessages((m) => [...m.map((x) => ({ ...x, fresh: false })), { id: ++id.current, role: "user", text: trimmed }]);
     setPending(true);
     const c = ctx.current;
-    const local = (): OrchestratorReply => mockOrchestrate(trimmed, { role: c.role, address: c.session?.address ?? null, snap: c.snap, fx: c.fx }, copy);
-    let reply: OrchestratorReply | null = null;
-    let fellBack = false;
-    // Payment requests go to the wallet assistant (Tether QVAC, or the fallback parser) and come back as a
-    // "Review payment" button. The review sheet is still where the person approves or cancels.
-    if (service && looksLikeSend(trimmed)) {
-      try {
-        const r = await interpretRequest(trimmed, service, c.fx?.usdtZar ?? null, copy.wallet);
-        const engine = r.engine === "qvac" ? copy.wallet.engineQvac : copy.wallet.engineFallback;
-        reply = {
-          specialist: "Orchestrator",
-          reply: `${describeResult(r, copy.wallet)}
-
-${engine}${r.note ? `: ${r.note}` : ""}`,
-          actions: r.plan.ok
-            ? [{ type: "reviewSend", to: r.plan.to, toLabel: reviewLabel(r.plan, copy.wallet), amountUsdt: r.plan.amountUsdt }]
-            : [{ type: "navigate", to: "/send" }],
-        };
-      } catch { reply = null; }
-    }
-    if (reply) { /* answered by the wallet assistant */ }
-    else if (c.isMock || !c.ready) {
-      await sleep(700 + Math.min(900, trimmed.length * 12));
-      reply = local();
-    } else {
-      try {
-        const res = await fetch("/api/agent/orchestrate", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            message: trimmed,
-            history: history.map((m) => ({ role: m.role, text: m.text })),
-            persona: c.session ? `${c.session.role}:${c.session.label}` : "guest",
-            wallet: c.session?.address,
-            estate: c.snap?.estate.address,
-            page: c.page,
-            locale: c.locale,
-          }),
-        });
-        reply = res.ok ? normaliseReply(await res.json()) : null;
-      } catch { reply = null; }
-      if (!reply) { reply = local(); fellBack = true; }
-    }
-    const final = reply;
+    const result = await runAssistantTurn(trimmed, history, c, copy);
+    const final = result.reply;
     setMessages((m) => [...m, {
       id: ++id.current, role: "agent", fresh: true, specialist: final.specialist, actions: final.actions,
-      text: fellBack ? `${copy.chat.errorFallback}\n\n${final.reply}` : final.reply,
+      text: turnText(result, copy),
     }]);
     setPending(false);
-  }, [messages, copy, service]);
+  }, [messages, copy]);
 
   const reset = useCallback(() => {
     setMessages([{ id: ++id.current, role: "agent", text: greeting, specialist: "EstateGuide" }]);
