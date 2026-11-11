@@ -42,6 +42,7 @@ export const assistant = {
     startUploadDeath: "Report a passing",
     startUploadClaim: "Upload a fee statement",
     startUploadHardship: "Start a hardship request",
+    reviewSend: "Review payment to {name}",
     pages: {
       "/estate": "the estate",
       "/will": "the will writer",
@@ -143,6 +144,31 @@ export const assistant = {
     agent: "Heirloom",
     simulated: "Simulated call preview",
     orbLabel: "Voice activity",
+  },
+  /** Wallet assistant: a typed payment request is read by Tether QVAC (or the fallback parser), checked, then reviewed. */
+  wallet: {
+    title: "Ask your wallet",
+    label: "Tell your wallet what to send",
+    placeholder: "Send R500 to Lerato for books",
+    ask: "Ask",
+    asking: "Reading your request",
+    hint: "Nothing is sent until you approve the review.",
+    engineQvac: "Tether QVAC · on-device AI",
+    engineFallback: "Fallback parser",
+    understood: "I read this as {amount} to {name}{memo}. Check the review, then approve or cancel.",
+    understoodZar: "{zar} ({usdt} at R{rate} per USD₮)",
+    memo: ", for {memo}",
+    labelMemo: "{name} · for {memo}",
+    reasons: {
+      not_send: "I can only prepare payments here, like \"Send R500 to Lerato for books\".",
+      no_recipient: "Who should get it? I couldn't match \"{name}\" to anyone saved. Choose a person below.",
+      no_recipient_blank: "Who should get it? Choose a person below.",
+      ambiguous: "Which one did you mean: {names}? Choose them below.",
+      no_amount: "How much should I send? Enter the amount below.",
+      no_rate: "I can't get the rand rate right now. Enter the amount in USD₮ below.",
+    },
+    offline: "Read on this device by the fallback parser (no connection to the QVAC route).",
+    error: "I couldn't prepare that payment.",
   },
   /** Scripted lines for the simulated call used when no voice service is configured in development. */
   voicePreview: [

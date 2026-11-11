@@ -4,6 +4,8 @@ import type { AssistantCopy } from "@/content/assistant";
 import { useEstate } from "./estate";
 import { normaliseReply, type AssistantMessage, type OrchestratorReply } from "./agent-types";
 import { mockOrchestrate } from "./mock-orchestrator";
+import { looksLikeSend } from "@/lib/assistant/intent";
+import { describeResult, interpretRequest, reviewLabel } from "@/lib/assistant/client";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -37,7 +39,25 @@ export function useAssistant(copy: AssistantCopy, page: string) {
     const local = (): OrchestratorReply => mockOrchestrate(trimmed, { role: c.role, address: c.session?.address ?? null, snap: c.snap, fx: c.fx }, copy);
     let reply: OrchestratorReply | null = null;
     let fellBack = false;
-    if (c.isMock || !c.ready) {
+    // Payment requests go to the wallet assistant (Tether QVAC, or the fallback parser) and come back as a
+    // "Review payment" button. The review sheet is still where the person approves or cancels.
+    if (service && looksLikeSend(trimmed)) {
+      try {
+        const r = await interpretRequest(trimmed, service, c.fx?.usdtZar ?? null, copy.wallet);
+        const engine = r.engine === "qvac" ? copy.wallet.engineQvac : copy.wallet.engineFallback;
+        reply = {
+          specialist: "Orchestrator",
+          reply: `${describeResult(r, copy.wallet)}
+
+${engine}${r.note ? `: ${r.note}` : ""}`,
+          actions: r.plan.ok
+            ? [{ type: "reviewSend", to: r.plan.to, toLabel: reviewLabel(r.plan, copy.wallet), amountUsdt: r.plan.amountUsdt }]
+            : [{ type: "navigate", to: "/send" }],
+        };
+      } catch { reply = null; }
+    }
+    if (reply) { /* answered by the wallet assistant */ }
+    else if (c.isMock || !c.ready) {
       await sleep(700 + Math.min(900, trimmed.length * 12));
       reply = local();
     } else {
@@ -64,7 +84,7 @@ export function useAssistant(copy: AssistantCopy, page: string) {
       text: fellBack ? `${copy.chat.errorFallback}\n\n${final.reply}` : final.reply,
     }]);
     setPending(false);
-  }, [messages, copy]);
+  }, [messages, copy, service]);
 
   const reset = useCallback(() => {
     setMessages([{ id: ++id.current, role: "agent", text: greeting, specialist: "EstateGuide" }]);

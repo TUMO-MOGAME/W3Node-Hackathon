@@ -9,6 +9,8 @@ import type { SpecialistName } from "@/lib/voice/types";
 import { mapAgentPath, type AgentAction } from "@/lib/hooks/agent-types";
 import { onAgentAction } from "@/lib/agent/actions";
 import { useEstate } from "@/lib/hooks/estate";
+import { shortAddress } from "@/lib/format";
+import { usePay } from "@/components/pay/payment";
 import { LogoMark } from "@/components/ui/primitives";
 import { Typewriter } from "@/components/ui/client";
 import { fmt } from "@/components/shell/copy";
@@ -118,8 +120,17 @@ export function Composer({ onSend, disabled, copy, autoFocus }: { onSend: (text:
 /** Performs an agent UI action: used by the buttons under a reply and by intents the agent emits itself (voice tools). */
 export function usePerformAction() {
   const router = useRouter();
-  const { setIntent, setProofOpen } = useEstate();
+  const { setIntent, setProofOpen, service, explain, notify } = useEstate();
+  const { pay } = usePay();
   return useCallback((x: AgentAction) => {
+    if (x.type === "reviewSend") {
+      if (!service) return;
+      router.push("/send");
+      service.reviewSend({ to: x.to, toLabel: x.toLabel, amountUsdt: x.amountUsdt })
+        .then((r) => pay({ kind: "p2p", to: r.to, toLabel: r.toLabel, amount: r.amount, review: r }))
+        .catch((e: unknown) => notify("error", explain(e).message));
+      return;
+    }
     if (x.type === "navigate") {
       const to = mapAgentPath(x.to);
       if (to.includes("proof=1")) setProofOpen(true);
@@ -127,7 +138,7 @@ export function usePerformAction() {
     } else if (x.type === "openClaimForm") { setIntent({ kind: "claim", rule: x.rule, payee: x.payee, amount: x.amount }); router.push("/claims"); }
     else if (x.type === "showRule") { setIntent({ kind: "rule", rule: x.rule }); router.push("/estate"); }
     else { setIntent({ kind: "upload", purpose: x.purpose }); router.push(x.purpose === "death" ? "/family" : x.purpose === "claim" ? "/claims" : "/hardship"); }
-  }, [router, setIntent, setProofOpen]);
+  }, [router, setIntent, setProofOpen, service, pay, explain, notify]);
 }
 
 /** Listens for UI intents emitted by the agent (text orchestrator or voice client tools). Renders nothing. */
@@ -147,6 +158,7 @@ export function ActionButtons({ actions, copy, onDone }: { actions: AgentAction[
     x.type === "navigate" ? fmt(a.navigate, { page: a.pages[x.to.split("?")[0]] ?? a.fallbackPage })
       : x.type === "openClaimForm" ? a.openClaimForm
         : x.type === "showRule" ? a.showRule
+          : x.type === "reviewSend" ? fmt(a.reviewSend, { name: x.toLabel.split(" · ")[0] || shortAddress(x.to) })
           : x.purpose === "death" ? a.startUploadDeath : x.purpose === "claim" ? a.startUploadClaim : a.startUploadHardship;
   const perform = (x: AgentAction) => { run(x); onDone?.(); };
   const visible = actions.filter((x) => !(x.type === "openClaimForm" && role !== "beneficiary"));
