@@ -5,7 +5,9 @@ export type AgentAction =
   | { type: "navigate"; to: string }
   | { type: "openClaimForm"; rule?: string; payee?: string; amount?: number }
   | { type: "showRule"; rule: string }
-  | { type: "startUpload"; purpose: "death" | "claim" | "hardship" };
+  | { type: "startUpload"; purpose: "death" | "claim" | "hardship" }
+  /** From the wallet assistant (Tether QVAC): opens the payment review. Never sends by itself. */
+  | { type: "reviewSend"; to: string; toLabel: string; amountUsdt: number };
 
 export interface OrchestratorReply { specialist: SpecialistName; reply: string; actions: AgentAction[] }
 

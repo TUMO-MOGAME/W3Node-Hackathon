@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "qvac:install": "npm install --no-save @qvac/sdk@0.23.0",
+    "qvac:local": "tsx --tsconfig ../scripts/tsconfig.json ../scripts/qvac-local.ts"
   },
   "dependencies": {
     "@anchor-lang/core": "^1.2.2",
