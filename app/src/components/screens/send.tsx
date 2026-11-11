@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import clsx from "clsx";
 import { ArrowRight, Check, CircleAlert, Delete, Sparkles, UserRoundPlus, Wallet } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { SavedRecipient } from "@/lib/types";
 import { formatUsdt, formatZar, fromBase, toBase } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
@@ -17,7 +18,8 @@ import { Gate } from "@/components/shell/gate";
 type Copy = ScreensCopy["send"];
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"] as const;
 
-export function SendScreen({ copy }: { copy: Copy }) {
+export function SendScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.send);
   return <Gate allowEmpty>{() => <Send copy={copy} />}</Gate>;
 }
 

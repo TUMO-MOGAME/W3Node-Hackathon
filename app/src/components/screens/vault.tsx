@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { motion } from "motion/react";
 import { ArrowDownToLine, ArrowUpFromLine, HeartPulse, Landmark, Lock, ShieldCheck, Wallet } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import { formatUsdt, formatZar, fromBase, toBase } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
@@ -15,7 +16,8 @@ import { usePay } from "@/components/pay/payment";
 
 type Copy = ScreensCopy["vault"];
 
-export function VaultScreen({ copy }: { copy: Copy }) {
+export function VaultScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.vault);
   return <Gate roles={["owner"]}>{({ snap }) => <Vault copy={copy} snap={snap!} />}</Gate>;
 }
 

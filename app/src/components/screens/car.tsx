@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { motion } from "motion/react";
 import { ArrowRight, CarFront, Check, FileText, Gavel, HandHeart, Loader2, Lock, ShieldCheck, Sparkles, Store } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { Asset, CarValuation, OfferRanking, Role, WalletSession } from "@/lib/types";
 import { formatUsdt, formatZar, fromBase, toBase } from "@/lib/format";
@@ -22,7 +23,8 @@ import { clock } from "./family";
 type Copy = ScreensCopy["car"];
 const num = (s: string) => Number(s.replace(/[\s,]/g, ""));
 
-export function CarScreen({ copy }: { copy: Copy }) {
+export function CarScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.car);
   return (
     <Gate>
       {({ snap, session, role }) => {

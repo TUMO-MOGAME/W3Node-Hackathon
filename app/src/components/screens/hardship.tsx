@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, HandHeart, TriangleAlert } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Hardship, Role, WalletSession } from "@/lib/types";
 import { useEstate } from "@/lib/hooks/estate";
@@ -15,7 +16,8 @@ import { formatUsdt } from "@/lib/format";
 
 type Copy = ScreensCopy["hardship"];
 
-export function HardshipScreen({ copy }: { copy: Copy }) {
+export function HardshipScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.hardship);
   return <Gate>{({ snap, session, role }) => <HardshipView copy={copy} snap={snap!} session={session} role={role} />}</Gate>;
 }
 

@@ -3,6 +3,7 @@ import type { LegalSection } from "@/content/legal";
 import type { SiteCopy } from "@/content/site";
 import { Notice } from "@/components/ui/primitives";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { LegalLanguageNote } from "./language-switcher";
 
 export function LegalPage({ site, doc }: {
   site: SiteCopy;
@@ -13,6 +14,7 @@ export function LegalPage({ site, doc }: {
       <SiteHeader site={site} minimal />
       <main id="main" className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
         <h1 className="text-h1">{doc.title}</h1>
+        <LegalLanguageNote />
         <p className="mt-2 text-small text-ink-2">{doc.updated}</p>
         <Notice tone="warn" icon={<Scale className="size-5" aria-hidden="true" />} className="mt-5">
           <p className="text-body font-medium">{doc.templateNotice}</p>

@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { handler, HttpError, isChainMode, json, parseJson, rateLimit } from "@/lib/api/http";
-import { chatMessageSchema } from "@/lib/agent/schemas";
+import { chatMessageSchema, localeSchema } from "@/lib/agent/schemas";
 import { orchestrate, ROUTABLE } from "@/lib/agent/orchestrator";
 import { estateFactsSchema, toEstateFacts, type EstateFacts } from "@/lib/agent/facts";
 import { loadSnapshot } from "@/lib/server/estate";
@@ -24,6 +24,8 @@ const body = z.object({
   estate: z.string().max(64).optional(),
   page: z.string().max(120).optional(),
   conversation_id: z.string().max(80).optional(),
+  // The visitor's language (both shapes); the agent replies in it.
+  locale: localeSchema.optional(),
 }).refine((b) => b.text || b.message || b.history?.length, "text, message or history is required");
 
 function secretOk(given: string): boolean {
@@ -55,7 +57,7 @@ export const POST = handler(async (req) => {
   let facts: EstateFacts | null = b.facts ?? null;
   if (!facts && estateAddr && isChainMode()) facts = await loadSnapshot(estateAddr).then(toEstateFacts).catch(() => null);
 
-  const result = await orchestrate({ history, facts, context: { persona, role, page: b.context?.page ?? b.page, channel } }, b.specialist);
+  const result = await orchestrate({ history, facts, context: { persona, role, page: b.context?.page ?? b.page, channel, locale: b.locale } }, b.specialist);
 
   const sessionId = b.sessionId ?? b.conversation_id;
   if (sessionId && userText) {

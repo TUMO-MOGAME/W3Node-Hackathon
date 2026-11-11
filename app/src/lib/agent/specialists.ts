@@ -9,8 +9,9 @@ import type { Content, FunctionDeclaration, Part } from "@google/genai";
 import { z } from "zod";
 import type { SpecialistName } from "../voice/types";
 import type { WillChatMessage, WillDraft } from "../types";
+import type { Locale } from "../i18n/locales";
 import { generate, hasGemini, jsonSchemaOf } from "./gemini";
-import { CAR_BROKER, CLAIMS_GUIDE, COMPLIANCE, DOCUMENT_REVIEWER, ESTATE_GUIDE } from "./prompts";
+import { CAR_BROKER, CLAIMS_GUIDE, COMPLIANCE, DOCUMENT_REVIEWER, ESTATE_GUIDE, replyLanguage } from "./prompts";
 import { uiActionSchema, type UiAction } from "./actions";
 import { checkClaim, type EstateFacts } from "./facts";
 import { rankOffers } from "./offers";
@@ -22,7 +23,7 @@ import { CANNED_PREFIX } from "./canned";
 export interface SpecialistInput {
   history: WillChatMessage[];          // last message is the user's
   facts: EstateFacts | null;
-  context: { persona?: string; role?: string; page?: string; channel?: "text" | "voice" };
+  context: { persona?: string; role?: string; page?: string; channel?: "text" | "voice"; locale?: Locale };
 }
 
 export interface SpecialistResult {
@@ -129,12 +130,13 @@ const SPECS: Record<Exclude<SpecialistName, "Orchestrator" | "WillWriter">, { sy
 function contextLine(i: SpecialistInput): string {
   const c = i.context;
   return `Session: persona=${c.persona ?? "unknown"}, role=${c.role ?? "unknown"}, page=${c.page ?? "unknown"}, estate=${i.facts?.estate.address ?? "none"}. Today: ${new Date().toISOString().slice(0, 10)}.` +
-    (c.channel === "voice" ? " This answer will be SPOKEN: at most 3 short sentences, no lists, no markdown, say amounts in words-friendly form." : "");
+    (c.channel === "voice" ? " This answer will be SPOKEN: at most 3 short sentences, no lists, no markdown, say amounts in words-friendly form." : "") +
+    replyLanguage(c.locale);
 }
 
 export async function runSpecialist(name: Exclude<SpecialistName, "Orchestrator">, input: SpecialistInput): Promise<SpecialistResult> {
   if (name === "WillWriter") {
-    const r = await willChat(input.history);
+    const r = await willChat(input.history, input.context.locale);
     return { specialist: name, reply: r.reply, draft: r.draft, actions: [] };
   }
   if (!hasGemini()) return cannedSpecialist(name, input);

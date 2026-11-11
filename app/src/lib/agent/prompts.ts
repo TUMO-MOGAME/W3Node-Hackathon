@@ -3,6 +3,22 @@ import "server-only";
  * System prompts, one per specialist. Shared guardrails first: the agent recommends and explains;
  * the Solana program enforces caps, floors and quorums; people approve exceptions.
  */
+import { LOCALE_ENGLISH_NAMES, type Locale } from "../i18n/locales";
+
+/**
+ * Appended to a specialist's system prompt when the visitor chose a language other than English.
+ * Names, amounts and fixed terms stay as they are so replies still match what the screens show.
+ */
+export function replyLanguage(locale?: Locale): string {
+  if (!locale || locale === "en") return "";
+  const lang = LOCALE_ENGLISH_NAMES[locale];
+  return `
+Language: the user chose ${lang}. Write the user-facing reply in ${lang}, in plain, respectful, everyday words ` +
+    `a family would use; common English loanwords (app, wallet) are fine where that is how people speak. If they write in ` +
+    `another language, answer in theirs. Keep amounts, "USD₮", "Heirloom", people's and institutions' names, and rule ` +
+    `categories exactly as given. JSON keys, enum values and every field other than the reply stay in English.`;
+}
+
 const GUARDRAILS = `
 You are part of Heirloom, a programmable estate trust on Solana for South African families. Money is USD₮ (Tether)
 held in an on-chain vault. Heirloom does NOT replace a legal will (Wills Act 7 of 1953 still requires a signed,

@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { motion } from "motion/react";
 import { ArrowRight, BookOpen, CalendarClock, CarFront, CircleDot, FileCheck2, GraduationCap, HeartPulse, Hourglass, House, Landmark, Milestone, Plus, Send, Stethoscope, UsersRound, Zap, type LucideIcon } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { Category, EstateStatus, Role, Rule, WalletSession } from "@/lib/types";
 import { formatUsdt, formatZar } from "@/lib/format";
@@ -22,7 +23,8 @@ type Copy = ScreensCopy["estate"];
 export const statusTone: Record<EstateStatus, Tone> = { Active: "accent", DeathPending: "warn", Unlocked: "ok", Frozen: "danger" };
 export const categoryIcon: Record<Category, LucideIcon> = { Tuition: GraduationCap, Accommodation: House, Books: BookOpen, Medical: Stethoscope, General: CircleDot };
 
-export function EstateScreen({ copy }: { copy: Copy }) {
+export function EstateScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.estate);
   return <Gate>{({ snap, session, role }) => <Dashboard copy={copy} snap={snap!} session={session} role={role} />}</Gate>;
 }
 

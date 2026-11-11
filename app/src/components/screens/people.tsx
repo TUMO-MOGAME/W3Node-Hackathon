@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { Bot, Building2, Plus, ShieldCheck, UsersRound } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { PayeeKind, Role, WalletSession } from "@/lib/types";
 import { shortAddress } from "@/lib/format";
@@ -14,7 +15,8 @@ import { Gate } from "@/components/shell/gate";
 type Copy = ScreensCopy["people"];
 const KINDS: PayeeKind[] = ["University", "School", "Landlord", "Other"];
 
-export function PeopleScreen({ copy }: { copy: Copy }) {
+export function PeopleScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.people);
   return <Gate>{({ snap, session, role }) => <People copy={copy} snap={snap!} session={session} role={role} />}</Gate>;
 }
 

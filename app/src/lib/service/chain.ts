@@ -7,6 +7,7 @@
 import { PublicKey, Transaction, type TransactionInstruction } from "@solana/web3.js";
 import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from "@solana/spl-token";
 import type { HeirloomService, EstateSnapshot, TxResult } from "./types";
+import type { Locale } from "../i18n/locales";
 import type {
   AgentReport, Base58, CarValuation, FxRate, OfferRanking, PaymentReceipt, PaymentReview, SavedRecipient, WillChatMessage, WillDraft,
 } from "../types";
@@ -225,7 +226,7 @@ export function createChainService(): HeirloomService {
     },
     getFx: () => api<FxRate>("/api/fx"),
 
-    willChat: (history: WillChatMessage[]) => post<{ reply: string; draft: WillDraft | null }>("/api/will-chat", { history }),
+    willChat: (history: WillChatMessage[], locale?: Locale) => post<{ reply: string; draft: WillDraft | null }>("/api/will-chat", { history, locale }),
 
     async reviewDocument({ file, purpose, context }) {
       const signer = getActiveSigner();

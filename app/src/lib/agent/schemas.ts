@@ -2,6 +2,7 @@
  * zod schemas: model outputs (validated before use) and API request bodies. Client-safe (no secrets).
  */
 import { z } from "zod";
+import { LOCALES } from "../i18n/locales";
 
 export const CATEGORIES = ["Tuition", "Accommodation", "Books", "Medical", "General"] as const;
 export const PAYEE_KINDS = ["University", "School", "Landlord", "Other"] as const;
@@ -101,7 +102,10 @@ export const comparablesSchema = z.object({
 
 // ---------- API bodies ----------
 export const chatMessageSchema = z.object({ role: z.enum(["user", "agent"]), text: z.string().min(1).max(4000) });
-export const willChatBody = z.object({ history: z.array(chatMessageSchema).min(1).max(40) });
+/** The visitor's chosen language, so the agent can reply in it. */
+export const localeSchema = z.enum(LOCALES);
+
+export const willChatBody = z.object({ history: z.array(chatMessageSchema).min(1).max(40), locale: localeSchema.optional() });
 
 export const valuationBody = z.object({
   make: z.string().min(1).max(40), model: z.string().min(1).max(60), year: z.number().int().min(1980).max(2030),

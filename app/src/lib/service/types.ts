@@ -10,6 +10,7 @@ import type {
   Hardship, Offer, OfferRanking, PayeeKind, Payee, Rule, Beneficiary, WillChatMessage, WillDraft,
   PaymentReview, PaymentReceipt, SavedRecipient,
 } from "../types";
+import type { Locale } from "../i18n/locales";
 
 export interface TxResult { signature: string; explorerUrl: string }
 
@@ -34,7 +35,8 @@ export interface HeirloomService {
   getFx(): Promise<FxRate>;
 
   // AI agent (server routes)
-  willChat(history: WillChatMessage[]): Promise<{ reply: string; draft: WillDraft | null }>;
+  /** `locale` asks the agent to reply in the visitor's language. */
+  willChat(history: WillChatMessage[], locale?: Locale): Promise<{ reply: string; draft: WillDraft | null }>;
   reviewDocument(input: { file: File; purpose: "death" | "claim" | "hardship"; context: string }): Promise<AgentReport>;
   valueCar(input: { make: string; model: string; year: number; mileageKm: number; condition: string }): Promise<CarValuation>;
   rankOffers(asset: Base58): Promise<OfferRanking>;

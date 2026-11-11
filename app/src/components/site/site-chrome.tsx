@@ -1,13 +1,20 @@
+"use client";
 import Link from "next/link";
 import type { SiteCopy } from "@/content/site";
 import { ButtonLink, Logo } from "@/components/ui/primitives";
+import { useLocalized } from "@/lib/i18n/client";
+import { LanguageSwitcher } from "./language-switcher";
 
-export function SiteHeader({ site, minimal = false }: { site: SiteCopy; minimal?: boolean }) {
+/** Site chrome is shared by the landing, legal and 404 pages; English is rendered first, then the visitor's language. */
+
+export function SiteHeader({ site: english, minimal = false }: { site: SiteCopy; minimal?: boolean }) {
+  const site = useLocalized(english, (t) => t.site);
   return (
     <header className="pt-safe sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur-md">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-accent-ink">{site.nav.skip}</a>
-      <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-3 px-4">
-        <Link href="/" aria-label={site.nav.home} className="rounded-full"><Logo name={site.name} /></Link>
+      <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-2 px-4 min-[400px]:gap-3">
+        {/* Below 400px the wordmark gives way to the language switcher; the link keeps its accessible name. */}
+        <Link href="/" aria-label={site.nav.home} className="shrink-0 rounded-full"><Logo name={site.name} className="max-[400px]:[&>span:last-child]:hidden" /></Link>
         {!minimal && (
           <nav aria-label={site.name} className="ml-6 hidden items-center gap-1 md:flex">
             {[["#how", site.nav.how], ["#safety", site.nav.safety], ["#proof", site.nav.proof]].map(([href, label]) => (
@@ -15,13 +22,15 @@ export function SiteHeader({ site, minimal = false }: { site: SiteCopy; minimal?
             ))}
           </nav>
         )}
-        <ButtonLink href="/start" small className="ml-auto">{site.nav.open}</ButtonLink>
+        <LanguageSwitcher className="ml-auto" />
+        <ButtonLink href="/start" small className="shrink-0">{site.nav.open}</ButtonLink>
       </div>
     </header>
   );
 }
 
-export function SiteFooter({ site }: { site: SiteCopy }) {
+export function SiteFooter({ site: english }: { site: SiteCopy }) {
+  const site = useLocalized(english, (t) => t.site);
   const f = site.footer;
   return (
     <footer className="border-t border-line bg-surface-2/50">
