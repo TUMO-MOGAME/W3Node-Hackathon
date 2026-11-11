@@ -66,8 +66,8 @@ export function Toaster({ dismissLabel }: { dismissLabel: string }) {
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.22 }}
             className={clsx(
-              "pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-md border bg-surface p-3 pr-1.5 text-small shadow-raised",
-              t.tone === "error" ? "border-danger/50" : t.tone === "ok" ? "border-ok/40" : "border-line",
+              "pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-md border border-l-4 bg-surface p-3 pr-1.5 text-small shadow-raised",
+              t.tone === "error" ? "border-danger/50 border-l-danger" : t.tone === "ok" ? "border-ok/40 border-l-ok" : "border-line border-l-gold-edge",
             )}
           >
             <span className={clsx("mt-0.5 shrink-0", t.tone === "error" ? "text-danger" : t.tone === "ok" ? "text-ok" : "text-accent")}>
@@ -98,7 +98,7 @@ export function Quorum({ approvals, needed, names, label }: { approvals: boolean
             animate={{ scale: on ? [1, 1.25, 1] : 1 }}
             transition={{ duration: 0.45 }}
             title={names?.[i]}
-            className={clsx("grid size-7 place-items-center rounded-full border-2 text-[0.7rem] font-bold", on ? "border-accent bg-accent text-accent-ink" : "border-line-strong/70 bg-surface text-ink-2")}
+            className={clsx("grid size-7 place-items-center rounded-full border-2 text-[0.7rem] font-bold", on ? "border-gold-edge bg-gold text-gold-ink shadow-[0_0_0_3px_color-mix(in_srgb,var(--gold)_30%,transparent)]" : "border-line-strong/70 bg-surface text-ink-2")}
           >
             {on ? <Check className="size-4" /> : (names?.[i]?.replace(/^(Adv\.|Ms\.|Mr\.|Uncle|Aunt|Pastor)\s+/i, "")[0] ?? i + 1)}
           </motion.span>

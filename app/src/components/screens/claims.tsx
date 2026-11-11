@@ -110,7 +110,7 @@ export function ClaimTracker({ claim, need, copy, waitingFor }: { claim: Claim; 
             <span className={clsx("h-0.5 flex-1", i === 0 ? "bg-transparent" : steps[i].done ? "bg-accent" : "bg-line")} aria-hidden="true" />
             <motion.span
               initial={false} animate={{ scale: s.done ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.4 }}
-              className={clsx("grid size-7 shrink-0 place-items-center rounded-full border-2", s.bad ? "border-danger bg-danger text-surface" : s.done ? "border-accent bg-accent text-accent-ink" : i === current && !declined ? "border-brass bg-brass-soft" : "border-line-strong/50 bg-surface")}
+              className={clsx("grid size-7 shrink-0 place-items-center rounded-full border-2", s.bad ? "border-danger bg-danger text-surface" : s.done ? "border-gold-edge bg-gold text-gold-ink" : i === current && !declined ? "border-brass bg-brass-soft" : "border-line-strong/50 bg-surface")}
               aria-hidden="true"
             >
               {s.bad ? <CircleX className="size-4" /> : s.done ? <Check className="size-4" /> : i === current && !declined ? <span className="size-2 animate-pulse-soft rounded-full bg-brass" /> : null}
@@ -256,7 +256,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
                     <input type="radio" name="claim-rule" className="sr-only" disabled={!usable(r)} checked={ruleAddr === r.address} onChange={() => { setRuleAddr(r.address); setPayee(""); }} />
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-accent"><Icon className="size-5" aria-hidden="true" /></span>
                     <span className="min-w-0 flex-1">
-                      <span className="flex flex-wrap items-center gap-2 font-semibold">{common.status.category[r.category]}<Badge tone={r.startsNow ? "accent" : "neutral"}>{r.startsNow ? w.rule.now : w.rule.later}</Badge></span>
+                      <span className="flex flex-wrap items-center gap-2 font-semibold">{common.status.category[r.category]}<Badge tone={r.startsNow ? "gold" : "neutral"}>{r.startsNow ? w.rule.now : w.rule.later}</Badge></span>
                       {!usable(r) && <span className="block text-small font-medium text-brass">{w.rule.notYet}</span>}
                       <span className="block text-small text-ink-2">{fmt(w.rule.left, { amount: formatUsdt(r.lifetimeCap - r.spentTotal, { decimals: 0 }) })} · {fmt(w.rule.perClaim, { amount: formatUsdt(r.maxPerClaim, { decimals: 0 }) })}</span>
                     </span>

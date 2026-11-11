@@ -94,7 +94,7 @@ function Chrome({ children }: { children: ReactNode }) {
           active ? (layout === "tab" ? "text-accent" : "bg-accent-soft text-accent") : "text-ink-2 hover:text-ink",
         )}
       >
-        <span className={clsx("relative grid place-items-center", layout === "tab" && "h-7 w-14 rounded-full", layout === "tab" && active && "bg-accent-soft")}>
+        <span className={clsx("relative grid place-items-center", layout === "tab" && "h-7 w-14 rounded-full", layout === "tab" && "transition-[background-color,box-shadow] duration-200", layout === "tab" && active && "gold-fill")}>
           <Icon className="size-5" aria-hidden="true" />
           {badge > 0 && <span className="absolute -right-0.5 -top-1 grid min-w-4.5 place-items-center rounded-full bg-danger px-1 text-[0.65rem] font-bold leading-[1.15rem] text-surface">{badge}<span className="sr-only"> </span></span>}
         </span>
@@ -107,7 +107,7 @@ function Chrome({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[90] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-accent-ink">{common.nav.skip}</a>
 
-      <header className="pt-safe sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-md">
+      <header className="harvest-top pt-safe sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-md">
         <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-2 px-4">
           <Link href={session ? "/estate" : "/"} aria-label={common.nav.home} className="flex shrink-0 items-center gap-2 rounded-full pr-1">
             <LogoMark className="size-9" />
@@ -165,12 +165,12 @@ function Chrome({ children }: { children: ReactNode }) {
         <>
           {pathname !== "/will" && <button
             type="button" onClick={() => openAgent("chat")}
-            className="fixed bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.875rem)] right-4 z-40 inline-flex h-14 items-center gap-2 rounded-full bg-accent pl-4 pr-5 font-semibold text-accent-ink shadow-float transition-transform active:scale-95 md:hidden"
+            className="fixed bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.875rem)] right-4 z-40 inline-flex h-14 items-center gap-2 rounded-full bg-accent pl-4 pr-5 font-semibold text-accent-ink shadow-float ring-2 ring-gold/60 transition-transform active:scale-95 md:hidden"
           >
             <MessageCircle className="size-6" aria-hidden="true" />
             <span className="text-small">{assistant.sheet.fabLabel}</span>
           </button>}
-          <nav aria-label={common.nav.label} className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 backdrop-blur-md md:hidden">
+          <nav aria-label={common.nav.label} className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 shadow-[0_-8px_24px_-16px_rgb(92_34_24/0.35)] backdrop-blur-md md:hidden">
             <div className="mx-auto flex h-[var(--tabbar-h)] max-w-lg items-stretch px-1">{tabs.map((k) => navLink(k, "tab"))}</div>
           </nav>
         </>
@@ -186,8 +186,8 @@ function Chrome({ children }: { children: ReactNode }) {
 }
 
 const roleTint: Record<Role, string> = {
-  owner: "bg-accent text-accent-ink",
-  beneficiary: "bg-brass-soft text-brass",
+  owner: "bg-brand text-brand-ink",
+  beneficiary: "bg-gold text-gold-ink",
   verifier: "bg-accent-soft text-accent",
   buyer: "bg-surface-2 text-ink",
   agent: "bg-ink text-bg",

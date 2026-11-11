@@ -36,7 +36,7 @@ export function Bubble({
   if (role === "user") {
     return (
       <motion.li initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="flex justify-end">
-        <p className="max-w-[85%] whitespace-pre-line rounded-[1.25rem] rounded-br-md bg-accent px-4 py-2.5 text-accent-ink">
+        <p className="max-w-[85%] whitespace-pre-line rounded-[1.25rem] rounded-br-md bg-brand px-4 py-2.5 text-brand-ink shadow-card">
           <span className="sr-only">{copy.chat.you}: </span>{text}
         </p>
       </motion.li>
@@ -50,7 +50,7 @@ export function Bubble({
           <span className="text-small font-semibold">{copy.chat.agent}</span>
           {specialist && specialist !== "Orchestrator" && <SpecialistChip name={specialist} copy={copy} />}
         </div>
-        <div className="rounded-[1.25rem] rounded-tl-md border border-line bg-surface-2/70 px-4 py-2.5">
+        <div className="rounded-[1.25rem] rounded-tl-md border border-line bg-surface-2/70 px-4 py-2.5 shadow-card">
           <Typewriter text={text} active={fresh} onTick={onTick} onDone={() => { setTyped(true); onTyped?.(); }} />
         </div>
         {typed && children}
@@ -167,7 +167,7 @@ export function ActionButtons({ actions, copy, onDone }: { actions: AgentAction[
       {visible.map((x, i) => (
         <button
           key={i} type="button" onClick={() => perform(x)}
-          className={clsx("inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-small font-semibold", i === 0 ? "bg-accent text-accent-ink hover:bg-accent-hover" : "border border-line-strong bg-surface hover:bg-surface-2")}
+          className={clsx("inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-small font-semibold", i === 0 ? "bg-accent text-accent-ink shadow-btn hover:bg-accent-hover" : "border border-line-strong bg-surface hover:bg-surface-2")}
         >
           {label(x)} <ArrowRight className="size-4" aria-hidden="true" />
         </button>
