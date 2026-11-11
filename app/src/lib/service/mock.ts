@@ -8,7 +8,7 @@
  */
 import { explorerTx, fromBase, toBase } from "../format";
 import type {
-  AgentReport, Asset, Base58, CarValuation, Claim, Hardship, Offer, OfferRanking, Role, WillChatMessage, WillDraft,
+  AgentReport, Asset, Base58, CarValuation, Claim, Hardship, Offer, OfferRanking, PaymentReceipt, PaymentReview, Role, SavedRecipient, WillChatMessage, WillDraft,
 } from "../types";
 import type { EstateSnapshot, HeirloomService, TxResult } from "./types";
 import { DEMO_PERSONAS as WALLET_PERSONAS } from "../wallet/personas";
@@ -74,15 +74,17 @@ export const DEMO_INTERVAL_SECS = 60;
 /* ---------- state ---------- */
 
 interface State {
-  v: 4;
+  v: 5;
   created: boolean;
   bind: Record<string, Base58>;
   snap: EstateSnapshot;
   balances: Record<Base58, bigint>;
   names: Record<Base58, string>;
+  /** P2P sends: receipt plus what is needed to settle it once "the network" confirms. */
+  sends: Record<string, { receipt: PaymentReceipt; from: Base58; to: Base58; toLabel: string; amount: bigint; confirmAt: number }>;
 }
 
-const KEY = "heirloom.mock.v4";
+const KEY = "heirloom.mock.v5";
 const nowSecs = () => Math.floor(Date.now() / 1000);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -110,7 +112,8 @@ function blank(): State {
   RIVALS.forEach((r, i) => { names[r.address] = r.name; balances[r.address] = toBase(i === 0 ? 11000 : 9000); });
   PAYEES.forEach((p) => { names[p.wallet] = p.name; balances[p.wallet] = 0n; });
   return {
-    v: 4,
+    v: 5,
+    sends: {},
     created: false,
     bind,
     balances,
@@ -153,7 +156,7 @@ export function createMockService(): MockService {
       const raw = window.localStorage.getItem(KEY);
       if (raw) {
         const loaded = parse(raw);
-        if (loaded.v === 4) s = loaded;
+        if (loaded.v === 5) s = loaded;
       }
     } catch { /* storage blocked: stay in memory */ }
   }
@@ -543,6 +546,21 @@ export function createMockService(): MockService {
     return t;
   }
 
+  /* ----- plain USD₮ transfers (the Tether payment flow) ----- */
+
+  /** Moves a pending send to confirmed once its (simulated) confirmation time has passed. Never re-sends. */
+  function settle(id: string): PaymentReceipt | null {
+    const x = s.sends[id];
+    if (!x) return null;
+    if (x.receipt.status === "pending" && Date.now() >= x.confirmAt) {
+      credit(x.to, x.amount);
+      x.receipt = { ...x.receipt, status: "confirmed", confirmations: 32, updatedAt: nowSecs() };
+      s.snap.activity.unshift({ ts: nowSecs(), kind: "Transfer", text: `${first(x.from)} sent ${usd(x.amount)} to ${x.toLabel}`, amount: x.amount, txSignature: x.receipt.signature });
+      save();
+    }
+    return { ...x.receipt };
+  }
+
   /* ----- agent simulations ----- */
 
   const suspicious = (f: File) => /fake|edit|tamper|alter|photoshop/i.test(f.name);
@@ -701,6 +719,63 @@ export function createMockService(): MockService {
       }
     },
     resetDemo(stage) { seed(stage); save(); },
+
+    async reviewSend({ to, toLabel, amountUsdt }) {
+      await sleep(500);
+      const from = me();
+      const dest = to.trim();
+      need(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(dest), "InvalidAddress", "That is not a valid Solana address.");
+      const amount = toBase(amountUsdt);
+      need(amount > 0n, "InvalidAmount", "Enter an amount above zero.");
+      const balance = s.balances[from] ?? 0n;
+      const known = dest in s.names;
+      const warnings: string[] = [];
+      if (dest === from) warnings.push("This is your own wallet. Sending to yourself only costs the fee.");
+      if (!known) warnings.push("You have not sent to this address before. Check it carefully: transfers cannot be reversed.");
+      if (!(dest in s.balances)) warnings.push("The recipient has no USD₮ account yet. It will be created with this payment (a small extra SOL fee).");
+      const review: PaymentReview = {
+        id: `pay_${rand(16, B58)}`, kind: "p2p", from, to: dest, toLabel: toLabel || name(dest), amount,
+        token: { symbol: "USD₮", mint: est().usdtMint, verified: true },
+        network: { name: "Solana devnet", cluster: "devnet" },
+        fee: { lamports: 5000, sol: 0.000005, payer: from, sponsored: false },
+        balances: { usdt: balance, sol: 0.5, sufficient: balance >= amount },
+        warnings, simulated: true,
+      };
+      return review;
+    },
+    async confirmSend(review) {
+      const existing = s.sends[review.id];
+      if (existing) return { ...existing.receipt }; // idempotent: a retry never pays twice
+      await sleep(1200); // signing with the WDK wallet
+      need(me() === review.from, "NotOwner", "This payment was prepared by a different wallet.");
+      need((s.balances[review.from] ?? 0n) >= review.amount, "InsufficientFunds", "Your wallet does not hold that much USD₮.");
+      s.balances[review.from] -= review.amount;
+      const t = tx();
+      const receipt: PaymentReceipt = { id: review.id, status: "pending", signature: t.signature, explorerUrl: t.explorerUrl, confirmations: 0, updatedAt: nowSecs() };
+      s.sends[review.id] = { receipt, from: review.from, to: review.to, toLabel: review.toLabel, amount: review.amount, confirmAt: Date.now() + 2000 + Math.floor(Math.random() * 2000) };
+      save();
+      return { ...receipt };
+    },
+    async getReceipt(id) {
+      await sleep(350);
+      return settle(id);
+    },
+    async listPendingReceipts() {
+      await sleep(200);
+      return Object.keys(s.sends).map((id) => settle(id)!).filter((r) => r.status === "pending" || r.status === "submitted");
+    },
+    async savedRecipients() {
+      await sleep(150);
+      const self = actor?.address;
+      const out: SavedRecipient[] = s.created
+        ? [
+          ...s.snap.beneficiaries.map((b) => ({ label: b.label.replace(/\s*\(.*\)$/, ""), address: b.wallet, relationship: b.label.match(/\((.*)\)/)?.[1] })),
+          ...est().verifiers.map((v, i) => ({ label: est().verifierNames[i], address: v, relationship: i === 0 ? "executor" : "trusted person" })),
+          { label: est().ownerName, address: est().owner, relationship: "estate owner" },
+        ]
+        : DEMO_PERSONAS.filter((p) => p.role !== "buyer").map((p) => ({ label: p.label, address: p.address, relationship: p.relation.toLowerCase() }));
+      return out.filter((r) => r.address !== self);
+    },
     simulatePassing() {
       needCreated();
       need(est().status === "Active", "BadStatus", "A passing is already being confirmed.");

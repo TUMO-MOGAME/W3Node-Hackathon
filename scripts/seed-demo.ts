@@ -28,7 +28,6 @@ async function main() {
   const { intervalSecs } = await import("../app/src/lib/agent/schemas");
   const { sha256Hex } = await import("../app/src/lib/agent/hash");
 
-  if (!process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID) throw new Error("Set NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID in app/.env.local (deployed program id).");
   const w: WalletsFile = await loadOrCreateWallets();
   if (!w.usdtMint || !w.carMint) throw new Error("Run scripts/devnet-setup.ts first (no test USD₮ / car mint yet).");
   if (process.env.NEXT_PUBLIC_USDT_MINT && process.env.NEXT_PUBLIC_USDT_MINT !== w.usdtMint) {

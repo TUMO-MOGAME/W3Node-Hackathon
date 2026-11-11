@@ -16,6 +16,14 @@
 - [x] npm packages: @google/genai, @tetherto/wdk-wallet-solana (1.0.0-beta.20), @anchor-lang/core 1.2.2, @solana/web3.js 1, @solana/spl-token, @solana/kit, zod 4, @supabase/supabase-js, motion, lucide-react, clsx, @elevenlabs/react 1.22, tsx, vitest
 - [x] Shared contract between agents: `docs/program-spec.md`, `app/src/lib/types.ts`, `app/src/lib/service/{types,index}.ts`, `app/src/lib/wallet/types.ts`, `app/src/lib/voice/types.ts`, `app/src/lib/format.ts`
 
+## Smart contract: DONE (2026-11-11)
+- **Deployed to devnet: program id `b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY`** ([Explorer](https://explorer.solana.com/address/b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY?cluster=devnet)); upgrade authority = deployer in WSL `~/.config/solana/id.json` (~2.29 SOL left)
+- `anchor build` clean; **25/25 LiteSVM tests pass**; 27 instructions incl. living plans (`owner_approve_claim`, `execute_scheduled`)
+- Build/test/deploy: `wsl -d Ubuntu -u tumo --cd ~ -- bash "/mnt/c/Users/tumom/Hackathons/W3Node Hacathon/scripts/build-program.sh" [deploy]` (builds in `~/heirloom-build` for speed)
+- Program keypair `target/deploy/heirloom-keypair.json` is gitignored: **keep it**, or the program id changes
+- No on-chain IDL (the IDL upload needs Linux node in WSL); the app uses the bundled IDL
+- Repo: github.com/TUMO-MOGAME/W3Node-Hackathon (private for now; Tumo will make it public)
+
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |
 |---|---|---|

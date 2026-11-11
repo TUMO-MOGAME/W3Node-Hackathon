@@ -92,9 +92,9 @@ describe("scheduled payments", () => {
     const { DEMO_WILL } = await import("./canned");
     const r = DEMO_WILL.rules.find((x) => x.recurring);
     expect(r?.startsNow).toBe(true);
-    expect(r!.recurring!.amountUsdt).toBeLessThanOrEqual(r!.lifetimeCapUsdt);
+    expect(r!.recurring!.amountUsdt).toBeLessThanOrEqual(r!.maxPerClaimUsdt);
   });
-  it("rejects a recurring amount above the lifetime cap", () => {
+  it("rejects a recurring amount above the per-claim cap", () => {
     const rule = { ...DEMO_WILL.rules[1], recurring: { amountUsdt: 1e6, every: "month" as const, payeeName: "X" } };
     expect(willDraftChecked.safeParse({ ...DEMO_WILL, rules: [rule] }).success).toBe(false);
   });

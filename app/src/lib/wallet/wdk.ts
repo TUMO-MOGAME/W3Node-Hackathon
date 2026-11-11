@@ -94,3 +94,30 @@ function findLogs(e: unknown, depth = 0): string[] | null {
   if (Array.isArray(o.logs)) return o.logs as string[];
   return findLogs(o.cause, depth + 1);
 }
+
+/**
+ * Signs (does NOT broadcast) a base64 tx with WDK and returns the signature + signed wire bytes, so the payment
+ * pipeline can persist the signature before broadcasting (pay-once; see ./payments.ts).
+ */
+export async function wdkSign(account: WalletAccountSolanaT, base64Tx: string): Promise<{ signature: string; wireBase64: string }> {
+  // @solana/kit Transaction shape: { messageBytes, signatures: { [address]: bytes } } in signer order.
+  const signed = (await account.signTransaction(base64Tx)) as unknown as { messageBytes: Uint8Array; signatures: Record<string, Uint8Array | null> };
+  const sigs = Object.values(signed.signatures);
+  if (!sigs[0]) throw new Error("WDK returned an unsigned transaction.");
+  const { default: bs58 } = await import("bs58");
+  return { signature: bs58.encode(sigs[0]), wireBase64: encodeWire(sigs, signed.messageBytes) };
+}
+
+/** Solana wire format: compact-u16 signature count, 64-byte signatures (fee payer first), message bytes. */
+export function encodeWire(sigs: (Uint8Array | null)[], message: Uint8Array): string {
+  const len: number[] = [];
+  let n = sigs.length;
+  do { let b = n & 0x7f; n >>= 7; if (n) b |= 0x80; len.push(b); } while (n);
+  const out = new Uint8Array(len.length + sigs.length * 64 + message.length);
+  out.set(len, 0);
+  sigs.forEach((s, i) => out.set(s ?? new Uint8Array(64), len.length + i * 64));
+  out.set(message, len.length + sigs.length * 64);
+  let bin = "";
+  for (let i = 0; i < out.length; i += 0x8000) bin += String.fromCharCode(...out.subarray(i, i + 0x8000));
+  return btoa(bin);
+}

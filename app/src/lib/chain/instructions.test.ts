@@ -118,3 +118,19 @@ describe("decoders", () => {
     expect(e.vaultBalance).toBe(42n);
   });
 });
+
+describe("decoders (living plans, generated IDL)", () => {
+  it("decodes Rule living-plan fields", async () => {
+    const { decodeRule } = await import("./decoders");
+    const raw = {
+      estate, id: 1, beneficiary: ben, category: { Accommodation: {} }, allowed_payee_kind: { Landlord: {} },
+      max_per_claim: new BN(300), lifetime_cap: new BN(9000), spent_total: new BN(0), valid_until: new BN(2_000_000_000),
+      claim_count: 0, starts_now: true, recurring_amount: new BN(300), interval_secs: new BN(60), next_due: new BN(1_800_000_000),
+      fixed_payee: payee, bump: 254,
+    };
+    const back = getCoder().accounts.decode("Rule", await getCoder().accounts.encode("Rule", raw)) as Raw;
+    const r = (await import("./decoders")).decodeRule("R", back);
+    expect(r).toMatchObject({ startsNow: true, recurringAmount: 300n, intervalSecs: 60, nextDue: 1_800_000_000, fixedPayee: payee.toBase58() });
+    void decodeRule;
+  });
+});

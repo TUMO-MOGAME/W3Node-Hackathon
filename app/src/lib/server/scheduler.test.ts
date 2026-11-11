@@ -22,5 +22,6 @@ describe("scheduler isDue (mirrors execute_scheduled)", () => {
   it("ignores non-recurring rules and frozen estates", () => {
     expect(isDue(rule({ recurringAmount: 0n }), "Active", 1_500)).toBe(false);
     expect(isDue(rule(), "Frozen", 1_500)).toBe(false);
+    expect(isDue(rule(), "DeathPending", 1_500)).toBe(false);
   });
 });

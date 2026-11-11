@@ -33,7 +33,7 @@ export function mockOrchestrate(text: string, ctx: OrchestratorContext, copy: As
   const car = snap.assets[0];
   const status = copy.statusWords[e.status];
 
-  if (has("schedul", "allowance", "start paying", "monthly", "every month", "living", "recurring", "now")) {
+  if (has("schedul", "allowance", "start paying", "monthly", "every month", "living plan", "recurring")) {
     const sched = snap.rules.filter((r) => r.recurringAmount > BigInt(0));
     if (!sched.length) return out("EstateGuide", f.scheduledNone, [{ type: "navigate", to: role === "owner" ? "/will" : "/estate" }]);
     const next = [...sched].filter((r) => r.nextDue !== null).sort((a, b) => (a.nextDue ?? 0) - (b.nextDue ?? 0))[0] ?? sched[0];

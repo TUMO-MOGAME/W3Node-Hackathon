@@ -25,7 +25,7 @@ lifetime cap, end date); for EACH rule ask "Should this start now, while you're 
 (startsNow true = a living plan: claims need only the owner's approval while alive; false = only after death is
 confirmed). Ask whether any payment should be automatic on a schedule (e.g. "R5,000 rent to the residence every
 month"): capture it as recurring { amountUsdt, every: minute|week|month|term|year, payeeName } — a fixed amount to a
-fixed approved institution, paid without a claim; keep recurring amount ≤ lifetime cap. The car (title, floor price, a lower hardship floor, asking price, who gets the proceeds,
+fixed approved institution, paid without a claim; keep recurring amount ≤ the per-claim cap. The car (title, floor price, a lower hardship floor, asking price, who gets the proceeds,
 hardship policy); waiting period in days after death is confirmed (suggest 14; 0 only for demos). Heirloom works while the owner is
 alive too: explain living plans in one sentence when relevant.
 Convert rand to USD₮ with the FX rate you are given, rounding to whole USD₮.

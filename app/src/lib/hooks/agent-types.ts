@@ -19,6 +19,13 @@ export interface AssistantMessage {
   fresh?: boolean;
 }
 
+/** The agent may use its own route names; map them onto the app's routes. */
+const ROUTES: Record<string, string> = { "/owner": "/estate", "/verifier": "/inbox", "/buyer": "/car", "/audit": "/estate?proof=1", "/dashboard": "/estate", "/plan": "/will", "/timeline": "/family", "/home": "/estate" };
+export function mapAgentPath(path: string): string {
+  const clean = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  return ROUTES[clean] ?? path;
+}
+
 const SPECIALISTS: SpecialistName[] = ["Orchestrator", "WillWriter", "DocumentReviewer", "ClaimsGuide", "CarBroker", "EstateGuide", "Compliance"];
 
 /** Accepts whatever shape the server sends ({type,...} or {name, params}) and keeps only actions we can render. */
@@ -37,7 +44,7 @@ export function normaliseReply(raw: unknown): OrchestratorReply | null {
     const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
     if (type === "navigate") {
       const to = str(p.to) ?? str(p.path) ?? str(p.href) ?? str(p.route);
-      if (to && to.startsWith("/")) actions.push({ type, to });
+      if (to && to.startsWith("/")) actions.push({ type, to: mapAgentPath(to) });
     } else if (type === "openClaimForm") {
       const amount = typeof p.amount === "number" ? p.amount : typeof p.amountUsdt === "number" ? p.amountUsdt : Number(p.amount) || undefined;
       actions.push({ type, rule: str(p.rule), payee: str(p.payee), amount });

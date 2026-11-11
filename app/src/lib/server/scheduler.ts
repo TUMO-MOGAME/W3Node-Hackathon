@@ -21,7 +21,8 @@ export function isDue(rule: Rule, estateStatus: string, now: number): boolean {
   if (rule.recurringAmount <= 0n || !rule.fixedPayee || rule.nextDue === null) return false;
   if (rule.nextDue > now || now > rule.validUntil) return false;
   if (rule.spentTotal + rule.recurringAmount > rule.lifetimeCap) return false;
-  return rule.startsNow ? estateStatus === "Active" || estateStatus === "DeathPending" || estateStatus === "Unlocked" : estateStatus === "Unlocked";
+  // Spec #27: Unlocked, or Active if starts_now.
+  return estateStatus === "Unlocked" || (rule.startsNow && estateStatus === "Active");
 }
 
 export async function runDueSchedules(now = Math.floor(Date.now() / 1000), max = 10): Promise<TickResult[]> {

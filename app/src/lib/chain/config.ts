@@ -11,6 +11,9 @@ const DEFAULT_RPC: Record<Cluster, string> = {
   localnet: "http://127.0.0.1:8899",
 };
 
+/** Heirloom program deployed on devnet (2026-11-11). Override with NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID. */
+export const DEVNET_PROGRAM_ID = "b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY";
+
 /** Official USD₮ SPL mint on Solana mainnet (6 decimals). Devnet uses our own test mint. */
 export const MAINNET_USDT_MINT = "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB";
 
@@ -24,8 +27,8 @@ export const chainConfig = {
   get rpcUrl(): string {
     return process.env.NEXT_PUBLIC_SOLANA_RPC_URL || DEFAULT_RPC[this.cluster];
   },
-  /** Base58 program id, empty when not yet deployed. */
-  programId: process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID ?? "",
+  /** Base58 program id (defaults to the devnet deployment). */
+  programId: process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID || DEVNET_PROGRAM_ID,
   /** Base58 USD₮ mint the estate is configured with (devnet: our 6-dp test mint). */
   usdtMint: process.env.NEXT_PUBLIC_USDT_MINT ?? (readCluster() === "mainnet-beta" ? MAINNET_USDT_MINT : ""),
   dataMode: process.env.NEXT_PUBLIC_DATA_MODE === "chain" ? ("chain" as const) : ("mock" as const),

@@ -7,6 +7,8 @@ import type { Base58 } from "../types";
 export interface ActiveSigner {
   address: Base58;
   signAndSend(base64Tx: string): Promise<string>;
+  /** Sign only (WDK), so the payment pipeline can store the signature before broadcasting. */
+  signOnly(base64Tx: string): Promise<{ signature: string; wireBase64: string }>;
 }
 
 let active: ActiveSigner | null = null;

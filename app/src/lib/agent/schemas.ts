@@ -58,7 +58,7 @@ export const willDraftChecked = willDraftSchema.superRefine((d, ctx) => {
     if (r.maxPerClaimUsdt <= 0 || r.lifetimeCapUsdt <= 0) ctx.addIssue({ code: "custom", path: ["rules", i], message: "caps must be > 0" });
     if (r.maxPerClaimUsdt > r.lifetimeCapUsdt) ctx.addIssue({ code: "custom", path: ["rules", i], message: "per-claim cap exceeds lifetime cap" });
     if (!d.beneficiaries.some((b) => b.label === r.beneficiaryLabel)) ctx.addIssue({ code: "custom", path: ["rules", i, "beneficiaryLabel"], message: "unknown beneficiary" });
-    if (r.recurring && (r.recurring.amountUsdt <= 0 || r.recurring.amountUsdt > r.lifetimeCapUsdt)) ctx.addIssue({ code: "custom", path: ["rules", i, "recurring"], message: "recurring amount must be > 0 and within the lifetime cap" });
+    if (r.recurring && (r.recurring.amountUsdt <= 0 || r.recurring.amountUsdt > r.maxPerClaimUsdt)) ctx.addIssue({ code: "custom", path: ["rules", i, "recurring"], message: "recurring amount must be > 0 and at most the per-claim cap" });
   });
   d.assets.forEach((a, i) => {
     if (!(a.floorPriceUsdt >= a.hardshipFloorUsdt && a.hardshipFloorUsdt > 0)) ctx.addIssue({ code: "custom", path: ["assets", i], message: "need floor ≥ hardship floor > 0" });

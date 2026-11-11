@@ -4,20 +4,25 @@
  * Agent actions (reviews, listing, accepting offers, valuation, chat) go through our API routes, where the
  * agent's own WDK wallet signs only review_* / list_asset / accept_offer.
  */
-import { PublicKey, type TransactionInstruction } from "@solana/web3.js";
+import { PublicKey, Transaction, type TransactionInstruction } from "@solana/web3.js";
+import { createAssociatedTokenAccountIdempotentInstruction, createTransferCheckedInstruction } from "@solana/spl-token";
 import type { HeirloomService, EstateSnapshot, TxResult } from "./types";
 import type {
-  AgentReport, Base58, CarValuation, FxRate, OfferRanking, WillChatMessage, WillDraft,
+  AgentReport, Base58, CarValuation, FxRate, OfferRanking, PaymentReceipt, PaymentReview, SavedRecipient, WillChatMessage, WillDraft,
 } from "../types";
-import { chainCtx, prepareTx } from "../chain/client";
+import { chainCtx } from "../chain/client";
+import { chainConfig } from "../chain/config";
 import * as ix from "../chain/instructions";
-import { claimPda, estatePda, offerPda, hardshipPda } from "../chain/pda";
-import { confirmOrThrow, getConnection } from "../chain/tx";
+import { ata, claimPda, estatePda, offerPda, hardshipPda } from "../chain/pda";
+import { base64ToBytes, bytesToBase64, ChainTxError, getConnection } from "../chain/tx";
 import { fetchAccountRaw, fetchActivity, fetchEstateRaw, findEstateOf } from "../chain/reads";
 import { assembleSnapshot } from "../chain/snapshot";
 import { key, num, type Raw } from "../chain/decoders";
 import { accountDiscriminator, getIdl } from "../chain/idl";
 import { getActiveSigner } from "../wallet/signer";
+import { defaultReceiptStore, newPaymentId, openReceipts, recheck, runPayment, waitForFinal, type ChainOps, type StoredPayment } from "../wallet/payments";
+import { readOnly } from "../wallet/wdk";
+import { loadWallets } from "../wallet/store";
 import { explorerTx, toBase } from "../format";
 import { hashJson, sha256Hex } from "../agent/hash";
 import { intervalSecs, willDraftSchema } from "../agent/schemas";
@@ -27,12 +32,38 @@ import bs58 from "bs58";
 // ---------- small helpers ----------
 const pk = (a: string) => new PublicKey(a);
 
-async function send(ixs: TransactionInstruction[]): Promise<TxResult> {
+// ---------- pay-once pipeline (wallet/payments.ts) ----------
+const receipts = defaultReceiptStore();
+
+function chainOps(): ChainOps {
+  const conn = getConnection();
+  return {
+    status: async (sig) => (await conn.getSignatureStatuses([sig], { searchTransactionHistory: true })).value[0],
+    blockHeight: () => conn.getBlockHeight("confirmed"),
+    broadcast: async (wire) => { await conn.sendRawTransaction(base64ToBytes(wire), { maxRetries: 3 }); },
+  };
+}
+
+/** Builds the tx, WDK signs it (sign-only), signature persisted, then broadcast; returns the receipt. */
+async function pay(id: string, ixs: TransactionInstruction[], meta: Pick<StoredPayment, "kind" | "to" | "toLabel" | "amount">) {
   const signer = getActiveSigner();
-  const b64 = await prepareTx(signer.address, ixs);
-  const signature = await signer.signAndSend(b64);
-  await confirmOrThrow(signature);
-  return { signature, explorerUrl: explorerTx(signature) };
+  return runPayment(receipts, chainOps(), id, async () => {
+    const conn = getConnection();
+    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
+    const tx = new Transaction({ feePayer: pk(signer.address), blockhash, lastValidBlockHeight }).add(...ixs);
+    const b64 = bytesToBase64(tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
+    return { ...(await signer.signOnly(b64)), lastValidBlockHeight };
+  }, meta);
+}
+
+/** Every user-initiated program tx goes through the same pay-once pipeline and waits for confirmation. */
+async function send(ixs: TransactionInstruction[], meta: Pick<StoredPayment, "kind" | "to" | "toLabel" | "amount"> = { kind: "program" }): Promise<TxResult> {
+  const id = newPaymentId();
+  const first = await pay(id, ixs, meta);
+  const r = first.status === "failed" ? first : await waitForFinal(receipts, chainOps(), id, 60_000, 800);
+  if (!r || r.status === "failed") throw new ChainTxError(r?.signature ?? "", r?.error ?? "Transaction failed.");
+  if (!r.signature) throw new Error("Transaction was not signed.");
+  return { signature: r.signature, explorerUrl: explorerTx(r.signature) };
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -213,7 +244,7 @@ export function createChainService(): HeirloomService {
       return { estate: estate.toBase58(), txs };
     },
 
-    async deposit(estate, amountUsdt) { const o = requireOwnerOf(estate); return send([ix.deposit(chainCtx(), o, toBase(amountUsdt))]); },
+    async deposit(estate, amountUsdt) { const o = requireOwnerOf(estate); return send([ix.deposit(chainCtx(), o, toBase(amountUsdt))], { kind: "vault-deposit", to: estate, toLabel: "Estate vault", amount: toBase(amountUsdt).toString() }); },
     async withdraw(estate, amountUsdt) { const o = requireOwnerOf(estate); return send([ix.withdraw(chainCtx(), o, toBase(amountUsdt))]); },
     async heartbeat(estate) { const o = requireOwnerOf(estate); return send([ix.heartbeat(chainCtx(), o)]); },
     async vetoDeath(estate) { const o = requireOwnerOf(estate); return send([ix.vetoDeath(chainCtx(), o)]); },
@@ -258,7 +289,8 @@ export function createChainService(): HeirloomService {
     async executeScheduled(estate, rule) {
       const raw = await mustFetch("Rule", rule);
       const fixed = key(raw, "fixed_payee");
-      return send([ix.executeScheduled(chainCtx(), { estate: pk(estate), payer: pk(getActiveSigner().address), rule: pk(rule), payeeWallet: pk(fixed) })]);
+      return send([ix.executeScheduled(chainCtx(), { estate: pk(estate), payer: pk(getActiveSigner().address), rule: pk(rule), payeeWallet: pk(fixed) })],
+        { kind: "scheduled", to: fixed, toLabel: "Scheduled payee", amount: String(raw.recurring_amount ?? "0") });
     },
 
     // ----- Family -----
@@ -316,14 +348,93 @@ export function createChainService(): HeirloomService {
       const raw = await mustFetch("Claim", claim);
       return send([ix.executeClaim(chainCtx(), {
         estate: pk(estate), payer: pk(getActiveSigner().address), rule: pk(key(raw, "rule")), claim: pk(claim), payeeWallet: pk(key(raw, "payee")),
-      })]);
+      })], { kind: "claim-payout", to: key(raw, "payee"), toLabel: "Approved institution", amount: String(raw.amount ?? "0") });
+    },
+
+    // ----- P2P USD₮ (Tether track flow: review → approve → WDK sign → pending → confirmed) -----
+    async reviewSend({ to, toLabel, amountUsdt }): Promise<PaymentReview> {
+      const from = getActiveSigner().address;
+      let toKey: PublicKey;
+      try { toKey = pk(to); } catch { throw new Error("That is not a valid Solana address."); }
+      if (to === from) throw new Error("You cannot send to your own wallet.");
+      if (!(amountUsdt > 0)) throw new Error("Enter an amount above zero.");
+      const amount = toBase(amountUsdt);
+      const conn = getConnection();
+      const mint = chainCtx().usdtMint;
+      const warnings: string[] = [];
+
+      // Token check: the configured USD₮ mint must exist on this cluster with 6 decimals.
+      const mintInfo = await conn.getParsedAccountInfo(mint, "confirmed");
+      const parsed = mintInfo.value?.data as { parsed?: { type?: string; info?: { decimals?: number } } } | undefined;
+      const verified = parsed?.parsed?.type === "mint" && parsed.parsed.info?.decimals === 6;
+      if (!verified) warnings.push("The USD₮ token could not be verified on this network. Do not send.");
+      if (!PublicKey.isOnCurve(toKey.toBytes())) warnings.push("This address is a program account, not a person's wallet. Check it carefully.");
+
+      // Balances + fee quote via Tether WDK (read-only account: no keys needed).
+      const ro = await readOnly(from, chainConfig.rpcUrl);
+      const [usdt, lamports, quote, recipientAta] = await Promise.all([
+        ro.getTokenBalance(mint.toBase58()), ro.getBalance(),
+        ro.quoteTransfer({ token: mint.toBase58(), recipient: to, amount }).catch(() => null),
+        conn.getAccountInfo(ata(mint, toKey), "confirmed"),
+      ]);
+      const rent = recipientAta ? 0 : 2_039_280; // rent for a new token account, paid by the sender
+      if (!recipientAta) warnings.push("The recipient has no USD₮ account yet: it will be created (about 0.002 SOL, paid by you).");
+      const feeLamports = Number(quote?.fee ?? 5000n) + rent;
+      if (!quote) warnings.push("Fee estimate unavailable; using the standard network fee.");
+      const sol = Number(lamports) / 1e9;
+      const sufficient = usdt >= amount && Number(lamports) >= feeLamports;
+      if (usdt < amount) warnings.push("Not enough USD₮ in this wallet.");
+      if (Number(lamports) < feeLamports) warnings.push("Not enough SOL to pay the network fee.");
+
+      const review: PaymentReview = {
+        id: newPaymentId(), kind: "p2p", from, to, toLabel, amount,
+        token: { symbol: "USD₮", mint: mint.toBase58(), verified },
+        network: { name: `Solana ${chainConfig.cluster}`, cluster: chainConfig.cluster === "mainnet-beta" ? "mainnet-beta" : chainConfig.cluster === "localnet" ? "localnet" : "devnet" },
+        fee: { lamports: feeLamports, sol: feeLamports / 1e9, payer: from, sponsored: false },
+        balances: { usdt, sol, sufficient },
+        warnings,
+      };
+      receipts.put({ id: review.id, status: "awaiting-approval", kind: "p2p", to, toLabel, amount: amount.toString(), updatedAt: Date.now() });
+      return review;
+    },
+
+    async confirmSend(review) {
+      if (!review.token.verified) throw new Error("The USD₮ token is not verified on this network; payment blocked.");
+      if (review.token.mint !== chainCtx().usdtMint.toBase58()) throw new Error("Token mismatch: this is not the configured USD₮ mint.");
+      if (review.from !== getActiveSigner().address) throw new Error("Switch back to the wallet that reviewed this payment.");
+      const mint = chainCtx().usdtMint;
+      const from = pk(review.from), to = pk(review.to);
+      const ixs = [
+        createAssociatedTokenAccountIdempotentInstruction(from, ata(mint, to), to, mint),
+        createTransferCheckedInstruction(ata(mint, from), mint, ata(mint, to), from, review.amount, 6),
+      ];
+      return pay(review.id, ixs, { kind: "p2p", to: review.to, toLabel: review.toLabel, amount: review.amount.toString() });
+    },
+
+    getReceipt: (id): Promise<PaymentReceipt | null> => recheck(receipts, chainOps(), id),
+
+    async listPendingReceipts() {
+      const out: PaymentReceipt[] = [];
+      for (const r of openReceipts(receipts)) { const n = await recheck(receipts, chainOps(), r.id).catch(() => r); if (n) out.push(n); }
+      return out;
+    },
+
+    async savedRecipients(): Promise<SavedRecipient[]> {
+      const me = getActiveSigner().address;
+      const seen = new Map<string, SavedRecipient>();
+      for (const w of loadWallets()) if (w.address !== me) seen.set(w.address, { label: w.label, address: w.address, relationship: w.role });
+      for (const r of receipts.list()) {
+        if (r.kind === "p2p" && r.to && r.toLabel && !seen.has(r.to) && r.to !== me) seen.set(r.to, { label: r.toLabel, address: r.to });
+      }
+      return [...seen.values()];
     },
 
     // ----- Car sale -----
     listAsset: (estate, asset, durationSecs) => post<TxResult>("/api/list-asset", { estate, asset, durationSecs }),
 
     async placeOffer(estate, asset, amountUsdt) {
-      return send([ix.placeOffer(chainCtx(), pk(estate), pk(asset), pk(getActiveSigner().address), toBase(amountUsdt))]);
+      return send([ix.placeOffer(chainCtx(), pk(estate), pk(asset), pk(getActiveSigner().address), toBase(amountUsdt))],
+        { kind: "offer", to: asset, toLabel: "Offer escrow", amount: toBase(amountUsdt).toString() });
     },
 
     async withdrawOffer(estate, asset) {

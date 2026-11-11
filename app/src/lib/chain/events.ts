@@ -45,6 +45,8 @@ const TEXT: Record<string, (d: Raw, amt?: bigint) => string> = {
   HardshipSubmitted: () => "Hardship request submitted",
   HardshipReviewed: (d) => `Agent reviewed a hardship request: ${pick(d, "approve", "approved") ? "supported" : "rejected"}`,
   HardshipApproved: (d) => `Verifier ${who(d, "verifier")} approved a hardship request`,
+  ScheduledPaid: (d, a) => `Scheduled payment of ${a !== undefined ? formatUsdt(a) : "USD₮"} paid to ${who(d, "payee", "fixed_payee", "payee_wallet")}`,
+  ClaimOwnerApproved: () => "Owner approved a living-plan claim",
   AssetSold: (d, a) => `Car sold for ${a !== undefined ? formatUsdt(a) : "USD₮"} to ${who(d, "buyer")}: USD₮ and title swapped atomically`,
 };
 
