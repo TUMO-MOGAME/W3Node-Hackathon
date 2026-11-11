@@ -36,16 +36,16 @@ export function AgentSheet() {
   }, [voice, session, snap, pathname]);
 
   const tabs = (
-    <div role="tablist" aria-label={copy.sheet.title} className="flex shrink-0 rounded-full bg-surface-2 p-1">
+    <div role="tablist" aria-label={copy.sheet.title} className="flex shrink-0 rounded-full border border-line-strong bg-surface p-1">
       {(["chat", "call"] as const).map((m) => (
         <button
           key={m} type="button" role="tab" id={`agent-tab-${m}`} aria-selected={agent === m} aria-controls="agent-panel"
           onClick={() => openAgent(m)}
-          className={clsx("inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-small font-semibold transition-colors", agent === m ? "bg-surface text-ink shadow-card" : "text-ink-2")}
+          className={clsx("inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-small font-semibold transition-colors", agent === m ? "bg-ink text-bg" : "text-ink-2")}
         >
           {m === "chat" ? <MessageCircle className="size-4" aria-hidden="true" /> : <Phone className="size-4" aria-hidden="true" />}
           {m === "chat" ? copy.sheet.tabChat : copy.sheet.tabCall}
-          {m === "call" && live && <span className="size-2 animate-pulse-soft rounded-full bg-danger" aria-hidden="true" />}
+          {m === "call" && live && <span className="size-2 animate-pulse-soft rounded-full bg-current" aria-hidden="true" />}
         </button>
       ))}
     </div>
@@ -118,36 +118,42 @@ function Orb({ voice, label }: { voice: HeirloomVoice; label: string }) {
   const level = Math.max(out, inp);
   const userTalking = inp > out && inp > 0.08;
   const spring = { type: "spring" as const, stiffness: 260, damping: 18, mass: 0.6 };
-  // The orb is the harvest moon: mustard with a burnt-orange limb. It turns burgundy while you speak.
-  const core = userTalking
-    ? "radial-gradient(circle at 32% 28%, var(--burgundy-300) 0%, var(--burgundy-600) 46%, var(--brand-deep) 100%)"
-    : "radial-gradient(circle at 32% 28%, var(--mustard-50) 0%, var(--mustard-400) 46%, var(--ember-600) 100%)";
+  // The orb is drawn in ink only: three outlined rings that swell with the sound level, around a core
+  // that is hollow (outlined) while Heirloom listens and solid while it speaks. Five bars show the level.
+  const bars = [0.45, 0.8, 1, 0.8, 0.45];
   return (
     <div className="relative mx-auto grid size-56 place-items-center" role="img" aria-label={label}>
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          aria-hidden="true"
+          className="absolute rounded-full border border-ink"
+          style={{ inset: `${i * 1.1}rem`, borderWidth: i === 2 ? 2 : 1, borderStyle: waiting ? "dashed" : "solid" }}
+          animate={reduced ? { opacity: level > 0.08 ? 1 : 0.45 } : { scale: 1 + level * (0.16 - i * 0.04), opacity: 0.25 + i * 0.2 + level * 0.4 }}
+          transition={spring}
+        />
+      ))}
       <motion.span
         aria-hidden="true"
-        className="absolute inset-0 rounded-full"
-        style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--gold) 55%, transparent) 0%, color-mix(in srgb, var(--ember) 14%, transparent) 45%, transparent 68%)` }}
-        animate={reduced ? { opacity: level > 0.08 ? 1 : 0.5 } : { scale: 0.8 + level * 0.45, opacity: 0.55 + level * 0.45 }}
-        transition={spring}
-      />
-      <motion.span
-        aria-hidden="true"
-        className="absolute inset-7 rounded-full border-2"
-        style={{ borderColor: `color-mix(in srgb, var(--gold-edge) 55%, transparent)` }}
-        animate={reduced ? { opacity: level > 0.08 ? 1 : 0.4 } : { scale: 1 + level * 0.2 }}
-        transition={spring}
-      />
-      <motion.span
-        aria-hidden="true"
-        className={clsx("relative size-32 rounded-full shadow-float", (waiting || (connected && level < 0.05)) && !reduced && "animate-[orb-breathe_2.6s_ease-in-out_infinite]", waiting && "opacity-70")}
-        style={{
-          background: core,
-          boxShadow: "0 0 3.5rem 0.5rem var(--moon-glow), var(--shadow-3)",
-        }}
+        className={clsx(
+          "relative grid size-28 place-items-center rounded-full border-2 border-ink transition-colors duration-200",
+          voice.isSpeaking && !userTalking ? "bg-ink text-bg" : "bg-surface text-ink",
+          (waiting || (connected && level < 0.05)) && !reduced && "animate-[orb-breathe_2.6s_ease-in-out_infinite]",
+        )}
         animate={reduced ? {} : { scale: 1 + (voice.isSpeaking ? out : inp) * 0.14 }}
         transition={spring}
-      />
+      >
+        <span className="flex h-12 items-center gap-1.5">
+          {bars.map((w, i) => (
+            <motion.span
+              key={i}
+              className="w-1.5 rounded-full bg-current"
+              animate={{ height: reduced ? (level > 0.08 ? 8 + w * 22 : 8) : 6 + level * w * 42 }}
+              transition={spring}
+            />
+          ))}
+        </span>
+      </motion.span>
     </div>
   );
 }
@@ -217,10 +223,10 @@ function CallView({ voice, onStart, onChat }: { voice: HeirloomVoice & { simulat
               {voice.transcript.map((l, i) => (
                 <motion.li key={`${l.ts}-${i}`} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                   <p className="mb-0.5 flex items-center gap-2 text-small font-semibold">
-                    <span className={l.role === "agent" ? "text-accent" : "text-brass"}>{l.role === "agent" ? v.agent : v.you}</span>
+                    <span className={l.role === "agent" ? "text-ink" : "text-ink-2"}>{l.role === "agent" ? v.agent : v.you}</span>
                     {l.role === "agent" && l.specialist && l.specialist !== "Orchestrator" && <SpecialistChip name={l.specialist} copy={copy} />}
                   </p>
-                  <p className={clsx("rounded-md px-3 py-2", l.role === "agent" ? "bg-surface-2/70" : "border border-line")}>{l.text}</p>
+                  <p className={clsx("rounded-md px-3 py-2", l.role === "agent" ? "bg-surface-2" : "border border-line-strong")}>{l.text}</p>
                 </motion.li>
               ))}
             </ol>
@@ -239,13 +245,13 @@ function CallView({ voice, onStart, onChat }: { voice: HeirloomVoice & { simulat
             <button
               type="button" aria-pressed={voice.muted} aria-label={voice.muted ? v.unmute : v.mute} disabled={s !== "connected"}
               onClick={() => voice.setMuted(!voice.muted)}
-              className={clsx("grid size-14 place-items-center rounded-full border-2 transition-colors disabled:opacity-40", voice.muted ? "border-brass bg-brass-soft text-brass" : "border-line-strong bg-surface text-ink hover:bg-surface-2")}
+              className={clsx("grid size-14 place-items-center rounded-full border-2 transition-colors disabled:opacity-40", voice.muted ? "border-dashed border-ink bg-surface-2 text-ink" : "border-ink bg-surface text-ink hover:bg-surface-2")}
             >
               {voice.muted ? <MicOff className="size-6" aria-hidden="true" /> : <Mic className="size-6" aria-hidden="true" />}
             </button>
             <button
               type="button" aria-label={v.end} onClick={() => void voice.stop()}
-              className="grid h-14 w-24 place-items-center rounded-full bg-danger text-surface shadow-raised transition-transform active:scale-95"
+              className="grid h-14 w-24 place-items-center rounded-full bg-ink text-bg transition-transform active:scale-95"
             >
               <PhoneOff className="size-6" aria-hidden="true" />
             </button>

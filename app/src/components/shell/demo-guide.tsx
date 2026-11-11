@@ -58,14 +58,14 @@ export function DemoGuide() {
   const wrongPerson = step.actor && step.actor.address !== session?.address;
   const wrongPage = pathname !== step.href;
   const first = step.actor?.label.replace(/\s*\(.*\)$/, "").replace(/^(Adv\.|Ms\.|Mr\.|Uncle)\s+/i, (m) => m) ?? "";
-  const pill = "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-ember px-3.5 text-small font-semibold text-ember-ink shadow-card";
+  const pill = "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-3.5 text-small font-semibold text-bg";
 
   return (
-    <div className="border-t border-brass/25 bg-brass-soft/70">
+    <div className="brand-panel">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-1.5" role="status" aria-live="polite">
-        <Compass className="hidden size-5 shrink-0 text-brass sm:block" aria-hidden="true" />
+        <Compass className="hidden size-5 shrink-0 sm:block" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-brass">
+          <p className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-ink-2">
             {d.guideLabel}{step.key !== "done" && <> · {fmt(d.stepOf, { n, total: ORDER.length - 1 })}</>}
           </p>
           <p className="truncate text-small font-semibold" title={copy.body}>{fmt(copy.title, step.vars ?? {})}</p>

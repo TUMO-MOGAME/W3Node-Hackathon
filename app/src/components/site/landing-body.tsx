@@ -1,5 +1,5 @@
 "use client";
-import { ArrowDown, ArrowRight, BadgeCheck, Car, FileLock2, GraduationCap, HandHeart, HeartPulse, KeyRound, Landmark, MessageSquareHeart, PenLine, ShieldCheck, UsersRound } from "lucide-react";
+import { ArrowDown, ArrowRight, Car, FileLock2, GraduationCap, HandHeart, HeartPulse, KeyRound, Landmark, MessageSquareHeart, PenLine, ShieldCheck, UsersRound } from "lucide-react";
 import type { CSSProperties } from "react";
 import type { LandingCopy } from "@/content/landing";
 import { Badge, ButtonLink, Eyebrow } from "@/components/ui/primitives";
@@ -10,7 +10,7 @@ const safetyIcons = [ShieldCheck, UsersRound, HeartPulse, HandHeart, FileLock2, 
 const rowIcons = [GraduationCap, GraduationCap, Car];
 
 /**
- * The landing page's sections (Harvest Moon styling). Prerendered in English (the first screen needs no
+ * The landing page's sections. Prerendered in English (the first screen needs no
  * JavaScript: the entrance is CSS-only); after hydration the visitor's chosen language is laid over the same markup.
  */
 export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) {
@@ -18,7 +18,7 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
   return (
     <main id="main">
       {/* Hero: CSS-only entrance, no JavaScript needed for the first screen */}
-      <section className="paper overflow-hidden border-b border-line/70">
+      <section className="overflow-hidden border-b border-ink">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-14 pt-10 *:min-w-0 md:grid-cols-[1.1fr_0.9fr] md:pb-20 md:pt-16">
           <div>
             <Eyebrow className="rise">{hero.eyebrow}</Eyebrow>
@@ -26,22 +26,21 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
             <p className="rise mt-5 max-w-xl text-lead text-ink-2" style={{ "--i": 2 } as CSSProperties}>{hero.body}</p>
             <div className="rise mt-7 flex flex-col gap-3 sm:flex-row" style={{ "--i": 3 } as CSSProperties}>
               <ButtonLink href="/start" className="min-h-13! px-7">{hero.primary}<ArrowRight className="size-5" aria-hidden="true" /></ButtonLink>
-              <a href="#how" className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full border border-line-strong bg-surface/70 px-6 font-medium transition-colors hover:border-accent hover:bg-surface">{hero.secondary}<ArrowDown className="size-4" aria-hidden="true" /></a>
+              <a href="#how" className="inline-flex min-h-13 items-center justify-center gap-2 rounded-full border border-ink bg-surface px-6 font-medium transition-colors hover:bg-surface-2">{hero.secondary}<ArrowDown className="size-4" aria-hidden="true" /></a>
             </div>
             <p className="rise mt-4 text-small text-ink-2" style={{ "--i": 4 } as CSSProperties}>{hero.note}</p>
           </div>
 
           <div className="rise relative mx-auto w-full max-w-md" style={{ "--i": 3 } as CSSProperties} role="img" aria-label={`${hero.card.title}. ${hero.card.vaultLabel}: ${hero.card.vault}. ${hero.card.foot}`}>
-            <div className="moon moon-rise absolute -right-5 -top-12 -z-10 size-36 sm:-right-10 sm:-top-14 sm:size-48" aria-hidden="true" />
-            <div className="absolute -inset-3 -z-10 rotate-2 rounded-xl border border-gold-edge/25 bg-gold-soft/80" aria-hidden="true" />
-            <div className="rounded-xl border border-line bg-surface p-5 shadow-float" aria-hidden="true">
+            <div className="absolute inset-0 -z-10 translate-x-2.5 translate-y-2.5 rounded-xl bg-ink" aria-hidden="true" />
+            <div className="rounded-xl border border-ink bg-surface p-5" aria-hidden="true">
               <div className="flex items-center justify-between gap-3">
                 <p className="font-display text-h3">{hero.card.title}</p>
-                <Badge tone="ok"><BadgeCheck className="size-4" />{hero.card.status}</Badge>
+                <Badge tone="ok">{hero.card.status}</Badge>
               </div>
               <div className="brand-panel mt-4 rounded-lg p-4">
                 <p className="flex items-center gap-2 text-small font-medium opacity-90"><Landmark className="size-4" />{hero.card.vaultLabel}</p>
-                <p className="mt-1 font-display text-h2 text-gold">{hero.card.vault}</p>
+                <p className="mt-1 font-display text-h2">{hero.card.vault}</p>
                 <p className="text-small opacity-90">{hero.card.vaultZar}</p>
               </div>
               <ul className="mt-3 divide-y divide-line">
@@ -49,20 +48,20 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
                   const Icon = rowIcons[i];
                   return (
                     <li key={row.label} className="flex items-center gap-3 py-3">
-                      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-4.5" /></span>
+                      <span className="grid size-9 shrink-0 place-items-center rounded-full border border-ink text-ink"><Icon className="size-4.5" /></span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-small font-semibold">{row.label}</span>
                         <span className="block truncate text-small text-ink-2">{row.detail}</span>
                       </span>
                       <span className="shrink-0 text-right">
                         <span className="block text-small font-semibold tabular-nums">{row.amount}</span>
-                        <span className="text-[0.75rem] font-semibold text-brass">{row.state}</span>
+                        <span className="text-[0.75rem] font-semibold text-ink-2">{row.state}</span>
                       </span>
                     </li>
                   );
                 })}
               </ul>
-              <p className="mt-1 flex items-center gap-1.5 text-[0.8rem] text-ink-2"><ShieldCheck className="size-4 text-accent" />{hero.card.foot}</p>
+              <p className="mt-1 flex items-center gap-1.5 text-[0.8rem] text-ink-2"><ShieldCheck className="size-4 text-ink" />{hero.card.foot}</p>
             </div>
           </div>
         </div>
@@ -75,18 +74,18 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
           <h2 className="mt-3 text-h1">{problem.title}</h2>
           <p className="mt-4 text-lead text-ink-2">{problem.body}</p>
         </div>
-        <dl className="mt-8 grid gap-4 md:grid-cols-3">
+        <dl className="mt-10 grid gap-8 md:grid-cols-3">
           {problem.stats.map((s) => (
-            <div key={s.value} className="relative flex flex-col overflow-hidden rounded-lg border border-line bg-surface p-5 pt-6 shadow-card before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-[linear-gradient(90deg,var(--brand),var(--ember),var(--gold))]">
-              <dt className="order-2 mt-1 text-ink-2">{s.label}</dt>
-              <dd className="font-display text-h1 text-accent">{s.value}</dd>
+            <div key={s.value} className="flex flex-col border-t-4 border-ink pt-5">
+              <dt className="order-2 mt-3 text-ink-2">{s.label}</dt>
+              <dd className="font-display text-display leading-none text-ink">{s.value}</dd>
             </div>
           ))}
         </dl>
       </section>
 
       {/* How it works */}
-      <section id="how" className="scroll-mt-20 border-y border-line/70 bg-surface-2/50">
+      <section id="how" className="scroll-mt-20 border-y border-ink bg-surface-2">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 md:py-20">
           <Eyebrow>{how.eyebrow}</Eyebrow>
           <h2 className="mt-3 max-w-2xl text-h1">{how.title}</h2>
@@ -94,10 +93,10 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
             {how.steps.map((step, i) => {
               const Icon = stepIcons[i];
               return (
-                <li key={step.title} className="relative rounded-lg border border-line bg-surface p-5 shadow-card transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-raised">
+                <li key={step.title} className="relative rounded-lg border border-ink bg-surface p-5">
                   <div className="flex items-center justify-between">
-                    <span className="grid size-12 place-items-center rounded-full bg-brand text-brand-ink shadow-btn ring-4 ring-gold/35"><Icon className="size-6" aria-hidden="true" /></span>
-                    <span className="font-display text-h1 text-ember/45" aria-hidden="true">{i + 1}</span>
+                    <span className="grid size-12 place-items-center rounded-full bg-ink text-bg"><Icon className="size-6" aria-hidden="true" /></span>
+                    <span className="font-display text-h1 leading-none text-ink" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                   </div>
                   <h3 className="mt-4 text-h3">{step.title}</h3>
                   <p className="mt-2 text-ink-2">{step.body}</p>
@@ -117,7 +116,7 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
             const Icon = safetyIcons[i];
             return (
               <li key={item.title} className="flex gap-3.5">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
+                <span className="grid size-11 shrink-0 place-items-center rounded-full border border-ink text-ink"><Icon className="size-5" aria-hidden="true" /></span>
                 <div>
                   <h3 className="font-sans text-lead font-semibold tracking-normal">{item.title}</h3>
                   <p className="mt-1 text-ink-2">{item.body}</p>
@@ -132,15 +131,15 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
       <section id="proof" className="brand-panel scroll-mt-20">
         <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-14 md:grid-cols-2 md:py-20">
           <div>
-            <p className="text-small font-semibold uppercase tracking-[0.14em] text-gold">{proof.eyebrow}</p>
+            <p className="text-small font-semibold uppercase tracking-[0.14em]">{proof.eyebrow}</p>
             <h2 className="mt-3 text-h1">{proof.title}</h2>
-            <p className="mt-4 text-lead opacity-90">{proof.body}</p>
-            <p className="mt-6 rounded-md border border-current/25 p-4 text-small opacity-90">{proof.honest}</p>
+            <p className="mt-4 text-lead">{proof.body}</p>
+            <p className="mt-6 rounded-md border border-dashed border-ink p-4 text-small">{proof.honest}</p>
           </div>
           <dl className="grid content-start gap-3">
             {proof.points.map((p) => (
-              <div key={p.term} className="rounded-lg border-l-4 border-gold bg-surface p-4 text-ink shadow-raised">
-                <dt className="font-display text-h3 text-accent">{p.term}</dt>
+              <div key={p.term} className="border-t border-ink pb-1 pt-4 text-ink">
+                <dt className="font-display text-h3">{p.term}</dt>
                 <dd className="mt-1 text-ink-2">{p.detail}</dd>
               </div>
             ))}
@@ -149,7 +148,7 @@ export function LandingBody({ copy: english }: Readonly<{ copy: LandingCopy }>) 
       </section>
 
       {/* CTA */}
-      <section className="paper">
+      <section className="border-t border-ink">
         <div className="mx-auto w-full max-w-3xl px-4 py-16 text-center md:py-24">
           <h2 className="text-h1">{cta.title}</h2>
           <p className="mx-auto mt-4 max-w-xl text-lead text-ink-2">{cta.body}</p>

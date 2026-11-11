@@ -97,7 +97,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
               <h1 className="mt-2 text-h1">{copy.title}</h1>
               <p className="mt-3 text-lead text-ink-2">{copy.body}</p>
               <div className="mt-6 grid gap-4">
-                <Card className="border-accent/40 bg-accent-soft/60">
+                <Card className="border-ink bg-surface-2">
                   <div className="flex items-start gap-3.5">
                     <span className="grid size-12 shrink-0 place-items-center rounded-full bg-accent text-accent-ink"><UsersRound className="size-6" aria-hidden="true" /></span>
                     <div className="min-w-0">
@@ -150,7 +150,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
                 <legend className="mb-1.5 text-small font-semibold">{copy.form.role}</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {ROLES.map((r) => (
-                    <label key={r} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-3.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)] ${role === r ? "border-accent bg-accent-soft" : "border-line-strong/70 bg-surface"}`}>
+                    <label key={r} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-md border px-3.5 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)] ${role === r ? "border-accent bg-accent-soft" : "border-line-strong bg-surface"}`}>
                       <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="size-4 accent-[var(--accent)]" />
                       <span className="text-small font-medium">{copy.form.roles[r]}</span>
                     </label>
@@ -167,7 +167,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
                 </Field>
               )}
               <Consent id="start-consent" checked={consent} onChange={setConsent} copy={common.consent} />
-              {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+              {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => { setError(null); setStep("choose"); }}><ArrowLeft className="size-4" aria-hidden="true" />{copy.form.back}</Button>
                 <Button type="submit" className="flex-1">{copy.form.next}</Button>
@@ -187,7 +187,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
               <Field label={copy.pin.confirm} htmlFor="start-pin2">
                 <input id="start-pin2" type="password" inputMode="numeric" autoComplete="new-password" required value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, ""))} className={`${inputClass} font-mono text-h3 tracking-[0.4em]`} />
               </Field>
-              {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+              {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
               <p role="status" aria-live="polite" className="sr-only">{busy ? copy.pin.creating : ""}</p>
               <div className="flex gap-3">
                 <Button variant="secondary" disabled={busy} onClick={() => { setError(null); setStep("about"); }}><ArrowLeft className="size-4" aria-hidden="true" />{copy.form.back}</Button>

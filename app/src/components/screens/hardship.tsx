@@ -1,12 +1,12 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Check, HandHeart, TriangleAlert } from "lucide-react";
+import { ArrowRight, HandHeart, TriangleAlert } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Hardship, Role, WalletSession } from "@/lib/types";
 import { useEstate } from "@/lib/hooks/estate";
-import { Badge, Button, ButtonLink, Card, Consent, Money, Notice, PageHeader } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, Card, Consent, Money, Notice, PageHeader, TickDisc } from "@/components/ui/primitives";
 import { FilePicker, Quorum } from "@/components/ui/client";
 import { ReportCard, Reviewing } from "@/components/agent/report-card";
 import { Blocked } from "@/components/shell/blocked";
@@ -90,7 +90,7 @@ function HardshipView({ copy, snap, session, role }: { copy: Copy; snap: EstateS
                     <div className="mt-3"><Quorum approvals={h.approvals} needed={e.hardshipThreshold} names={e.verifierNames} label={fmt(copy.approvals, { got, need: e.hardshipThreshold })} /></div>
                   )}
                   {h.status === "Approved" && car && (
-                    <p className="mt-3 flex items-start gap-2 rounded-md bg-ok-soft p-3 font-medium text-ok"><Check className="mt-0.5 size-5 shrink-0" aria-hidden="true" />{fmt(copy.approved, { floor: formatUsdt(car.hardshipFloor, { decimals: 0 }), name: nameOf(h).split(" ")[0] })}</p>
+                    <p className="mt-3 flex items-start gap-2 rounded-md border-[1.5px] border-ink p-3 font-medium"><TickDisc className="mt-0.5 size-5" />{fmt(copy.approved, { floor: formatUsdt(car.hardshipFloor, { decimals: 0 }), name: nameOf(h).split(" ")[0] })}</p>
                   )}
                   {h.status === "Rejected" && <p className="mt-2 text-small text-ink-2">{copy.rejected}</p>}
                   {h.agentReport && <div className="mt-3"><ReportCard report={h.agentReport} compact /></div>}
@@ -121,7 +121,7 @@ function HardshipView({ copy, snap, session, role }: { copy: Copy; snap: EstateS
           <form onSubmit={submit} noValidate className="mt-4 flex flex-col gap-4">
             <FilePicker id="hardship-file" label={copy.file} hint={copy.fileHint} file={file} onFile={(f) => { setFile(f); setError(null); }} samples={copy.samples} copy={common.file} />
             <Consent id="hardship-consent" checked={consent} onChange={(v) => { setConsent(v); setError(null); }} copy={common.consent} />
-            {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+            {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
             {blocked && <Blocked code={blocked.code} message={blocked.message} />}
             <Button type="submit">{copy.submit}</Button>
           </form>

@@ -7,9 +7,9 @@ export const site = {
   description:
     "Set up a family plan in plain language. Heirloom pays allowances and school fees on schedule from a secure USD₮ vault today, and keeps paying the university directly after you're gone. Built with Tether WDK on Solana.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://heirloom.tumoolo.tech",
-  themeLight: "#fbf5e9",
-  themeDark: "#1a0e0f",
-  accent: "#800020",
+  themeLight: "#ffffff",
+  themeDark: "#000000",
+  accent: "#000000",
   ogAlt: "Heirloom. Plan for your family, now and after you're gone. A programmable estate trust built with Tether USD₮ on Solana.",
   nav: {
     how: "How it works",

@@ -32,7 +32,7 @@ export function Sheet({
     >
       {open && (
         <>
-          <div className="flex shrink-0 items-start gap-3 border-b border-line px-4 pb-3 pt-4 sm:px-5">
+          <div className="flex shrink-0 items-start gap-3 border-b border-ink px-4 pb-3 pt-4 sm:px-5">
             <div className="min-w-0 flex-1">
               <h2 id={titleId} data-sheet-title tabIndex={-1} className="text-h3 outline-none">{title}</h2>
               {description && <p className="mt-1 text-small text-ink-2">{description}</p>}
@@ -66,15 +66,16 @@ export function Toaster({ dismissLabel }: { dismissLabel: string }) {
             exit={{ opacity: 0, y: 8 }}
             transition={{ duration: 0.22 }}
             className={clsx(
-              "pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-md border border-l-4 bg-surface p-3 pr-1.5 text-small shadow-raised",
-              t.tone === "error" ? "border-danger/50 border-l-danger" : t.tone === "ok" ? "border-ok/40 border-l-ok" : "border-line border-l-gold-edge",
+              "pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-md p-3 pr-1.5 text-small shadow-raised",
+              // error: heavy rule and warning icon; ok: solid inverted block and tick; info: hairline outline
+              t.tone === "error" ? "border-2 border-l-8 border-ink bg-surface text-ink" : t.tone === "ok" ? "brand-panel border border-ink" : "border border-ink bg-surface text-ink",
             )}
           >
-            <span className={clsx("mt-0.5 shrink-0", t.tone === "error" ? "text-danger" : t.tone === "ok" ? "text-ok" : "text-accent")}>
+            <span className="mt-0.5 shrink-0">
               {t.tone === "error" ? <CircleAlert className="size-5" aria-hidden="true" /> : t.tone === "ok" ? <Check className="size-5" aria-hidden="true" /> : <Info className="size-5" aria-hidden="true" />}
             </span>
             <p className="min-w-0 flex-1 py-0.5 font-medium">{t.text}</p>
-            <button type="button" onClick={() => dismiss(t.id)} aria-label={dismissLabel} className="grid size-9 shrink-0 place-items-center rounded-full text-ink-2 hover:bg-surface-2">
+            <button type="button" onClick={() => dismiss(t.id)} aria-label={dismissLabel} className="grid size-11 shrink-0 place-items-center rounded-full text-ink hover:bg-surface-2">
               <X className="size-4" aria-hidden="true" />
             </button>
           </motion.div>
@@ -98,7 +99,7 @@ export function Quorum({ approvals, needed, names, label }: { approvals: boolean
             animate={{ scale: on ? [1, 1.25, 1] : 1 }}
             transition={{ duration: 0.45 }}
             title={names?.[i]}
-            className={clsx("grid size-7 place-items-center rounded-full border-2 text-[0.7rem] font-bold", on ? "border-gold-edge bg-gold text-gold-ink shadow-[0_0_0_3px_color-mix(in_srgb,var(--gold)_30%,transparent)]" : "border-line-strong/70 bg-surface text-ink-2")}
+            className={clsx("grid size-7 place-items-center rounded-full border-2 text-[0.7rem] font-bold", on ? "border-ink bg-ink text-bg" : "border-dashed border-line-strong bg-surface text-ink-2")}
           >
             {on ? <Check className="size-4" /> : (names?.[i]?.replace(/^(Adv\.|Ms\.|Mr\.|Uncle|Aunt|Pastor)\s+/i, "")[0] ?? i + 1)}
           </motion.span>
@@ -162,7 +163,7 @@ export function FilePicker({
         htmlFor={id}
         className={clsx(
           "flex min-h-20 cursor-pointer items-center gap-3 rounded-md border-2 border-dashed p-3.5 transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--focus)]",
-          file ? "border-accent/60 bg-accent-soft" : "border-line-strong/70 bg-surface hover:bg-surface-2",
+          file ? "border-solid border-ink bg-surface" : "border-line-strong bg-surface hover:bg-surface-2",
         )}
       >
         <span className={clsx("grid size-11 shrink-0 place-items-center rounded-full", file ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2")}>
@@ -190,7 +191,7 @@ export function FilePicker({
               key={s.fileName}
               type="button"
               onClick={() => onFile(new File([`Heirloom demo document: ${s.fileName}`], s.fileName, { type: "application/pdf" }))}
-              className={clsx("min-h-11 rounded-full border px-3.5 text-small font-medium", file?.name === s.fileName ? "border-accent bg-accent-soft text-accent" : "border-line-strong/70 bg-surface hover:bg-surface-2")}
+              className={clsx("min-h-11 rounded-full border px-3.5 text-small font-medium", file?.name === s.fileName ? "border-ink bg-ink text-bg" : "border-line-strong bg-surface hover:bg-surface-2")}
             >
               {s.label}
             </button>

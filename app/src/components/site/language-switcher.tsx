@@ -18,9 +18,9 @@ export function LanguageSwitcher({ variant = "compact", className }: { variant?:
     return (
       <fieldset className={className}>
         <legend className="mb-2 text-small font-semibold uppercase tracking-[0.12em] text-ink-2">{LANGUAGE_LABEL}</legend>
-        <div className="grid grid-cols-2 gap-1 rounded-2xl bg-surface-2 p-1 min-[420px]:grid-cols-4">
+        <div className="grid grid-cols-2 gap-1 rounded-2xl border border-line-strong bg-surface p-1 min-[420px]:grid-cols-4">
           {LOCALES.map((l) => (
-            <label key={l} lang={LOCALE_TAGS[l]} className={clsx("flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 text-small font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", locale === l ? "bg-surface shadow-card" : "text-ink-2")}>
+            <label key={l} lang={LOCALE_TAGS[l]} className={clsx("flex min-h-11 cursor-pointer items-center justify-center rounded-full px-2 text-small font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", locale === l ? "bg-ink text-bg" : "text-ink-2")}>
               <input type="radio" name={`${id}-lang`} value={l} checked={locale === l} onChange={() => setLocale(l)} className="sr-only" />
               {LOCALE_NAMES[l]}
             </label>
@@ -37,7 +37,7 @@ export function LanguageSwitcher({ variant = "compact", className }: { variant?:
       <select
         id={id} value={locale} title={LANGUAGE_LABEL}
         onChange={(e) => { if (isLocale(e.target.value)) setLocale(e.target.value); }}
-        className="min-h-11 max-w-[8.5rem] cursor-pointer appearance-none rounded-full border border-line-strong/60 bg-surface py-1 pl-8 pr-3 text-small font-semibold text-ink hover:bg-surface-2"
+        className="min-h-11 max-w-[8.5rem] cursor-pointer appearance-none rounded-full border border-line-strong bg-surface py-1 pl-8 pr-3 text-small font-semibold text-ink hover:bg-surface-2"
       >
         {LOCALES.map((l) => <option key={l} value={l} lang={LOCALE_TAGS[l]}>{LOCALE_NAMES[l]}</option>)}
       </select>
@@ -50,5 +50,5 @@ export function LegalLanguageNote() {
   const t = useTranslations();
   const locale = useLocale();
   if (!t) return null;
-  return <p lang={LOCALE_TAGS[locale]} className="mt-3 rounded-md border border-line bg-surface-2/60 px-3 py-2 text-small text-ink-2">{t.legalNote}</p>;
+  return <p lang={LOCALE_TAGS[locale]} className="mt-3 rounded-md border border-line bg-surface-2 px-3 py-2 text-small text-ink-2">{t.legalNote}</p>;
 }

@@ -10,7 +10,7 @@ export default function NotFound() {
   return (
     <>
       <SiteHeader site={site} minimal />
-      <main id="main" className="paper">
+      <main id="main">
         <div className="mx-auto flex min-h-[60dvh] w-full max-w-2xl flex-col items-center justify-center px-4 py-16 text-center">
           <LogoMark className="rise size-16" />
           <Eyebrow className="rise mt-6">{c.eyebrow} · 404</Eyebrow>

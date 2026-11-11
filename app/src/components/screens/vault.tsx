@@ -57,7 +57,7 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
     <div className="mx-auto max-w-3xl">
       <PageHeader eyebrow={copy.eyebrow} title={copy.title} body={copy.body} />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-accent/30 bg-accent-soft/60">
+        <Card className="border-ink bg-surface-2">
           <p className="flex items-center gap-2 text-small font-semibold text-accent"><Landmark className="size-4" aria-hidden="true" />{copy.balance}</p>
           <motion.div key={e.vaultBalance.toString()} initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }}><Money base={e.vaultBalance} rate={rate} size="lg" className="mt-1" /></motion.div>
         </Card>
@@ -74,12 +74,12 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
         </Notice>
       ) : (
         <Card className="mt-4">
-          <div role="tablist" aria-label={copy.tabsLabel} className="flex rounded-full bg-surface-2 p-1">
+          <div role="tablist" aria-label={copy.tabsLabel} className="flex rounded-full border border-line-strong bg-surface p-1">
             {(["deposit", "withdraw"] as const).map((t) => (
               <button
                 key={t} type="button" role="tab" aria-selected={tab === t} id={`vault-tab-${t}`} aria-controls="vault-panel"
                 onClick={() => { setTab(t); setError(null); setAmount(""); }}
-                className={clsx("inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full text-small font-semibold transition-colors", tab === t ? "bg-surface text-ink shadow-card" : "text-ink-2")}
+                className={clsx("inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full text-small font-semibold transition-colors", tab === t ? "bg-ink text-bg" : "text-ink-2")}
               >
                 {t === "deposit" ? <ArrowDownToLine className="size-4" aria-hidden="true" /> : <ArrowUpFromLine className="size-4" aria-hidden="true" />}
                 {copy.tabs[t]}

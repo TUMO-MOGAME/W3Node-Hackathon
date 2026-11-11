@@ -7,14 +7,14 @@
  */
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { BadgeCheck, Check, CircleAlert, Loader2, RefreshCw, ShieldAlert, WifiOff } from "lucide-react";
 import type { HeirloomService } from "@/lib/service";
 import type { PaymentReview } from "@/lib/types";
 import { formatUsdt, formatZar, shortAddress } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
 import { Sheet } from "@/components/ui/client";
-import { Badge, Button, ExplorerLink, Notice } from "@/components/ui/primitives";
+import { Badge, Button, ExplorerLink, Notice, TickDisc } from "@/components/ui/primitives";
 import { Blocked } from "@/components/shell/blocked";
 import { fmt, useCopy } from "@/components/shell/copy";
 
@@ -69,6 +69,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const { pay: copy } = useCopy();
   const { service, snap, session, walletUsdt, isMock, run, refresh, notify, explain, fx } = useEstate();
   const online = useOnline();
+  const reduced = useReducedMotion();
   const [req, setReq] = useState<PayRequest | null>(null);
   const [review, setReview] = useState<PaymentReview | null>(null);
   const [phase, setPhase] = useState<Phase>("review");
@@ -199,19 +200,19 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
             <ol aria-label={copy.stepsLabel} className="flex gap-1.5">
               {steps.map((st, i) => (
                 <li key={st} aria-current={i === at ? "step" : undefined} className="flex flex-1 flex-col gap-1">
-                  <span className={clsx("h-1.5 rounded-full transition-colors duration-300", phase === "confirmed" ? "meter-fill" : i < at ? "bg-accent" : i === at ? (phase === "failed" ? "bg-danger" : "bg-ember") : "bg-line")} />
+                  <span className={clsx("h-1.5 rounded-full transition-colors duration-300", phase === "confirmed" || i <= at ? "bg-ink" : "bg-line")} />
                   <span className={clsx("text-[0.7rem] font-semibold", i === at ? "text-ink" : "text-ink-2")}>{st === "review" ? copy.steps.review : st === "signing" ? copy.steps.sign : st === "pending" ? copy.steps.pending : copy.steps.confirmed}</span>
                 </li>
               ))}
             </ol>
 
             {/* Amount and recipient stay visible through every phase */}
-            <div className={clsx("rounded-lg border p-4 text-center transition-colors duration-500", phase === "confirmed" ? "border-gold-edge/50 bg-gold-soft" : "border-line bg-surface-2/50")}>
+            <div className={clsx("rounded-lg border p-4 text-center", phase === "confirmed" ? "brand-panel confirm-pop border-ink" : phase === "pending" ? "border-[1.5px] border-dashed border-ink bg-surface" : phase === "failed" ? "border-2 border-ink bg-surface" : "border-line-strong bg-surface")}>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Badge tone="accent">{c.kinds[review.kind]}</Badge>
                 {review.simulated && <Badge tone="warn">{c.simulated}</Badge>}
                 {phase === "pending" && <Badge tone="warn"><Loader2 className="size-3.5 animate-spin" aria-hidden="true" />{copy.pending.badge}</Badge>}
-                {phase === "confirmed" && <Badge tone="gold"><Check className="size-3.5" aria-hidden="true" />{copy.confirmed.badge}</Badge>}
+                {phase === "confirmed" && <Badge tone="gold"><TickDisc />{copy.confirmed.badge}</Badge>}
               </div>
               <p className="mt-2 font-display text-h1 tabular-nums">{formatUsdt(review.amount)}</p>
               <p className="min-h-6 text-ink-2 tabular-nums">{rate ? `≈ ${formatZar(review.amount, rate)}` : ""}</p>
@@ -225,11 +226,11 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
                   {[
                     { k: c.from, v: fromVault ? c.viaContract : `${session?.label ?? ""} · ${shortAddress(review.from)}` },
                     { k: c.network, v: review.network.name },
-                    { k: c.token, v: <span className={clsx("inline-flex items-center gap-1 font-semibold", review.token.verified ? "text-ok" : "text-danger")}>{review.token.verified ? <BadgeCheck className="size-4" aria-hidden="true" /> : <ShieldAlert className="size-4" aria-hidden="true" />}{review.token.verified ? c.verified : c.unverified}</span> },
+                    { k: c.token, v: <span className={clsx("inline-flex items-center gap-1 font-semibold", review.token.verified ? "text-ink" : "rounded-[3px] bg-ink px-1.5 text-bg")}>{review.token.verified ? <BadgeCheck className="size-4" aria-hidden="true" /> : <ShieldAlert className="size-4" aria-hidden="true" />}{review.token.verified ? c.verified : c.unverified}</span> },
                     { k: c.fee, v: fmt(review.fee.sponsored ? c.feeSponsored : review.fee.payer === session?.address ? c.feeYou : c.feeBy, { sol: review.fee.sol.toFixed(6), payer: shortAddress(review.fee.payer) }) },
                     { k: fromVault ? c.balanceVault : c.balance, v: <>{formatUsdt(review.balances.usdt)}{review.balances.sufficient && <span className="block text-ink-2">{fmt(c.after, { amount: formatUsdt(review.balances.usdt - review.amount) })}</span>}</> },
                   ].map((row) => (
-                    <div key={row.k} className="flex items-start justify-between gap-4 border-b border-line/70 py-2.5 last:border-0">
+                    <div key={row.k} className="flex items-start justify-between gap-4 border-b border-line py-2.5 last:border-0">
                       <dt className="shrink-0 text-ink-2">{row.k}</dt>
                       <dd className="min-w-0 text-right font-medium">{row.v}</dd>
                     </div>
@@ -256,7 +257,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
             {phase === "signing" && (
               <div role="status" aria-live="polite" className="flex flex-col items-center gap-3 py-6 text-center">
-                <Loader2 className="size-10 animate-spin text-accent" aria-hidden="true" />
+                <Loader2 className="size-10 animate-spin text-ink" aria-hidden="true" />
                 <p className="text-lead font-semibold">{copy.signing.title}</p>
                 <p className="max-w-xs text-small text-ink-2">{copy.signing.body}</p>
               </div>
@@ -264,7 +265,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
             {phase === "pending" && (
               <div role="status" aria-live="polite" className="flex flex-col items-center gap-3 py-4 text-center">
-                <span className="relative grid size-14 place-items-center rounded-full bg-brass-soft text-brass"><RefreshCw className="size-7 animate-spin [animation-duration:2.2s]" aria-hidden="true" /></span>
+                <span className="relative grid size-14 place-items-center rounded-full border-2 border-dashed border-ink text-ink"><RefreshCw className="size-7 animate-spin [animation-duration:2.2s]" aria-hidden="true" /></span>
                 <p className="max-w-sm text-small text-ink-2">{copy.pending.body}</p>
                 {signature && <ExplorerLink signature={signature} label={copy.confirmed.receipt} srLabel={copy.confirmed.receiptSr} />}
               </div>
@@ -272,7 +273,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
             {phase === "confirmed" && (
               <div role="status" aria-live="polite" className="flex flex-col items-center gap-3 py-2 text-center">
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 15 }} className="gold-fill gold-glow relative my-2 grid size-20 place-items-center rounded-full"><span className="confirm-ring absolute inset-0" aria-hidden="true" /><Check className="size-10" strokeWidth={2.75} aria-hidden="true" /></motion.span>
+                <motion.span initial={reduced ? false : { scale: 0.4 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 320, damping: 18 }} className="relative my-2 grid size-20 place-items-center rounded-full bg-ink text-bg"><span className="confirm-ring absolute inset-0" aria-hidden="true" /><Check className="size-10" strokeWidth={3} aria-hidden="true" /></motion.span>
                 <p className="text-small text-ink-2">{copy.confirmed.body}</p>
                 {signature && <ExplorerLink signature={signature} label={copy.confirmed.receipt} srLabel={copy.confirmed.receiptSr} />}
                 <Button block onClick={close}>{copy.confirmed.done}</Button>
@@ -308,7 +309,7 @@ export function ConnectionBars() {
         <p className="flex items-center justify-center gap-2 bg-ink px-4 py-2 text-center text-small font-medium text-bg"><WifiOff className="size-4 shrink-0" aria-hidden="true" />{copy.offline.banner}</p>
       )}
       {online && rechecking > 0 && (
-        <p className="flex items-center justify-center gap-2 bg-brass-soft px-4 py-2 text-center text-small font-semibold text-brass"><Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />{rechecking === 1 ? copy.recheck.banner : fmt(copy.recheck.bannerMany, { n: rechecking })}</p>
+        <p className="flex items-center justify-center gap-2 border-b border-dashed border-ink bg-surface px-4 py-2 text-center text-small font-semibold text-ink"><Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />{rechecking === 1 ? copy.recheck.banner : fmt(copy.recheck.bannerMany, { n: rechecking })}</p>
       )}
     </div>
   );

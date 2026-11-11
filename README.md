@@ -43,7 +43,7 @@ nothing makes sure it is spent on the children.
 
 ## Screenshots
 
-Phone width (360px), "Harvest Moon" theme, light and dark:
+Phone width (360px), pure black and white, light and dark:
 
 | Landing | Estate dashboard | Payment review | Payment confirmed |
 |---|---|---|---|

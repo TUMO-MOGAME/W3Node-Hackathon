@@ -1,105 +1,55 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   Heirloom design tokens: the "Harvest Moon" palette.
-   Deep burgundy (brand), mustard (highlight and celebration),
-   brick (secondary emphasis and the blocked / danger family),
-   burnt orange (warm accents), on cream, ivory and sand neutrals.
-   Light is the default; dark follows the system or [data-theme].
-   Every text / background pair below is checked by
-   scripts/contrast.mjs (WCAG 2.1 AA). Run it after changing a colour.
+   Heirloom design tokens: pure black and white.
+   No hue and no colour blends anywhere. Light is a white page with black
+   ink; dark is a black page with white ink. Neutral greys (R = G = B)
+   are used only for secondary text, rules and one subtle surface step.
+   The token NAMES are kept from the earlier palette (accent, brand,
+   gold, ember, brass, danger, ok) so components keep working; every one
+   now resolves to black, white or a neutral grey. Meaning is carried by
+   shape, weight, rule style, icon and the word, never by colour:
+     danger / blocked  thick rule or solid inverted block + warning icon
+     success           solid outline + filled tick
+     pending / warning dashed rule + clock or warning icon
+     emphasis          solid inverted block (.brand-panel)
+   scripts/contrast.mjs checks every pair (WCAG 2.1 AA) and fails on any
+   hue or colour blend. Run it after changing a colour.
 ------------------------------------------------------------------- */
 :root {
-  /* Raw scales (the four brand colours sit at burgundy-700, mustard-400, brick-600, ember-600) */
-  --burgundy-50: #fbf0f1;
-  --burgundy-100: #f3dde0;
-  --burgundy-200: #e8bbc1;
-  --burgundy-300: #d88e99;
-  --burgundy-400: #c25c6e;
-  --burgundy-500: #a92f49;
-  --burgundy-600: #940f31;
-  --burgundy-700: #800020;
-  --burgundy-800: #660019;
-  --burgundy-900: #470012;
-
-  --mustard-50: #fffae6;
-  --mustard-100: #fff1c2;
-  --mustard-200: #ffe68f;
-  --mustard-300: #ffdb57;
-  --mustard-400: #ffce1b;
-  --mustard-500: #e6b400;
-  --mustard-600: #b88c00;
-  --mustard-700: #8a6800;
-  --mustard-800: #5e4700;
-  --mustard-900: #3a2b00;
-
-  --brick-50: #fcf1ee;
-  --brick-100: #fbddd0;
-  --brick-200: #f0bdb3;
-  --brick-300: #e39385;
-  --brick-400: #d0675a;
-  --brick-500: #ba4238;
-  --brick-600: #a52a2a;
-  --brick-700: #872020;
-  --brick-800: #661818;
-  --brick-900: #45100f;
-
-  --ember-50: #fff4ea;
-  --ember-100: #ffe5cc;
-  --ember-200: #ffc999;
-  --ember-300: #fba75f;
-  --ember-400: #ee8530;
-  --ember-500: #d96a0e;
-  --ember-600: #be5103;
-  --ember-700: #984002;
-  --ember-800: #753003;
-  --ember-900: #4d2003;
-
-  --sand-50: #fffcf5;
-  --sand-100: #fbf5e9;
-  --sand-200: #f3e7d3;
-  --sand-300: #e6d5bc;
-  --sand-400: #cdb69a;
-  --sand-500: #8c7260;
-  --sand-600: #654e42;
-  --sand-700: #4d382f;
-  --sand-800: #3a2620;
-  --sand-900: #2a1a14;
-
-  /* Semantic colour */
-  --bg: var(--sand-100);
-  --surface: var(--sand-50);
-  --surface-2: var(--sand-200);
-  --ink: var(--sand-900);
-  --ink-2: var(--sand-600);
-  --line: var(--sand-300);
-  --line-strong: var(--sand-500);
-  --accent: var(--burgundy-700);
-  --accent-hover: var(--burgundy-800);
-  --accent-ink: #fff8ec;
-  --accent-soft: var(--burgundy-100);
-  /* Brand panels stay burgundy in both themes (large fills, logo). */
-  --brand: var(--burgundy-700);
-  --brand-deep: var(--burgundy-900);
-  --brand-ink: #fff8ec;
-  /* Mustard: fills only, always with dark ink on top. Never text on a light background. */
-  --gold: var(--mustard-400);
-  --gold-hi: var(--mustard-200);
-  --gold-ink: var(--sand-900);
-  --gold-edge: var(--ember-600);
-  --gold-soft: var(--mustard-100);
-  /* Burnt orange: fills (ember) and its text-safe shade (brass). */
-  --ember: var(--ember-600);
-  --ember-ink: #fffcf5;
-  --brass: var(--ember-700);
-  --brass-soft: var(--mustard-100);
-  --danger: var(--brick-600);
-  --danger-soft: var(--brick-100);
-  --ok: #4a5d16;
-  --ok-soft: #e8edc9;
-  --focus: var(--burgundy-700);
-  --scrim: rgb(42 14 16 / 0.52);
-  --moon-glow: rgb(255 206 27 / 0.42);
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --ink: #000000;
+  --ink-2: #595959;
+  --line: #d4d4d4;
+  --line-strong: #767676;
+  --accent: #000000;
+  --accent-hover: #2e2e2e;
+  --accent-ink: #ffffff;
+  --accent-soft: #ebebeb;
+  --brand: #000000;
+  --brand-deep: #000000;
+  --brand-ink: #ffffff;
+  --gold: #000000;
+  --gold-hi: #000000;
+  --gold-ink: #ffffff;
+  --gold-edge: #000000;
+  --gold-soft: #f2f2f2;
+  --ember: #000000;
+  --ember-ink: #ffffff;
+  --brass: #000000;
+  --brass-soft: #f2f2f2;
+  --danger: #000000;
+  --danger-soft: #f2f2f2;
+  --ok: #000000;
+  --ok-soft: #f2f2f2;
+  --focus: #000000;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+  --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.3);
+  --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.4);
+  --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
 
   /* Type scale (fluid, mobile first) */
   --step--1: 0.8125rem;
@@ -121,17 +71,11 @@
   --space-16: 4rem;
   --gutter: 1rem;
 
-  /* Radius */
-  --r-sm: 0.5rem;
-  --r-md: 0.875rem;
-  --r-lg: 1.25rem;
-  --r-xl: 1.75rem;
-
-  /* Shadow: warm, burgundy-brown tinted, soft */
-  --shadow-1: 0 1px 2px rgb(92 34 24 / 0.07), 0 2px 8px -4px rgb(92 34 24 / 0.1);
-  --shadow-2: 0 14px 34px -14px rgb(92 34 24 / 0.28), 0 3px 8px -2px rgb(92 34 24 / 0.08);
-  --shadow-3: 0 32px 64px -22px rgb(71 0 18 / 0.4), 0 6px 16px -6px rgb(92 34 24 / 0.12);
-  --shadow-cta: 0 1px 2px rgb(71 0 18 / 0.3), 0 8px 18px -10px rgb(128 0 32 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.16);
+  /* Radius: tight, print-like corners */
+  --r-sm: 0.25rem;
+  --r-md: 0.5rem;
+  --r-lg: 0.75rem;
+  --r-xl: 1rem;
 
   /* Motion */
   --dur-fast: 140ms;
@@ -148,83 +92,187 @@
   color-scheme: light;
 }
 
-/* Dark: a deep burgundy-brown night with mustard and orange glow. */
+/* Inverted block: the opposite theme's tokens, for solid emphasis panels. */
+.brand-panel {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #1c1c1c;
+  --ink: #ffffff;
+  --ink-2: #b0b0b0;
+  --line: #3a3a3a;
+  --line-strong: #8f8f8f;
+  --accent: #ffffff;
+  --accent-hover: #d6d6d6;
+  --accent-ink: #000000;
+  --accent-soft: #2b2b2b;
+  --brand: #ffffff;
+  --brand-deep: #ffffff;
+  --brand-ink: #000000;
+  --gold: #ffffff;
+  --gold-hi: #ffffff;
+  --gold-ink: #000000;
+  --gold-edge: #ffffff;
+  --gold-soft: #1c1c1c;
+  --ember: #ffffff;
+  --ember-ink: #000000;
+  --brass: #ffffff;
+  --brass-soft: #1c1c1c;
+  --danger: #ffffff;
+  --danger-soft: #1c1c1c;
+  --ok: #ffffff;
+  --ok-soft: #1c1c1c;
+  --focus: #ffffff;
+  --scrim: rgb(0 0 0 / 0.72);
+  --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+  --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.6);
+  --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.7);
+  --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
+}
+
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1a0e0f;
-    --surface: #261517;
-    --surface-2: #352021;
-    --ink: #f8ecdd;
-    --ink-2: #d2b9a9;
-    --line: #4a3230;
-    --line-strong: #a08475;
-    --accent: var(--mustard-400);
-    --accent-hover: var(--mustard-300);
-    --accent-ink: #241408;
-    --accent-soft: #471a2a;
-    --brand: var(--burgundy-700);
-    --brand-deep: #4d0014;
-    --brand-ink: #fff4e3;
-    --gold: var(--mustard-400);
-    --gold-hi: var(--mustard-300);
-    --gold-ink: #241408;
-    --gold-edge: var(--mustard-200);
-    --gold-soft: #3d2e10;
-    --ember: #e2731f;
-    --ember-ink: #1f0f05;
-    --brass: #f5a55c;
-    --brass-soft: #44260f;
-    --danger: #ff9f92;
-    --danger-soft: #4d2014;
-    --ok: #c3d67b;
-    --ok-soft: #2d3214;
-    --focus: var(--mustard-400);
-    --scrim: rgb(10 3 4 / 0.68);
-    --moon-glow: rgb(255 206 27 / 0.2);
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 206 27 / 0.02);
-    --shadow-2: 0 12px 32px -14px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.3);
-    --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.8);
-    --shadow-cta: 0 1px 2px rgb(0 0 0 / 0.5), 0 6px 18px -8px rgb(255 206 27 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.35);
+    --bg: #000000;
+    --surface: #000000;
+    --surface-2: #1c1c1c;
+    --ink: #ffffff;
+    --ink-2: #b0b0b0;
+    --line: #3a3a3a;
+    --line-strong: #8f8f8f;
+    --accent: #ffffff;
+    --accent-hover: #d6d6d6;
+    --accent-ink: #000000;
+    --accent-soft: #2b2b2b;
+    --brand: #ffffff;
+    --brand-deep: #ffffff;
+    --brand-ink: #000000;
+    --gold: #ffffff;
+    --gold-hi: #ffffff;
+    --gold-ink: #000000;
+    --gold-edge: #ffffff;
+    --gold-soft: #1c1c1c;
+    --ember: #ffffff;
+    --ember-ink: #000000;
+    --brass: #ffffff;
+    --brass-soft: #1c1c1c;
+    --danger: #ffffff;
+    --danger-soft: #1c1c1c;
+    --ok: #ffffff;
+    --ok-soft: #1c1c1c;
+    --focus: #ffffff;
+    --scrim: rgb(0 0 0 / 0.72);
+    --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+    --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.6);
+    --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.7);
+    --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
     color-scheme: dark;
+  }
+  :root:not([data-theme="light"]) .brand-panel {
+    --bg: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f2f2f2;
+    --ink: #000000;
+    --ink-2: #595959;
+    --line: #d4d4d4;
+    --line-strong: #767676;
+    --accent: #000000;
+    --accent-hover: #2e2e2e;
+    --accent-ink: #ffffff;
+    --accent-soft: #ebebeb;
+    --brand: #000000;
+    --brand-deep: #000000;
+    --brand-ink: #ffffff;
+    --gold: #000000;
+    --gold-hi: #000000;
+    --gold-ink: #ffffff;
+    --gold-edge: #000000;
+    --gold-soft: #f2f2f2;
+    --ember: #000000;
+    --ember-ink: #ffffff;
+    --brass: #000000;
+    --brass-soft: #f2f2f2;
+    --danger: #000000;
+    --danger-soft: #f2f2f2;
+    --ok: #000000;
+    --ok-soft: #f2f2f2;
+    --focus: #000000;
+    --scrim: rgb(0 0 0 / 0.6);
+    --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+    --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.3);
+    --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.4);
+    --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #1a0e0f;
-  --surface: #261517;
-  --surface-2: #352021;
-  --ink: #f8ecdd;
-  --ink-2: #d2b9a9;
-  --line: #4a3230;
-  --line-strong: #a08475;
-  --accent: var(--mustard-400);
-  --accent-hover: var(--mustard-300);
-  --accent-ink: #241408;
-  --accent-soft: #471a2a;
-  --brand: var(--burgundy-700);
-  --brand-deep: #4d0014;
-  --brand-ink: #fff4e3;
-  --gold: var(--mustard-400);
-  --gold-hi: var(--mustard-300);
-  --gold-ink: #241408;
-  --gold-edge: var(--mustard-200);
-  --gold-soft: #3d2e10;
-  --ember: #e2731f;
-  --ember-ink: #1f0f05;
-  --brass: #f5a55c;
-  --brass-soft: #44260f;
-  --danger: #ff9f92;
-  --danger-soft: #4d2014;
-  --ok: #c3d67b;
-  --ok-soft: #2d3214;
-  --focus: var(--mustard-400);
-  --scrim: rgb(10 3 4 / 0.68);
-  --moon-glow: rgb(255 206 27 / 0.2);
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 206 27 / 0.02);
-  --shadow-2: 0 12px 32px -14px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.3);
-  --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.8);
-  --shadow-cta: 0 1px 2px rgb(0 0 0 / 0.5), 0 6px 18px -8px rgb(255 206 27 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.35);
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #1c1c1c;
+  --ink: #ffffff;
+  --ink-2: #b0b0b0;
+  --line: #3a3a3a;
+  --line-strong: #8f8f8f;
+  --accent: #ffffff;
+  --accent-hover: #d6d6d6;
+  --accent-ink: #000000;
+  --accent-soft: #2b2b2b;
+  --brand: #ffffff;
+  --brand-deep: #ffffff;
+  --brand-ink: #000000;
+  --gold: #ffffff;
+  --gold-hi: #ffffff;
+  --gold-ink: #000000;
+  --gold-edge: #ffffff;
+  --gold-soft: #1c1c1c;
+  --ember: #ffffff;
+  --ember-ink: #000000;
+  --brass: #ffffff;
+  --brass-soft: #1c1c1c;
+  --danger: #ffffff;
+  --danger-soft: #1c1c1c;
+  --ok: #ffffff;
+  --ok-soft: #1c1c1c;
+  --focus: #ffffff;
+  --scrim: rgb(0 0 0 / 0.72);
+  --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+  --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.6);
+  --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.7);
+  --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
   color-scheme: dark;
+}
+:root[data-theme="dark"] .brand-panel {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --ink: #000000;
+  --ink-2: #595959;
+  --line: #d4d4d4;
+  --line-strong: #767676;
+  --accent: #000000;
+  --accent-hover: #2e2e2e;
+  --accent-ink: #ffffff;
+  --accent-soft: #ebebeb;
+  --brand: #000000;
+  --brand-deep: #000000;
+  --brand-ink: #ffffff;
+  --gold: #000000;
+  --gold-hi: #000000;
+  --gold-ink: #ffffff;
+  --gold-edge: #000000;
+  --gold-soft: #f2f2f2;
+  --ember: #000000;
+  --ember-ink: #ffffff;
+  --brass: #000000;
+  --brass-soft: #f2f2f2;
+  --danger: #000000;
+  --danger-soft: #f2f2f2;
+  --ok: #000000;
+  --ok-soft: #f2f2f2;
+  --focus: #000000;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-1: 0 0 0 0 rgb(0 0 0 / 0);
+  --shadow-2: 0 10px 24px -14px rgb(0 0 0 / 0.3);
+  --shadow-3: 0 24px 48px -24px rgb(0 0 0 / 0.4);
+  --shadow-cta: 0 0 0 0 rgb(0 0 0 / 0);
 }
 
 @theme inline {
@@ -297,10 +345,6 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
 }
-@keyframes shimmer {
-  from { background-position: 200% 0; }
-  to { background-position: -200% 0; }
-}
 @keyframes orb-breathe {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.045); }
@@ -337,9 +381,9 @@ h1, h2, h3 {
 p { text-wrap: pretty; }
 
 :focus-visible {
-  outline: 2.5px solid var(--focus);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 4px;
 }
 
 [data-sheet-title]:focus-visible { outline: none; }
@@ -358,68 +402,45 @@ button:disabled { cursor: not-allowed; }
 
 .skeleton {
   border-radius: var(--r-sm);
-  background: linear-gradient(90deg, var(--surface-2) 25%, var(--line) 50%, var(--surface-2) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.6s linear infinite;
+  background: var(--surface-2);
+  animation: pulse-soft 1.6s ease-in-out infinite;
 }
 
-/* Harvest Moon wash: a low mustard moon glow, burnt-orange dusk and a breath of burgundy. CSS only. */
-.paper {
-  background-image:
-    radial-gradient(34rem 26rem at 86% 4%, var(--moon-glow), transparent 68%),
-    radial-gradient(70% 55% at 100% 100%, color-mix(in srgb, var(--ember) 16%, transparent), transparent 62%),
-    radial-gradient(80% 60% at -12% 0%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 58%),
-    linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--surface-2) 55%, var(--bg)));
-}
-
-/* The moon itself: a mustard disc with a soft halo. Decorative only (always aria-hidden). */
-.moon {
-  border-radius: 9999px;
-  background:
-    radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.55), transparent 42%),
-    radial-gradient(circle at 68% 72%, color-mix(in srgb, var(--ember-500) 55%, transparent), transparent 60%),
-    var(--mustard-400);
-  box-shadow: 0 0 0 0.75rem color-mix(in srgb, var(--mustard-400) 16%, transparent), 0 0 5rem 1.25rem var(--moon-glow);
-}
-
-/* Burgundy brand panel (vault hero, proof band). Burgundy in both themes, cream text, mustard focus ring. */
+/* Solid inverted block (vault hero, proof band, guide bar, confirmed payment). Flips with the theme. */
 .brand-panel {
-  --focus: var(--gold);
-  color: var(--brand-ink);
-  background:
-    radial-gradient(22rem 16rem at 100% 0%, rgb(255 206 27 / 0.2), transparent 70%),
-    radial-gradient(26rem 18rem at 0% 110%, color-mix(in srgb, var(--ember-600) 38%, transparent), transparent 70%),
-    linear-gradient(140deg, var(--burgundy-600), var(--brand) 42%, var(--brand-deep));
+  color: var(--ink);
+  background: var(--bg);
 }
-.brand-panel ::selection { background: var(--gold); color: var(--gold-ink); }
+.brand-panel ::selection { background: var(--ink); color: var(--bg); }
 
-/* Mustard fill: always dark ink on top, and a burnt-orange edge so the shape reads at 3:1 on cream. */
+/* Solid emphasis fill: black on white, white on black. */
 .gold-fill {
   color: var(--gold-ink);
-  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
-  box-shadow: inset 0 0 0 1.5px var(--gold-edge);
-}
-.gold-glow { box-shadow: inset 0 0 0 1.5px var(--gold-edge), 0 0 0 0.4rem color-mix(in srgb, var(--gold) 26%, transparent), 0 0 2.5rem 0.25rem var(--moon-glow); }
-
-/* Progress: burnt orange rising into mustard, outlined so the fill is visible against the track. */
-.meter-track { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
-.meter-fill {
-  background: linear-gradient(90deg, var(--ember), var(--gold));
-  box-shadow: inset 0 0 0 1px var(--gold-edge);
+  background: var(--gold);
 }
 
-/* Celebration rings behind the "Confirmed" tick. */
+/* Progress: one solid fill on a neutral track. */
+.meter-track { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.meter-fill { background: var(--ink); }
+
+/* One crisp ring behind the "Confirmed" tick. */
 @keyframes ring-out {
-  from { transform: scale(0.7); opacity: 0.7; }
-  to { transform: scale(1.9); opacity: 0; }
+  from { transform: scale(0.8); opacity: 1; }
+  to { transform: scale(1.7); opacity: 0; }
 }
-.confirm-ring { animation: ring-out 1.4s var(--ease-out) 0.15s 2 both; border: 2px solid var(--gold-edge); border-radius: 9999px; }
+.confirm-ring { animation: ring-out 0.9s var(--ease-out) 0.15s 1 both; border: 2px solid var(--ink); border-radius: 9999px; }
+@keyframes confirm-pop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.confirm-pop { animation: confirm-pop 320ms var(--ease-out) both; }
 
-@keyframes moon-rise {
-  from { opacity: 0; transform: translateY(18px) scale(0.94); }
-  to { opacity: 1; transform: none; }
+/* Voice orb: concentric outlined rings. */
+@keyframes orb-ring {
+  from { transform: scale(0.62); opacity: 0.9; }
+  to { transform: scale(1); opacity: 0; }
 }
-.moon-rise { animation: moon-rise 900ms var(--ease-out) 120ms both; }
+.orb-ring { animation: orb-ring 2.4s linear infinite; }
 
 .typing-caret::after {
   content: "";
@@ -445,7 +466,8 @@ dialog.sheet {
   width: 100%;
   max-height: min(92dvh, 100dvh - var(--safe-t));
   border-radius: var(--r-xl) var(--r-xl) 0 0;
-  box-shadow: var(--shadow-3), 0 -1px 0 var(--line);
+  border-top: 1px solid var(--ink);
+  box-shadow: var(--shadow-3);
   overflow: hidden;
 }
 dialog.sheet[open] {
@@ -467,7 +489,6 @@ dialog.sheet::before {
 }
 dialog.sheet::backdrop {
   background: var(--scrim);
-  backdrop-filter: blur(3px);
   animation: fade var(--dur-base) ease-out both;
 }
 @keyframes sheet-up {
@@ -484,7 +505,9 @@ dialog.sheet::backdrop {
     width: min(30rem, 100%);
     height: 100dvh;
     max-height: 100dvh;
-    border-radius: var(--r-xl) 0 0 var(--r-xl);
+    border-radius: 0;
+    border-top: 0;
+    border-left: 1px solid var(--ink);
   }
   dialog.sheet.sheet-tall { height: 100dvh; }
   dialog.sheet[open] { animation-name: sheet-side; }
@@ -494,7 +517,7 @@ dialog.sheet::backdrop {
 .pb-safe { padding-bottom: var(--safe-b); }
 .pt-safe { padding-top: var(--safe-t); }
 
-.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.scroll-thin { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -504,11 +527,4 @@ dialog.sheet::backdrop {
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* A thin burgundy -> burnt orange -> mustard rule along the top of the sticky headers. */
-.harvest-top {
-  background-image: linear-gradient(90deg, var(--brand), var(--ember) 55%, var(--mustard-400));
-  background-size: 100% 3px;
-  background-repeat: no-repeat;
 }

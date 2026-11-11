@@ -10,7 +10,7 @@ import { LanguageSwitcher } from "./language-switcher";
 export function SiteHeader({ site: english, minimal = false }: { site: SiteCopy; minimal?: boolean }) {
   const site = useLocalized(english, (t) => t.site);
   return (
-    <header className="harvest-top pt-safe sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur-md">
+    <header className="pt-safe sticky top-0 z-40 border-b border-ink bg-bg">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-accent-ink">{site.nav.skip}</a>
       <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-2 px-4 min-[400px]:gap-3">
         {/* Below 400px the wordmark gives way to the language switcher; the link keeps its accessible name. */}
@@ -33,12 +33,12 @@ export function SiteFooter({ site: english }: { site: SiteCopy }) {
   const site = useLocalized(english, (t) => t.site);
   const f = site.footer;
   return (
-    <footer className="border-t border-line bg-surface-2/50">
+    <footer className="border-t border-ink bg-surface">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-10 md:grid-cols-[1.3fr_0.7fr_0.7fr_1.5fr]">
         <div>
           <Logo name={site.name} />
           <p className="mt-3 max-w-sm text-small text-ink-2">{f.blurb}</p>
-          <p className="mt-4 inline-flex rounded-full border border-line-strong/60 px-3 py-1.5 text-small font-semibold">{f.builtWith}</p>
+          <p className="mt-4 inline-flex rounded-full border border-ink px-3 py-1.5 text-small font-semibold">{f.builtWith}</p>
           <p className="mt-3 text-small text-ink-2">{f.program}:{" "}<a href={`https://explorer.solana.com/address/${f.programId}?cluster=devnet`} target="_blank" rel="noreferrer noopener" className="break-all font-mono text-ink underline underline-offset-4">{f.programId}</a></p>
         </div>
         <nav aria-label={f.linksTitle}>

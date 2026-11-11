@@ -43,22 +43,20 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
         <InstallBanner copy={common.install} />
 
         {/* Vault hero */}
-        <section aria-labelledby="estate-title" className="relative overflow-hidden brand-panel rounded-xl p-5 shadow-raised sm:p-6">
-          <div className="pointer-events-none absolute -right-16 -top-20 size-64 rounded-full bg-gold/20" aria-hidden="true" />
-          <div className="pointer-events-none absolute -bottom-24 right-10 size-56 rounded-full bg-gold/10" aria-hidden="true" />
+        <section aria-labelledby="estate-title" className="brand-panel relative overflow-hidden rounded-xl p-5 sm:p-6">
           <div className="relative">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-small font-semibold uppercase tracking-[0.14em] opacity-80">{copy.eyebrow}</p>
                 <h1 id="estate-title" className="text-h2">{fmt(copy.title, { name: first })}</h1>
               </div>
-              <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-brand-ink px-3 text-small font-semibold text-brand">
-                <span className={clsx("size-2 rounded-full", e.status === "DeathPending" ? "animate-pulse-soft bg-[var(--ember-600)]" : "bg-brand")} aria-hidden="true" />
+              <span className="inline-flex min-h-7 items-center gap-1.5 rounded-full bg-ink px-3 text-small font-semibold text-bg">
+                <span className={clsx("size-2 rounded-full", e.status === "DeathPending" ? "animate-pulse-soft bg-bg" : "bg-bg")} aria-hidden="true" />
                 {common.status.estate[e.status]}
               </span>
             </div>
             <p className="mt-5 flex items-center gap-2 text-small font-medium opacity-90"><Landmark className="size-4" aria-hidden="true" />{copy.vault}</p>
-            <motion.p key={e.vaultBalance.toString()} initial={{ opacity: 0.4, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="font-display text-display leading-none text-gold tabular-nums">
+            <motion.p key={e.vaultBalance.toString()} initial={{ opacity: 0.4, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="font-display text-display leading-none tabular-nums">
               {formatUsdt(e.vaultBalance).replace(" USD₮", "")}<span className="ml-2 text-h3">USD₮</span>
             </motion.p>
             <p className="mt-1.5 min-h-6 text-lead opacity-95 tabular-nums">{rate ? `≈ ${formatZar(e.vaultBalance, rate)}` : ""}</p>
@@ -66,10 +64,10 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
             <p className="mt-3 text-small opacity-90">{common.status.estateHint[e.status]}</p>
             <div className="mt-4 flex flex-wrap gap-2.5">
               {role === "owner" && e.status === "Active" && (
-                <ButtonLink href="/vault" className="bg-gold! text-gold-ink! hover:opacity-90"><Plus className="size-5" aria-hidden="true" />{copy.addFunds}</ButtonLink>
+                <ButtonLink href="/vault"><Plus className="size-5" aria-hidden="true" />{copy.addFunds}</ButtonLink>
               )}
-              <Link href="/send" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand-ink/50 px-5 font-medium hover:bg-brand-ink/10"><Send className="size-5" aria-hidden="true" />{copy.send}</Link>
-              <button type="button" onClick={() => setProofOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-brand-ink/50 px-5 font-medium hover:bg-brand-ink/10">
+              <Link href="/send" className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink px-5 font-medium hover:bg-surface-2"><Send className="size-5" aria-hidden="true" />{copy.send}</Link>
+              <button type="button" onClick={() => setProofOpen(true)} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-ink px-5 font-medium hover:bg-surface-2">
                 <FileCheck2 className="size-5" aria-hidden="true" />{copy.openProof}
               </button>
             </div>
@@ -127,7 +125,7 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
           <ul className="mt-3 flex flex-col gap-1.5">
             {e.verifierNames.map((n, i) => (
               <li key={e.verifiers[i]} className="flex items-center gap-2.5 text-small font-medium">
-                <span className="grid size-8 place-items-center rounded-full bg-accent-soft font-bold text-accent" aria-hidden="true">{n.replace(/^(Adv\.|Ms\.|Mr\.|Uncle|Aunt|Pastor)\s+/i, "")[0]}</span>
+                <span className="grid size-8 place-items-center rounded-full border border-ink font-bold text-ink" aria-hidden="true">{n.replace(/^(Adv\.|Ms\.|Mr\.|Uncle|Aunt|Pastor)\s+/i, "")[0]}</span>
                 {n}
               </li>
             ))}
@@ -183,7 +181,7 @@ function RuleCard({ rule, snap, copy, rate, now }: { rule: Rule; snap: EstateSna
   }, [hit, setIntent]);
 
   return (
-    <li ref={ref} className={clsx("rounded-lg border bg-surface p-4 shadow-card transition-shadow duration-500", glow ? "border-accent ring-4 ring-accent/25" : "border-line")}>
+    <li ref={ref} className={clsx("rounded-lg border bg-surface p-4 shadow-card transition-shadow duration-500", glow ? "border-ink ring-2 ring-ink" : "border-line")}>
       {glow && <p className="sr-only" role="status">{copy.rules.highlighted}</p>}
       <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
         <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
@@ -232,7 +230,7 @@ function ForYou({ copy, snap, session, role, now, onHeartbeat, busy, walletUsdt,
   } else if (role === "buyer") block = { ...f.buyer, href: "/car" };
 
   return (
-    <Card aria-label={f.title} className={clsx(block && role === "owner" && reported && "border-danger/50 bg-danger-soft")}>
+    <Card aria-label={f.title} className={clsx(block && role === "owner" && reported && "border-2 border-l-8 border-ink")}>
       <Eyebrow>{f.title}</Eyebrow>
       {block ? (
         <div className="mt-1.5 flex flex-wrap items-end justify-between gap-3">
@@ -303,14 +301,14 @@ function Scheduled({ copy, snap, rate }: { copy: Copy; snap: EstateSnapshot; rat
           const due = live && !capped && !ended && left !== null && left <= 0;
           const state = capped ? c.capReached : ended ? c.ended : !live ? (r.startsNow || e.status === "DeathPending" ? (e.status === "DeathPending" && r.startsNow ? c.paused : c.startsAfter) : c.startsAfter) : left === null ? "" : due ? c.dueNow : fmt(c.nextIn, { time: clock(left) });
           return (
-            <li key={r.address} className={clsx("flex flex-wrap items-center gap-3 rounded-lg border bg-surface p-4 shadow-card", due ? "border-brass/60" : "border-line")}>
-              <span className={clsx("grid size-10 shrink-0 place-items-center rounded-full", r.startsNow ? "gold-fill" : "bg-surface-2 text-ink-2")}>
+            <li key={r.address} className={clsx("flex flex-wrap items-center gap-3 rounded-lg border bg-surface p-4 shadow-card", due ? "border-[1.5px] border-dashed border-ink" : "border-line")}>
+              <span className={clsx("grid size-10 shrink-0 place-items-center rounded-full", r.startsNow ? "bg-ink text-bg" : "border border-line-strong bg-surface text-ink-2")}>
                 {r.startsNow ? <Zap className="size-5" aria-hidden="true" /> : <Hourglass className="size-5" aria-hidden="true" />}
               </span>
               <div className="min-w-0 flex-1 basis-40">
                 <p className="font-semibold">{fmt(c.line, { amount: formatUsdt(r.recurringAmount, { decimals: 0 }), payee })}</p>
                 <p className="text-small text-ink-2">{fmt(c.forWho, { name: who, every: everyLabel(r.intervalSecs, c.intervals) })}{rate ? ` · ≈ ${formatZar(r.recurringAmount, rate)}` : ""}</p>
-                <p className={clsx("mt-0.5 min-h-5 text-small font-semibold tabular-nums", due ? "text-brass" : "text-ink-2")} role="timer" aria-live="off">{state}</p>
+                <p className={clsx("mt-0.5 min-h-5 text-small font-semibold tabular-nums", due ? "text-ink" : "text-ink-2")} role="timer" aria-live="off">{state}</p>
               </div>
               {live && !capped && !ended && (
                 <Button

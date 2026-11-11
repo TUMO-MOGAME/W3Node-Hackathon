@@ -197,7 +197,7 @@ function Preview({ copy, draft, onStart }: { copy: Copy; draft: WillDraft | null
         <Slot icon={<UsersRound className="size-4" aria-hidden="true" />} title={p.family} filled={parts[0]} pending={p.pending}>
           <ul className="flex flex-wrap gap-1.5">
             {draft?.beneficiaries.map((b) => (
-              <motion.li key={b.label} {...item} className="rounded-full bg-brass-soft px-2.5 py-1 font-medium text-brass">{b.label.split(" ")[0]} · {b.relationship}</motion.li>
+              <motion.li key={b.label} {...item} className="rounded-full border border-ink px-2.5 py-1 font-medium text-ink">{b.label.split(" ")[0]} · {b.relationship}</motion.li>
             ))}
           </ul>
         </Slot>
@@ -219,11 +219,11 @@ function Preview({ copy, draft, onStart }: { copy: Copy; draft: WillDraft | null
                           : fmt(p.ruleLine, { category: p.onClaim, max: usd(r.maxPerClaimUsdt), cap: usd(r.lifetimeCapUsdt) })}
                       </p>
                     </div>
-                    {r.recurring && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brass-soft px-2 py-0.5 text-[0.7rem] font-semibold text-brass"><CalendarClock className="size-3" aria-hidden="true" />{p.scheduled}</span>}
+                    {r.recurring && <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-dashed border-ink px-2 py-0.5 text-[0.7rem] font-semibold text-ink"><CalendarClock className="size-3" aria-hidden="true" />{p.scheduled}</span>}
                   </div>
                   <fieldset className="mt-2">
                     <legend className="sr-only">{fmt(p.startLabel, { category: cat.toLowerCase(), name: r.beneficiaryLabel })}</legend>
-                    <div className="flex rounded-full bg-surface p-0.5 ring-1 ring-line">
+                    <div className="flex rounded-full bg-surface p-0.5 ring-1 ring-line-strong">
                       {[true, false].map((now) => (
                         <label key={String(now)} className={clsx("flex min-h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-full px-2 text-[0.8rem] font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", r.startsNow === now ? (now ? "bg-accent text-accent-ink" : "bg-ink text-bg") : "text-ink-2")}>
                           <input type="radio" name={`start-${i}`} className="sr-only" checked={r.startsNow === now} onChange={() => onStart(i, now)} />
@@ -273,7 +273,7 @@ function Review({ copy, draft, onBack, onSign, signing }: { copy: Copy; draft: W
       <Eyebrow>{r.eyebrow}</Eyebrow>
       <h1 className="mt-1.5 text-h1">{r.title}</h1>
 
-      <Card className="mt-5 border-accent/30 bg-accent-soft/60">
+      <Card className="mt-5 border-ink bg-surface-2">
         <h2 className="text-h3">{r.summaryTitle}</h2>
         <p className="mt-2 text-lead">{draft.plainLanguageSummary}</p>
       </Card>
@@ -336,7 +336,7 @@ function Review({ copy, draft, onBack, onSign, signing }: { copy: Copy; draft: W
         </ul>
       </section>
 
-      <div className="sticky bottom-[calc(var(--tabbar-h)+var(--safe-b))] -mx-4 mt-6 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur md:bottom-0">
+      <div className="sticky bottom-[calc(var(--tabbar-h)+var(--safe-b))] -mx-4 mt-6 border-t border-ink bg-bg px-4 py-3 md:bottom-0">
         <Button block onClick={onSign} loading={signing} className="min-h-13!">
           <Lock className="size-5" aria-hidden="true" />{signing ? r.signing : r.sign}
         </Button>

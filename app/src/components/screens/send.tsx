@@ -115,7 +115,7 @@ function Send({ copy }: { copy: Copy }) {
   if (sent) {
     return (
       <div className="mx-auto max-w-md py-8 text-center">
-        <span className="mx-auto grid size-16 place-items-center rounded-full bg-ok-soft text-ok"><Check className="size-8" aria-hidden="true" /></span>
+        <span className="mx-auto grid size-16 place-items-center rounded-full bg-ink text-bg"><Check className="size-8" strokeWidth={3} aria-hidden="true" /></span>
         <h1 className="mt-4 text-h2" role="status">{copy.sentTitle}</h1>
         <div className="mt-6 flex flex-col gap-3">
           <Button onClick={() => setSent(false)}>{copy.again}</Button>
@@ -180,13 +180,13 @@ function Send({ copy }: { copy: Copy }) {
             <input id="send-address" value={address} onChange={(e) => { setAddress(e.target.value); setFieldError({}); setProblem(null); }} autoComplete="off" autoCapitalize="none" spellCheck={false} aria-invalid={!!fieldError.address} aria-describedby={fieldError.address ? "send-address-error" : "send-address-hint"} className={`${inputClass} font-mono text-small`} />
           </Field>
         )}
-        {!other && fieldError.address && <p role="alert" className="mt-2 text-small font-medium text-danger">{fieldError.address}</p>}
+        {!other && fieldError.address && <p role="alert" className="mt-2 border-l-4 border-ink pl-2 text-small font-semibold text-ink">{fieldError.address}</p>}
 
         <div className="mt-5 text-center">
           <p id="send-amount-label" className="text-small font-semibold">{copy.amount}</p>
           <p className="mt-1 font-display text-display leading-none tabular-nums" aria-live="polite" aria-label={fmt(copy.amountSr, { amount: amount || "0" })}>{amount || "0"}<span className="ml-2 text-h3 text-ink-2">USD₮</span></p>
           <p className="mt-1 min-h-6 text-ink-2 tabular-nums">{valid && rate ? fmt(copy.zar, { zar: formatZar(toBase(n), rate) }) : ""}</p>
-          {fieldError.amount && <p role="alert" className="text-small font-medium text-danger">{fieldError.amount}</p>}
+          {fieldError.amount && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{fieldError.amount}</p>}
         </div>
         <div role="group" aria-label={copy.quick} className="mt-2 flex justify-center gap-2">
           {[50, 100, 500].map((q) => (

@@ -112,7 +112,7 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
     return (
       <motion.li key={it.key} layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97 }} className="rounded-xl border border-line bg-surface p-4 shadow-card sm:p-5">
         <div className="flex items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brass-soft text-brass">{icons[it.kind]}</span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full border-[1.5px] border-dashed border-ink text-ink">{icons[it.kind]}</span>
           <div className="min-w-0 flex-1">
             <Badge tone="warn">{copy.kinds[it.kind]}</Badge>
             <h2 className="mt-1.5 text-h3">{it.title}</h2>
@@ -155,7 +155,7 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
             {handled.map((h) => (
               <li key={h.key} className="flex items-center justify-between gap-3 border-b border-line/70 py-2.5 text-small last:border-0">
                 <span className="min-w-0 truncate">{h.text}</span>
-                <Badge tone="ok"><Check className="size-3.5" aria-hidden="true" />{h.tag}</Badge>
+                <Badge tone="ok">{h.tag}</Badge>
               </li>
             ))}
           </ul>

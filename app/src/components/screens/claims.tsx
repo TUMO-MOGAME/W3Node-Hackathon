@@ -9,7 +9,7 @@ import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Claim, Role, WalletSession } from "@/lib/types";
 import { formatUsdt, formatZar, toBase } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
-import { Badge, Button, ButtonLink, Card, Consent, EmptyState, ExplorerLink, Field, inputClass, Notice, PageHeader } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, Card, Consent, EmptyState, ExplorerLink, Field, inputClass, Notice, PageHeader, TickDisc } from "@/components/ui/primitives";
 import { FilePicker } from "@/components/ui/client";
 import { ReportCard, Reviewing } from "@/components/agent/report-card";
 import { Blocked } from "@/components/shell/blocked";
@@ -110,15 +110,15 @@ export function ClaimTracker({ claim, need, copy, waitingFor }: { claim: Claim; 
             <span className={clsx("h-0.5 flex-1", i === 0 ? "bg-transparent" : steps[i].done ? "bg-accent" : "bg-line")} aria-hidden="true" />
             <motion.span
               initial={false} animate={{ scale: s.done ? [1, 1.2, 1] : 1 }} transition={{ duration: 0.4 }}
-              className={clsx("grid size-7 shrink-0 place-items-center rounded-full border-2", s.bad ? "border-danger bg-danger text-surface" : s.done ? "border-gold-edge bg-gold text-gold-ink" : i === current && !declined ? "border-brass bg-brass-soft" : "border-line-strong/50 bg-surface")}
+              className={clsx("grid size-7 shrink-0 place-items-center rounded-full border-2", s.bad ? "rounded-[3px]! border-ink bg-ink text-bg" : s.done ? "border-ink bg-ink text-bg" : i === current && !declined ? "border-dashed border-ink bg-surface" : "border-line bg-surface")}
               aria-hidden="true"
             >
-              {s.bad ? <CircleX className="size-4" /> : s.done ? <Check className="size-4" /> : i === current && !declined ? <span className="size-2 animate-pulse-soft rounded-full bg-brass" /> : null}
+              {s.bad ? <CircleX className="size-4" /> : s.done ? <Check className="size-4" /> : i === current && !declined ? <span className="size-2 animate-pulse-soft rounded-full bg-ink" /> : null}
             </motion.span>
             <span className={clsx("h-0.5 flex-1", i === steps.length - 1 ? "bg-transparent" : steps[i + 1].done ? "bg-accent" : "bg-line")} aria-hidden="true" />
           </div>
-          <span className={clsx("text-[0.7rem] font-semibold leading-tight", s.bad ? "text-danger" : s.done ? "text-ink" : "text-ink-2")}>{s.label}<span className="sr-only">{s.done ? " ✓" : ""}</span></span>
-          {s.note && <span className="text-[0.7rem] leading-tight text-brass">{s.note}</span>}
+          <span className={clsx("text-[0.7rem] font-semibold leading-tight", s.bad ? "text-ink underline decoration-2 underline-offset-2" : s.done ? "text-ink" : "text-ink-2")}>{s.label}<span className="sr-only">{s.done ? " ✓" : ""}</span></span>
+          {s.note && <span className="text-[0.7rem] leading-tight text-ink-2">{s.note}</span>}
         </li>
       ))}
     </ol>
@@ -146,8 +146,8 @@ function ClaimCard({ claim, snap, copy }: { claim: Claim; snap: EstateSnapshot; 
       </div>
       <div className="mt-4"><ClaimTracker claim={claim} need={snap.estate.claimThreshold} copy={copy} waitingFor={snap.estate.status === "Active" && rule?.startsNow ? fmt(copy.card.waitingOwner, { owner: snap.estate.ownerName.split(" ")[0] }) : undefined} /></div>
       {claim.status === "Paid" && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-md border border-ok/30 bg-ok-soft p-3">
-          <p className="flex items-center gap-2 font-semibold text-ok"><Check className="size-5" aria-hidden="true" />{fmt(copy.card.paidOn, { payee })}</p>
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-md border-[1.5px] border-ink bg-surface p-3">
+          <p className="flex items-center gap-2 font-semibold"><TickDisc className="size-5" />{fmt(copy.card.paidOn, { payee })}</p>
           {rate && <p className="mt-1 flex flex-wrap items-center gap-2 text-small">{fmt(copy.card.settlement, { zar: formatZar(claim.amount, rate), payee })}<Badge tone="warn">{copy.card.simulated}</Badge></p>}
           <p className="text-[0.75rem] text-ink-2">{copy.card.settlementNote}</p>
           {claim.txSignature && <ExplorerLink signature={claim.txSignature} label={copy.card.receipt} srLabel={copy.card.receiptSr} />}
@@ -252,7 +252,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
               {rules.map((r) => {
                 const Icon = categoryIcon[r.category];
                 return (
-                  <label key={r.address} className={clsx("flex min-h-16 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", ruleAddr === r.address ? "border-accent bg-accent-soft" : "border-line-strong/60", !usable(r) && "cursor-not-allowed opacity-60")}>
+                  <label key={r.address} className={clsx("flex min-h-16 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", ruleAddr === r.address ? "border-accent bg-accent-soft" : "border-line-strong", !usable(r) && "cursor-not-allowed opacity-60")}>
                     <input type="radio" name="claim-rule" className="sr-only" disabled={!usable(r)} checked={ruleAddr === r.address} onChange={() => { setRuleAddr(r.address); setPayee(""); }} />
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-accent"><Icon className="size-5" aria-hidden="true" /></span>
                     <span className="min-w-0 flex-1">
@@ -275,7 +275,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
             {payees.length === 0 ? <p className="text-ink-2">{w.payee.none}</p> : (
               <div className="grid gap-2">
                 {payees.map((p) => (
-                  <label key={p.wallet} className={clsx("flex min-h-14 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", payee === p.wallet ? "border-accent bg-accent-soft" : "border-line-strong/60")}>
+                  <label key={p.wallet} className={clsx("flex min-h-14 cursor-pointer items-center gap-3 rounded-md border p-3 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", payee === p.wallet ? "border-accent bg-accent-soft" : "border-line-strong")}>
                     <input type="radio" name="claim-payee" className="sr-only" checked={payee === p.wallet} onChange={() => setPayee(p.wallet)} />
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold">{p.name}</span>
@@ -312,7 +312,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
             <p className="rounded-md bg-surface-2 px-3.5 py-2.5 font-semibold">{fmt(w.summary, { amount: formatUsdt(toBase(n || 0)), payee: payeeName })}</p>
             <FilePicker id="claim-evidence" label={w.evidence.label} hint={w.evidence.hint} file={file} onFile={(f) => { setFile(f); setError(null); }} samples={w.evidence.samples} copy={common.file} />
             <Consent id="claim-consent" checked={consent} onChange={(v) => { setConsent(v); setError(null); }} copy={common.consent} />
-            {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+            {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
             {blocked && (
               <Blocked code={blocked.code} message={blocked.message}>
                 <Button small variant="secondary" onClick={() => { setBlocked(null); setStep(2); }}>{copy.result.tryAgain}</Button>
@@ -343,7 +343,7 @@ function OwnerApproval({ claim, snap, copy }: { claim: Claim; snap: EstateSnapsh
   const payee = snap.payees.find((p) => p.wallet === claim.payee)?.name ?? "";
   const who = snap.beneficiaries.find((b) => b.wallet === claim.beneficiary)?.label ?? "";
   return (
-    <motion.li layout className="rounded-xl border border-accent/40 bg-surface p-4 shadow-card">
+    <motion.li layout className="rounded-xl border border-ink bg-surface p-4">
       <p className="text-h3 font-display tabular-nums">{formatUsdt(claim.amount)}{rate ? <span className="ml-2 font-sans text-small text-ink-2">≈ {formatZar(claim.amount, rate)}</span> : null}</p>
       <p className="font-semibold">{fmt(copy.card.to, { payee })}</p>
       <p className="text-small text-ink-2">{fmt(copy.owner.forWho, { name: who, category: rule ? common.status.category[rule.category].toLowerCase() : "" })}</p>

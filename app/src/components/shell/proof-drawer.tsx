@@ -21,7 +21,7 @@ function CopyValue({ value, copyLabel, copiedLabel }: { value: string; copyLabel
       className="inline-flex min-h-11 max-w-full items-center gap-2 rounded-md text-left font-mono text-small hover:bg-surface-2"
     >
       <span className="truncate">{shortAddress(value, 8)}</span>
-      {done ? <Check className="size-4 shrink-0 text-ok" aria-hidden="true" /> : <Copy className="size-4 shrink-0 text-ink-2" aria-hidden="true" />}
+      {done ? <Check className="size-4 shrink-0 text-ink" strokeWidth={3} aria-hidden="true" /> : <Copy className="size-4 shrink-0 text-ink-2" aria-hidden="true" />}
       <span className="sr-only" role="status">{done ? copiedLabel : copyLabel}</span>
     </button>
   );
@@ -46,9 +46,9 @@ export function ProofDrawer() {
       <div className="flex flex-col gap-4">
         {isMock && <Notice tone="warn" icon={<Info className="size-5" aria-hidden="true" />}>{c.mockNote}</Notice>}
         {e && (
-          <dl className="rounded-lg border border-line bg-surface-2/50 px-3.5 py-1">
+          <dl className="rounded-lg border border-line bg-surface px-3.5 py-1">
             {facts.map((f) => (
-              <div key={f.term} className="flex flex-wrap items-center justify-between gap-x-3 border-b border-line/70 py-1 last:border-0">
+              <div key={f.term} className="flex flex-wrap items-center justify-between gap-x-3 border-b border-line py-1 last:border-0">
                 <dt className="text-small text-ink-2">{f.term}</dt>
                 <dd className="min-w-0">{f.value ? <CopyValue value={f.value} copyLabel={c.copy} copiedLabel={c.copied} /> : <span className="text-small">{c.notSigned}</span>}</dd>
               </div>
@@ -64,7 +64,7 @@ export function ProofDrawer() {
         ) : (
           <ol className="flex flex-col">
             {snap.activity.map((a, i) => (
-              <li key={`${a.txSignature}-${i}`} className="border-b border-line/70 py-2.5 last:border-0">
+              <li key={`${a.txSignature}-${i}`} className="border-b border-line py-2.5 last:border-0">
                 <div className="flex items-start justify-between gap-3">
                   <p className="min-w-0 text-small font-medium">{a.text}</p>
                   {a.amount !== undefined && <span className="shrink-0 text-small font-semibold tabular-nums">{formatUsdt(a.amount, { decimals: 0 })}</span>}

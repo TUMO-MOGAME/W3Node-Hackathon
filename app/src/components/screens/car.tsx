@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, CarFront, Check, FileText, Gavel, HandHeart, Loader2, Lock, ShieldCheck, Sparkles, Store } from "lucide-react";
+import { ArrowRight, CarFront, FileText, Gavel, HandHeart, Loader2, Lock, ShieldCheck, Sparkles, Store } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
@@ -11,7 +11,7 @@ import type { Asset, CarValuation, OfferRanking, Role, WalletSession } from "@/l
 import { formatUsdt, formatZar, fromBase, toBase } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
 import { useNow } from "@/lib/hooks/use-now";
-import { Badge, Button, ButtonLink, Card, Consent, EmptyState, Eyebrow, ExplorerLink, Field, inputClass, Money, Notice, PageHeader } from "@/components/ui/primitives";
+import { Badge, Button, ButtonLink, Card, Consent, EmptyState, Eyebrow, ExplorerLink, Field, inputClass, Money, Notice, PageHeader, TickDisc } from "@/components/ui/primitives";
 import { FilePicker, Quorum } from "@/components/ui/client";
 import { SpecialistChip } from "@/components/agent/chat-parts";
 import { Blocked } from "@/components/shell/blocked";
@@ -111,7 +111,7 @@ function Register({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
 
       {valuation && !valuing && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-4 grid gap-4">
-          <Card className="border-accent/30 bg-accent-soft/50">
+          <Card className="border-ink bg-surface-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Eyebrow>{r.valuationTitle}</Eyebrow>
               <SpecialistChip name="CarBroker" copy={assistant} />
@@ -141,14 +141,14 @@ function Register({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
               <p className="text-small text-ink-2">{r.floorHint} {r.hardshipHint}</p>
               <FilePicker id="car-doc" label={r.doc} hint={r.docHint} file={doc} onFile={setDoc} samples={r.docSamples} copy={common.file} />
               <Consent id="car-consent" checked={consent} onChange={(v) => { setConsent(v); setError(null); }} copy={common.consent} />
-              {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+              {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
               <Button type="submit" loading={busy === "register"}><Lock className="size-5" aria-hidden="true" />{r.submit}</Button>
               <p className="text-small text-ink-2">{r.titleNote}</p>
             </form>
           </Card>
         </motion.div>
       )}
-      {error && !valuation && <p role="alert" className="mt-3 text-small font-medium text-danger">{error}</p>}
+      {error && !valuation && <p role="alert" className="mt-3 border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
     </div>
   );
 }
@@ -212,7 +212,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
         <Card className="overflow-hidden p-0! sm:p-0!">
           <div className="relative aspect-[32/15] w-full bg-surface-2">
             <Image src={car.imageUrl ?? "/car-corolla.svg"} alt={fmt(copy.imageAlt, { title: car.title })} fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" unoptimized priority />
-            <span className="absolute left-3 top-3"><Badge tone={car.status === "Sold" ? "ok" : car.status === "Listed" ? "warn" : "neutral"} className="shadow-card">{common.status.asset[car.status]}</Badge></span>
+            <span className="absolute left-3 top-3"><Badge tone={car.status === "Sold" ? "ok" : car.status === "Listed" ? "warn" : "neutral"} >{common.status.asset[car.status]}</Badge></span>
           </div>
           <div className="p-4 sm:p-5">
             <Eyebrow>{copy.eyebrow}</Eyebrow>
@@ -233,8 +233,8 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
 
         {car.status === "Sold" && sale && (
           <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}>
-            <Card className="border-ok/40 bg-ok-soft">
-              <p className="flex items-center gap-2 text-h3 font-display text-ok"><Check className="size-6" aria-hidden="true" />{copy.sold.title}</p>
+            <Card className="border-2 border-ink">
+              <p className="flex items-center gap-2 text-h3 font-display"><TickDisc className="size-7" />{copy.sold.title}</p>
               <p className="mt-2 font-medium">{sale.text}</p>
               <p className="mt-2 text-small text-ink-2">{copy.sold.body}</p>
               {sale.amount !== undefined && (
@@ -242,7 +242,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
               )}
               {sale.txSignature && <ExplorerLink signature={sale.txSignature} label={copy.sold.receipt} srLabel={copy.sold.receiptSr} />}
               <h3 className="mt-3 flex items-center gap-2 font-sans text-body font-semibold tracking-normal"><FileText className="size-4" aria-hidden="true" />{copy.sold.packTitle}</h3>
-              <ul className="mt-1 list-disc space-y-1 pl-5 text-small marker:text-ok">
+              <ul className="mt-1 list-disc space-y-1 pl-5 text-small marker:text-ink">
                 {copy.sold.pack.map((p) => <li key={p}>{p}</li>)}
               </ul>
               {offers.length > 0 && <p className="mt-3 text-small text-ink-2">{copy.sold.refund}</p>}
@@ -257,7 +257,7 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
         {/* What this person can do */}
         {car.status === "Held" && (
           isVerifier && e.status === "Unlocked" ? (
-            <Card className="border-accent/40 bg-accent-soft/60">
+            <Card className="border-ink bg-surface-2">
               <h2 className="flex items-center gap-2 text-h3"><Store className="size-5 text-accent" aria-hidden="true" />{copy.list.title}</h2>
               <p className="mt-1 text-ink-2">{copy.list.body}</p>
               <Button className="mt-3" loading={busy === "list"} onClick={() => run("list", (s, est) => s.listAsset(est, car.address, 7 * 86400), copy.list.done)}>{copy.list.cta}</Button>
@@ -359,9 +359,9 @@ function Protect({ copy, car, offers, owner, rate, hardshipName }: {
   const pos = (v: number) => `${Math.max(0, Math.min(100, ((v - min) / (max - min)) * 100))}%`;
   const relaxed = !!car.hardshipBeneficiary;
   const legend = [
-    { swatch: "bg-danger", label: p.blockedZone, value: `< ${formatUsdt(relaxed ? car.hardshipFloor : car.floorPrice, { decimals: 0 })}` },
-    ...(relaxed ? [] : [{ swatch: "bg-brass", label: p.hardshipZone, value: `${formatUsdt(car.hardshipFloor, { decimals: 0 }).replace(" USD₮", "")} – ${formatUsdt(car.floorPrice, { decimals: 0 })}` }]),
-    { swatch: "bg-ok", label: p.openZone, value: `≥ ${formatUsdt(relaxed ? car.hardshipFloor : car.floorPrice, { decimals: 0 })}` },
+    { swatch: "bg-ink", label: p.blockedZone, value: `< ${formatUsdt(relaxed ? car.hardshipFloor : car.floorPrice, { decimals: 0 })}` },
+    ...(relaxed ? [] : [{ swatch: "bg-line-strong", label: p.hardshipZone, value: `${formatUsdt(car.hardshipFloor, { decimals: 0 }).replace(" USD₮", "")} – ${formatUsdt(car.floorPrice, { decimals: 0 })}` }]),
+    { swatch: "bg-surface", label: p.openZone, value: `≥ ${formatUsdt(relaxed ? car.hardshipFloor : car.floorPrice, { decimals: 0 })}` },
   ];
   return (
     <Card>
@@ -371,10 +371,10 @@ function Protect({ copy, car, offers, owner, rate, hardshipName }: {
 
       <div className="mt-12" role="img" aria-label={p.scaleLabel}>
         <div className="relative h-4 rounded-full">
-          <div className="absolute inset-0 flex overflow-hidden rounded-full">
-            <span className="h-full bg-danger/75" style={{ width: pos(h) }} />
-            <span className={clsx("h-full", relaxed ? "bg-ok/70" : "bg-brass/60")} style={{ width: `calc(${pos(f)} - ${pos(h)})` }} />
-            <span className="h-full flex-1 bg-ok/70" />
+          <div className="absolute inset-0 flex overflow-hidden rounded-full border border-ink bg-surface">
+            <span className="h-full bg-ink" style={{ width: pos(h) }} />
+            <span className={clsx("h-full", relaxed ? "bg-surface" : "bg-line-strong")} style={{ width: `calc(${pos(f)} - ${pos(h)})` }} />
+            <span className="h-full flex-1 bg-surface" />
           </div>
           {[{ v: h, label: p.hardshipFloor }, { v: f, label: p.floor }, { v: a, label: p.asking }].map((m, i) => (
             <span key={m.label} className="absolute -bottom-1.5 -top-1.5 w-0.5 bg-ink" style={{ left: pos(m.v) }}>
@@ -389,7 +389,7 @@ function Protect({ copy, car, offers, owner, rate, hardshipName }: {
             return (
               <motion.span
                 key={`${o.name}-${i}`} initial={{ y: -14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: "spring", stiffness: 300, damping: 18, delay: i * 0.06 }}
-                className={clsx("absolute bottom-full mb-1.5 grid size-7 -translate-x-1/2 place-items-center rounded-full border-2 border-surface text-[0.7rem] font-bold shadow-card", ok ? "bg-ok text-surface" : "bg-danger text-surface", o.mine && "ring-2 ring-ink")}
+                className={clsx("absolute bottom-full mb-1.5 grid size-7 -translate-x-1/2 place-items-center border-2 border-ink text-[0.7rem] font-bold", ok ? "rounded-full bg-surface text-ink" : "rounded-[3px] bg-ink text-bg", o.mine && "ring-2 ring-ink ring-offset-2 ring-offset-surface")}
                 style={{ left: pos(v) }} title={`${o.name}: ${v.toLocaleString("en-ZA")} USD₮`}
               >
                 {o.name[0] ?? "?"}
@@ -402,7 +402,7 @@ function Protect({ copy, car, offers, owner, rate, hardshipName }: {
       <ul className="mt-14 grid gap-1.5 text-small">
         {legend.map((l) => (
           <li key={l.label} className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2"><span className={clsx("size-3 shrink-0 rounded-full", l.swatch)} aria-hidden="true" />{l.label}</span>
+            <span className="flex items-center gap-2"><span className={clsx("size-3 shrink-0 rounded-full border border-ink", l.swatch)} aria-hidden="true" />{l.label}</span>
             <span className="shrink-0 font-medium tabular-nums">{l.value}</span>
           </li>
         ))}

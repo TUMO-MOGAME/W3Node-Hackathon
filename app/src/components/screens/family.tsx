@@ -135,13 +135,13 @@ function Timeline({ copy, snap, role }: { copy: Copy; snap: EstateSnapshot; role
               initial={false} animate={{ scale: st.state === "now" ? [1, 1.12, 1] : 1 }} transition={{ duration: 0.5 }}
               className={clsx(
                 "relative z-10 grid size-9 shrink-0 place-items-center rounded-full border-2 text-small font-bold",
-                st.state === "done" ? "border-accent bg-accent text-accent-ink" : st.state === "now" ? "border-brass bg-brass-soft text-brass" : "border-line-strong/60 bg-surface text-ink-2",
+                st.state === "done" ? "border-ink bg-ink text-bg" : st.state === "now" ? "border-dashed border-ink bg-surface text-ink" : "border-line bg-surface text-ink-2",
               )}
               aria-hidden="true"
             >
               {st.state === "done" ? <Check className="size-5" /> : i + 1}
             </motion.span>
-            <div className={clsx("min-w-0 flex-1 rounded-lg border p-3.5", st.state === "now" ? "border-brass/50 bg-surface shadow-raised" : "border-line bg-surface", st.state === "next" && "opacity-70")}>
+            <div className={clsx("min-w-0 flex-1 rounded-lg border p-3.5", st.state === "now" ? "border-[1.5px] border-dashed border-ink bg-surface" : "border-line bg-surface")}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h2 className="font-sans text-body font-semibold tracking-normal">{st.title}</h2>
                 <span className={clsx("text-[0.75rem] font-semibold uppercase tracking-wider", st.state === "done" ? "text-ok" : st.state === "now" ? "text-brass" : "text-ink-2")}>
@@ -171,7 +171,7 @@ function CountdownRing({ fraction }: { fraction: number }) {
   return (
     <svg viewBox="0 0 64 64" className="size-16 shrink-0 -rotate-90" aria-hidden="true">
       <circle cx="32" cy="32" r={r} fill="none" stroke="var(--line)" strokeWidth="6" />
-      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--brass)" strokeWidth="6" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, Math.max(0, fraction)))} style={{ transition: "stroke-dashoffset 1s linear" }} />
+      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--ink)" strokeWidth="6" strokeLinecap="butt" strokeDasharray={c} strokeDashoffset={c * (1 - Math.min(1, Math.max(0, fraction)))} style={{ transition: "stroke-dashoffset 1s linear" }} />
     </svg>
   );
 }
@@ -211,7 +211,7 @@ function ReportForm({ copy }: { copy: Copy }) {
       <form onSubmit={submit} noValidate className="mt-4 flex flex-col gap-4">
         <FilePicker id="death-cert" label={r.file} hint={r.fileHint} file={file} onFile={(f) => { setFile(f); setError(null); }} samples={r.samples} copy={common.file} />
         <Consent id="death-consent" checked={consent} onChange={(v) => { setConsent(v); setError(null); }} copy={common.consent} />
-        {error && <p role="alert" className="text-small font-medium text-danger">{error}</p>}
+        {error && <p role="alert" className="border-l-4 border-ink pl-2 text-small font-semibold text-ink">{error}</p>}
         <Button type="submit">{r.submit}</Button>
       </form>
     </Card>
