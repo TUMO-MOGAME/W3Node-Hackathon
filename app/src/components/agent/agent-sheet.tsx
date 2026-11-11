@@ -118,20 +118,23 @@ function Orb({ voice, label }: { voice: HeirloomVoice; label: string }) {
   const level = Math.max(out, inp);
   const userTalking = inp > out && inp > 0.08;
   const spring = { type: "spring" as const, stiffness: 260, damping: 18, mass: 0.6 };
-  const tint = userTalking ? "var(--brass)" : "var(--accent)";
+  // The orb is the harvest moon: mustard with a burnt-orange limb. It turns burgundy while you speak.
+  const core = userTalking
+    ? "radial-gradient(circle at 32% 28%, var(--burgundy-300) 0%, var(--burgundy-600) 46%, var(--brand-deep) 100%)"
+    : "radial-gradient(circle at 32% 28%, var(--mustard-50) 0%, var(--mustard-400) 46%, var(--ember-600) 100%)";
   return (
     <div className="relative mx-auto grid size-56 place-items-center" role="img" aria-label={label}>
       <motion.span
         aria-hidden="true"
         className="absolute inset-0 rounded-full"
-        style={{ background: `radial-gradient(circle, color-mix(in srgb, ${tint} 32%, transparent) 0%, transparent 68%)` }}
+        style={{ background: `radial-gradient(circle, color-mix(in srgb, var(--gold) 55%, transparent) 0%, color-mix(in srgb, var(--ember) 14%, transparent) 45%, transparent 68%)` }}
         animate={reduced ? { opacity: level > 0.08 ? 1 : 0.5 } : { scale: 0.8 + level * 0.45, opacity: 0.55 + level * 0.45 }}
         transition={spring}
       />
       <motion.span
         aria-hidden="true"
         className="absolute inset-7 rounded-full border-2"
-        style={{ borderColor: `color-mix(in srgb, ${tint} 45%, transparent)` }}
+        style={{ borderColor: `color-mix(in srgb, var(--gold-edge) 55%, transparent)` }}
         animate={reduced ? { opacity: level > 0.08 ? 1 : 0.4 } : { scale: 1 + level * 0.2 }}
         transition={spring}
       />
@@ -139,7 +142,8 @@ function Orb({ voice, label }: { voice: HeirloomVoice; label: string }) {
         aria-hidden="true"
         className={clsx("relative size-32 rounded-full shadow-float", (waiting || (connected && level < 0.05)) && !reduced && "animate-[orb-breathe_2.6s_ease-in-out_infinite]", waiting && "opacity-70")}
         style={{
-          background: `radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--surface) 55%, ${tint}) 0%, ${tint} 46%, color-mix(in srgb, ${tint} 62%, black) 100%)`,
+          background: core,
+          boxShadow: "0 0 3.5rem 0.5rem var(--moon-glow), var(--shadow-3)",
         }}
         animate={reduced ? {} : { scale: 1 + (voice.isSpeaking ? out : inp) * 0.14 }}
         transition={spring}

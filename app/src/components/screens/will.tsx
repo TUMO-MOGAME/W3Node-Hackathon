@@ -365,7 +365,7 @@ function Locked({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
             <li key={rule.address} className="flex gap-3 rounded-md border border-line bg-surface p-3.5 shadow-card">
               <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent-soft text-accent"><Icon className="size-5" aria-hidden="true" /></span>
               <div className="min-w-0">
-                <Badge tone={rule.startsNow ? "accent" : "neutral"}>{rule.startsNow ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}{rule.startsNow ? copy.preview.now : copy.preview.later}</Badge>
+                <Badge tone={rule.startsNow ? "gold" : "neutral"}>{rule.startsNow ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}{rule.startsNow ? copy.preview.now : copy.preview.later}</Badge>
                 <p className="mt-1.5">{recurring
                   ? fmt(copy.review.recurringRule, { ...base, amount: formatUsdt(rule.recurringAmount, { decimals: 0 }), payee: snap.payees.find((x) => x.wallet === rule.fixedPayee)?.name ?? "", every: copy.preview.every[rule.intervalSecs <= 60 ? "minute" : "month"] })
                   : fmt(copy.review.rule, base)}</p>

@@ -4,7 +4,7 @@ import { ButtonLink, Logo } from "@/components/ui/primitives";
 
 export function SiteHeader({ site, minimal = false }: { site: SiteCopy; minimal?: boolean }) {
   return (
-    <header className="pt-safe sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur-md">
+    <header className="harvest-top pt-safe sticky top-0 z-40 border-b border-line/70 bg-bg/90 backdrop-blur-md">
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-accent-ink">{site.nav.skip}</a>
       <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-3 px-4">
         <Link href="/" aria-label={site.nav.home} className="rounded-full"><Logo name={site.name} /></Link>

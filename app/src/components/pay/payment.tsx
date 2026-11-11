@@ -197,19 +197,19 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
             <ol aria-label={copy.stepsLabel} className="flex gap-1.5">
               {steps.map((st, i) => (
                 <li key={st} aria-current={i === at ? "step" : undefined} className="flex flex-1 flex-col gap-1">
-                  <span className={clsx("h-1.5 rounded-full transition-colors duration-300", i < at || phase === "confirmed" ? "bg-accent" : i === at ? (phase === "failed" ? "bg-danger" : "bg-brass") : "bg-line")} />
+                  <span className={clsx("h-1.5 rounded-full transition-colors duration-300", phase === "confirmed" ? "meter-fill" : i < at ? "bg-accent" : i === at ? (phase === "failed" ? "bg-danger" : "bg-ember") : "bg-line")} />
                   <span className={clsx("text-[0.7rem] font-semibold", i === at ? "text-ink" : "text-ink-2")}>{st === "review" ? copy.steps.review : st === "signing" ? copy.steps.sign : st === "pending" ? copy.steps.pending : copy.steps.confirmed}</span>
                 </li>
               ))}
             </ol>
 
             {/* Amount and recipient stay visible through every phase */}
-            <div className="rounded-lg border border-line bg-surface-2/50 p-4 text-center">
+            <div className={clsx("rounded-lg border p-4 text-center transition-colors duration-500", phase === "confirmed" ? "border-gold-edge/50 bg-gold-soft" : "border-line bg-surface-2/50")}>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 <Badge tone="accent">{c.kinds[review.kind]}</Badge>
                 {review.simulated && <Badge tone="warn">{c.simulated}</Badge>}
                 {phase === "pending" && <Badge tone="warn"><Loader2 className="size-3.5 animate-spin" aria-hidden="true" />{copy.pending.badge}</Badge>}
-                {phase === "confirmed" && <Badge tone="ok"><Check className="size-3.5" aria-hidden="true" />{copy.confirmed.badge}</Badge>}
+                {phase === "confirmed" && <Badge tone="gold"><Check className="size-3.5" aria-hidden="true" />{copy.confirmed.badge}</Badge>}
               </div>
               <p className="mt-2 font-display text-h1 tabular-nums">{formatUsdt(review.amount)}</p>
               <p className="min-h-6 text-ink-2 tabular-nums">{rate ? `≈ ${formatZar(review.amount, rate)}` : ""}</p>
@@ -270,7 +270,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
 
             {phase === "confirmed" && (
               <div role="status" aria-live="polite" className="flex flex-col items-center gap-3 py-2 text-center">
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 15 }} className="grid size-16 place-items-center rounded-full bg-ok text-surface"><Check className="size-9" aria-hidden="true" /></motion.span>
+                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 280, damping: 15 }} className="gold-fill gold-glow relative my-2 grid size-20 place-items-center rounded-full"><span className="confirm-ring absolute inset-0" aria-hidden="true" /><Check className="size-10" strokeWidth={2.75} aria-hidden="true" /></motion.span>
                 <p className="text-small text-ink-2">{copy.confirmed.body}</p>
                 {signature && <ExplorerLink signature={signature} label={copy.confirmed.receipt} srLabel={copy.confirmed.receiptSr} />}
                 <Button block onClick={close}>{copy.confirmed.done}</Button>

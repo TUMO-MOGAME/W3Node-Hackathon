@@ -102,7 +102,7 @@ export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => 
                     <button
                       key={k} type="button"
                       onClick={async () => { if (await demoShortcut(k)) { notify("info", common.demo.shortcutDone); onClose(); } }}
-                      className="min-h-11 rounded-full bg-brass px-3.5 text-small font-semibold text-surface"
+                      className="min-h-11 rounded-full bg-ember px-3.5 text-small font-semibold text-ember-ink"
                     >
                       {common.demo.shortcuts[k]}
                     </button>

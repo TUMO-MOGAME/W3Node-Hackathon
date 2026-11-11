@@ -60,7 +60,7 @@ export function InstallBanner({ copy }: { copy: { title: string; body: string; c
     try { window.localStorage.setItem("heirloom.install.dismissed", "1"); } catch { /* ignore */ }
   };
   return (
-    <aside aria-label={copy.title} className="flex items-start gap-3 rounded-lg border border-accent/25 bg-accent-soft p-3.5">
+    <aside aria-label={copy.title} className="flex items-start gap-3 rounded-lg border border-gold-edge/30 bg-gold-soft p-3.5 shadow-card">
       <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-ink"><Download className="size-5" aria-hidden="true" /></span>
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{copy.title}</p>

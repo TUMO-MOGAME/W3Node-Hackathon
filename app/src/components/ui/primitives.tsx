@@ -9,10 +9,10 @@ import { explorerTx, formatUsdt, formatZar, shortAddress } from "@/lib/format";
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 48 48" className={className} aria-hidden="true" focusable="false">
-      <rect width="48" height="48" rx="13" fill="var(--accent)" />
-      <circle cx="24" cy="11.5" r="3.6" fill="none" stroke="var(--accent-ink)" strokeWidth="2.4" />
-      <circle cx="24" cy="28" r="11.5" fill="none" stroke="var(--accent-ink)" strokeWidth="2.6" />
-      <path d="M24 22.2a3.4 3.4 0 0 1 1.7 6.3l1 5h-5.4l1-5a3.4 3.4 0 0 1 1.7-6.3Z" fill="var(--accent-ink)" />
+      <rect width="48" height="48" rx="13" fill="var(--brand)" />
+      <circle cx="24" cy="11.5" r="3.6" fill="none" stroke="var(--brand-ink)" strokeWidth="2.4" />
+      <circle cx="24" cy="28" r="11.5" fill="none" stroke="var(--brand-ink)" strokeWidth="2.6" />
+      <path d="M24 22.2a3.4 3.4 0 0 1 1.7 6.3l1 5h-5.4l1-5a3.4 3.4 0 0 1 1.7-6.3Z" fill="var(--mustard-400)" />
     </svg>
   );
 }
@@ -29,10 +29,10 @@ export function Logo({ name, className }: { name: string; className?: string }) 
 /* ---------- Buttons ---------- */
 
 const btnBase =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-body font-medium leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150 active:scale-[0.98] disabled:opacity-55 disabled:active:scale-100 select-none text-center";
+  "inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-body font-medium leading-tight transition-[background-color,border-color,color,transform,box-shadow] duration-150 active:translate-y-0 active:scale-[0.98] disabled:opacity-55 disabled:shadow-none disabled:hover:translate-y-0 disabled:active:scale-100 select-none text-center";
 const btnVariants = {
-  primary: "bg-accent text-accent-ink shadow-card hover:bg-accent-hover",
-  secondary: "border border-line-strong bg-surface text-ink hover:bg-surface-2",
+  primary: "bg-accent text-accent-ink shadow-btn hover:-translate-y-px hover:bg-accent-hover",
+  secondary: "border border-line-strong bg-surface text-ink shadow-card hover:border-accent hover:bg-surface-2",
   ghost: "text-ink hover:bg-surface-2",
   danger: "border border-danger text-danger bg-surface hover:bg-danger-soft",
   quiet: "bg-surface-2 text-ink hover:bg-line",
@@ -70,7 +70,7 @@ export function ButtonLink({
 
 export function Card({ className, children, ...rest }: ComponentProps<"div">) {
   return (
-    <div {...rest} className={clsx("rounded-lg border border-line bg-surface p-4 shadow-card sm:p-5", className)}>
+    <div {...rest} className={clsx("rounded-lg border border-line/80 bg-surface p-4 shadow-card sm:p-5", className)}>
       {children}
     </div>
   );
@@ -86,6 +86,8 @@ const badgeTones = {
   warn: "bg-brass-soft text-brass",
   danger: "bg-danger-soft text-danger",
   accent: "bg-accent-soft text-accent",
+  /** Mustard highlight ("Now", "Confirmed"): always dark ink on mustard. */
+  gold: "gold-fill",
 } as const;
 export type Tone = keyof typeof badgeTones;
 
@@ -148,10 +150,10 @@ export function Meter({ value, label, tone = "accent" }: { value: number; label:
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(pct)}
-      className="h-2.5 w-full overflow-hidden rounded-full bg-surface-2"
+      className="meter-track h-3 w-full overflow-hidden rounded-full"
     >
       <div
-        className={clsx("h-full rounded-full transition-[width] duration-700 ease-soft", tone === "accent" ? "bg-accent" : tone === "brass" ? "bg-brass" : "bg-danger")}
+        className={clsx("h-full rounded-full transition-[width] duration-700 ease-soft", tone === "accent" ? "meter-fill" : tone === "brass" ? "bg-ember" : "bg-danger")}
         style={{ width: `${pct}%` }}
       />
     </div>
@@ -161,7 +163,7 @@ export function Meter({ value, label, tone = "accent" }: { value: number; label:
 /* ---------- Forms ---------- */
 
 export const inputClass =
-  "block min-h-12 w-full rounded-md border border-line-strong bg-surface px-3.5 text-body text-ink placeholder:text-ink-2/70 transition-colors focus:border-accent";
+  "block min-h-12 w-full rounded-md border border-line-strong bg-surface px-3.5 text-body text-ink placeholder:text-ink-2/70 shadow-[inset_0_1px_2px_rgb(92_34_24/0.06)] transition-colors hover:border-ink-2 focus:border-accent";
 
 export function Field({ label, htmlFor, hint, error, children, className }: { label: string; htmlFor: string; hint?: ReactNode; error?: string | null; children: ReactNode; className?: string }) {
   return (
@@ -214,8 +216,8 @@ export function LoadingCards({ label }: { label: string }) {
 
 export function EmptyState({ icon, title, body, action }: { icon?: ReactNode; title: string; body?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center rounded-lg border border-dashed border-line-strong/60 bg-surface/60 px-5 py-10 text-center">
-      {icon && <div className="mb-3 grid size-12 place-items-center rounded-full bg-accent-soft text-accent">{icon}</div>}
+    <div className="flex flex-col items-center rounded-lg border border-dashed border-line-strong/60 bg-[radial-gradient(60%_70%_at_50%_0%,var(--gold-soft),transparent_70%)] bg-surface/60 px-5 py-10 text-center">
+      {icon && <div className="gold-fill gold-glow mb-4 grid size-14 place-items-center rounded-full">{icon}</div>}
       <h2 className="text-h3">{title}</h2>
       {body && <p className="mt-2 max-w-md text-ink-2">{body}</p>}
       {action && <div className="mt-5 flex flex-wrap justify-center gap-3">{action}</div>}
@@ -228,8 +230,9 @@ export function Notice({ tone = "accent", icon, title, children, className }: { 
     neutral: "border-line bg-surface-2/70",
     ok: "border-ok/30 bg-ok-soft",
     warn: "border-brass/35 bg-brass-soft",
-    danger: "border-danger/40 bg-danger-soft",
-    accent: "border-accent/25 bg-accent-soft",
+    danger: "border-danger/50 border-l-4 border-l-danger bg-danger-soft",
+    accent: "border-line border-l-4 border-l-accent bg-surface-2/60",
+    gold: "border-gold-edge/40 bg-gold-soft",
   } as const;
   return (
     <div className={clsx("flex gap-3 rounded-md border p-3.5 text-ink", tones[tone], className)}>

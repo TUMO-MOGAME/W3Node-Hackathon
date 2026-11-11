@@ -58,7 +58,7 @@ export function DemoGuide() {
   const wrongPerson = step.actor && step.actor.address !== session?.address;
   const wrongPage = pathname !== step.href;
   const first = step.actor?.label.replace(/\s*\(.*\)$/, "").replace(/^(Adv\.|Ms\.|Mr\.|Uncle)\s+/i, (m) => m) ?? "";
-  const pill = "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-brass px-3.5 text-small font-semibold text-surface";
+  const pill = "inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-ember px-3.5 text-small font-semibold text-ember-ink shadow-card";
 
   return (
     <div className="border-t border-brass/25 bg-brass-soft/70">

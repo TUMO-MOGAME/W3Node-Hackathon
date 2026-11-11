@@ -4,7 +4,7 @@
  * - Pages are network-first so estate data is never stale; offline falls back to the offline page.
  * - NEVER caches API routes, RPC calls, cross-origin requests, or anything that is not a GET.
  */
-const VERSION = "heirloom-v1";
+const VERSION = "heirloom-v2";
 const SHELL = ["/offline", "/icons/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {

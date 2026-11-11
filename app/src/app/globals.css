@@ -1,31 +1,105 @@
 @import "tailwindcss";
 
 /* ------------------------------------------------------------------
-   Heirloom design tokens.
-   Warm parchment neutrals, one deep green accent, brass for emphasis.
+   Heirloom design tokens: the "Harvest Moon" palette.
+   Deep burgundy (brand), mustard (highlight and celebration),
+   brick (secondary emphasis and the blocked / danger family),
+   burnt orange (warm accents), on cream, ivory and sand neutrals.
    Light is the default; dark follows the system or [data-theme].
+   Every text / background pair below is checked by
+   scripts/contrast.mjs (WCAG 2.1 AA). Run it after changing a colour.
 ------------------------------------------------------------------- */
 :root {
-  /* Colour */
-  --bg: #f6f1e7;
-  --surface: #fffdf8;
-  --surface-2: #efe7d8;
-  --ink: #1f1a14;
-  --ink-2: #594f43;
-  --line: #ddd2bf;
-  --line-strong: #8f8371;
-  --accent: #1e4d40;
-  --accent-hover: #163a30;
-  --accent-ink: #fffdf8;
-  --accent-soft: #dce9e2;
-  --brass: #80520f;
-  --brass-soft: #f3e3c3;
-  --danger: #962a2a;
-  --danger-soft: #f6ddd8;
-  --ok: #1b6341;
-  --ok-soft: #d9ecdf;
-  --focus: #1e4d40;
-  --scrim: rgb(31 26 20 / 0.5);
+  /* Raw scales (the four brand colours sit at burgundy-700, mustard-400, brick-600, ember-600) */
+  --burgundy-50: #fbf0f1;
+  --burgundy-100: #f3dde0;
+  --burgundy-200: #e8bbc1;
+  --burgundy-300: #d88e99;
+  --burgundy-400: #c25c6e;
+  --burgundy-500: #a92f49;
+  --burgundy-600: #940f31;
+  --burgundy-700: #800020;
+  --burgundy-800: #660019;
+  --burgundy-900: #470012;
+
+  --mustard-50: #fffae6;
+  --mustard-100: #fff1c2;
+  --mustard-200: #ffe68f;
+  --mustard-300: #ffdb57;
+  --mustard-400: #ffce1b;
+  --mustard-500: #e6b400;
+  --mustard-600: #b88c00;
+  --mustard-700: #8a6800;
+  --mustard-800: #5e4700;
+  --mustard-900: #3a2b00;
+
+  --brick-50: #fcf1ee;
+  --brick-100: #fbddd0;
+  --brick-200: #f0bdb3;
+  --brick-300: #e39385;
+  --brick-400: #d0675a;
+  --brick-500: #ba4238;
+  --brick-600: #a52a2a;
+  --brick-700: #872020;
+  --brick-800: #661818;
+  --brick-900: #45100f;
+
+  --ember-50: #fff4ea;
+  --ember-100: #ffe5cc;
+  --ember-200: #ffc999;
+  --ember-300: #fba75f;
+  --ember-400: #ee8530;
+  --ember-500: #d96a0e;
+  --ember-600: #be5103;
+  --ember-700: #984002;
+  --ember-800: #753003;
+  --ember-900: #4d2003;
+
+  --sand-50: #fffcf5;
+  --sand-100: #fbf5e9;
+  --sand-200: #f3e7d3;
+  --sand-300: #e6d5bc;
+  --sand-400: #cdb69a;
+  --sand-500: #8c7260;
+  --sand-600: #654e42;
+  --sand-700: #4d382f;
+  --sand-800: #3a2620;
+  --sand-900: #2a1a14;
+
+  /* Semantic colour */
+  --bg: var(--sand-100);
+  --surface: var(--sand-50);
+  --surface-2: var(--sand-200);
+  --ink: var(--sand-900);
+  --ink-2: var(--sand-600);
+  --line: var(--sand-300);
+  --line-strong: var(--sand-500);
+  --accent: var(--burgundy-700);
+  --accent-hover: var(--burgundy-800);
+  --accent-ink: #fff8ec;
+  --accent-soft: var(--burgundy-100);
+  /* Brand panels stay burgundy in both themes (large fills, logo). */
+  --brand: var(--burgundy-700);
+  --brand-deep: var(--burgundy-900);
+  --brand-ink: #fff8ec;
+  /* Mustard: fills only, always with dark ink on top. Never text on a light background. */
+  --gold: var(--mustard-400);
+  --gold-hi: var(--mustard-200);
+  --gold-ink: var(--sand-900);
+  --gold-edge: var(--ember-600);
+  --gold-soft: var(--mustard-100);
+  /* Burnt orange: fills (ember) and its text-safe shade (brass). */
+  --ember: var(--ember-600);
+  --ember-ink: #fffcf5;
+  --brass: var(--ember-700);
+  --brass-soft: var(--mustard-100);
+  --danger: var(--brick-600);
+  --danger-soft: var(--brick-100);
+  --ok: #4a5d16;
+  --ok-soft: #e8edc9;
+  --focus: var(--burgundy-700);
+  --scrim: rgb(42 14 16 / 0.52);
+  --moon-glow: rgb(255 206 27 / 0.42);
 
   /* Type scale (fluid, mobile first) */
   --step--1: 0.8125rem;
@@ -53,10 +127,11 @@
   --r-lg: 1.25rem;
   --r-xl: 1.75rem;
 
-  /* Shadow */
-  --shadow-1: 0 1px 2px rgb(60 42 20 / 0.06), 0 1px 1px rgb(60 42 20 / 0.04);
-  --shadow-2: 0 10px 30px -12px rgb(60 42 20 / 0.22), 0 2px 6px rgb(60 42 20 / 0.06);
-  --shadow-3: 0 30px 60px -20px rgb(40 28 12 / 0.35);
+  /* Shadow: warm, burgundy-brown tinted, soft */
+  --shadow-1: 0 1px 2px rgb(92 34 24 / 0.07), 0 2px 8px -4px rgb(92 34 24 / 0.1);
+  --shadow-2: 0 14px 34px -14px rgb(92 34 24 / 0.28), 0 3px 8px -2px rgb(92 34 24 / 0.08);
+  --shadow-3: 0 32px 64px -22px rgb(71 0 18 / 0.4), 0 6px 16px -6px rgb(92 34 24 / 0.12);
+  --shadow-cta: 0 1px 2px rgb(71 0 18 / 0.3), 0 8px 18px -10px rgb(128 0 32 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.16);
 
   /* Motion */
   --dur-fast: 140ms;
@@ -73,57 +148,82 @@
   color-scheme: light;
 }
 
+/* Dark: a deep burgundy-brown night with mustard and orange glow. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14110d;
-    --surface: #1d1914;
-    --surface-2: #29231b;
-    --ink: #f3ecdf;
-    --ink-2: #bdb19f;
-    --line: #3a3329;
-    --line-strong: #8a7e6c;
-    --accent: #8fd0b4;
-    --accent-hover: #a7dcc4;
-    --accent-ink: #0f1f19;
-    --accent-soft: #1d382f;
-    --brass: #e0b46a;
-    --brass-soft: #3a2e18;
-    --danger: #f0a29a;
-    --danger-soft: #40201d;
-    --ok: #8fd0b4;
-    --ok-soft: #1d382f;
-    --focus: #8fd0b4;
-    --scrim: rgb(0 0 0 / 0.62);
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-2: 0 10px 30px -12px rgb(0 0 0 / 0.6);
-    --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.7);
+    --bg: #1a0e0f;
+    --surface: #261517;
+    --surface-2: #352021;
+    --ink: #f8ecdd;
+    --ink-2: #d2b9a9;
+    --line: #4a3230;
+    --line-strong: #a08475;
+    --accent: var(--mustard-400);
+    --accent-hover: var(--mustard-300);
+    --accent-ink: #241408;
+    --accent-soft: #471a2a;
+    --brand: var(--burgundy-700);
+    --brand-deep: #4d0014;
+    --brand-ink: #fff4e3;
+    --gold: var(--mustard-400);
+    --gold-hi: var(--mustard-300);
+    --gold-ink: #241408;
+    --gold-edge: var(--mustard-200);
+    --gold-soft: #3d2e10;
+    --ember: #e2731f;
+    --ember-ink: #1f0f05;
+    --brass: #f5a55c;
+    --brass-soft: #44260f;
+    --danger: #ff9f92;
+    --danger-soft: #4d2014;
+    --ok: #c3d67b;
+    --ok-soft: #2d3214;
+    --focus: var(--mustard-400);
+    --scrim: rgb(10 3 4 / 0.68);
+    --moon-glow: rgb(255 206 27 / 0.2);
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 206 27 / 0.02);
+    --shadow-2: 0 12px 32px -14px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.3);
+    --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.8);
+    --shadow-cta: 0 1px 2px rgb(0 0 0 / 0.5), 0 6px 18px -8px rgb(255 206 27 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.35);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #14110d;
-  --surface: #1d1914;
-  --surface-2: #29231b;
-  --ink: #f3ecdf;
-  --ink-2: #bdb19f;
-  --line: #3a3329;
-  --line-strong: #8a7e6c;
-  --accent: #8fd0b4;
-  --accent-hover: #a7dcc4;
-  --accent-ink: #0f1f19;
-  --accent-soft: #1d382f;
-  --brass: #e0b46a;
-  --brass-soft: #3a2e18;
-  --danger: #f0a29a;
-  --danger-soft: #40201d;
-  --ok: #8fd0b4;
-  --ok-soft: #1d382f;
-  --focus: #8fd0b4;
-  --scrim: rgb(0 0 0 / 0.62);
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-2: 0 10px 30px -12px rgb(0 0 0 / 0.6);
-  --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.7);
+  --bg: #1a0e0f;
+  --surface: #261517;
+  --surface-2: #352021;
+  --ink: #f8ecdd;
+  --ink-2: #d2b9a9;
+  --line: #4a3230;
+  --line-strong: #a08475;
+  --accent: var(--mustard-400);
+  --accent-hover: var(--mustard-300);
+  --accent-ink: #241408;
+  --accent-soft: #471a2a;
+  --brand: var(--burgundy-700);
+  --brand-deep: #4d0014;
+  --brand-ink: #fff4e3;
+  --gold: var(--mustard-400);
+  --gold-hi: var(--mustard-300);
+  --gold-ink: #241408;
+  --gold-edge: var(--mustard-200);
+  --gold-soft: #3d2e10;
+  --ember: #e2731f;
+  --ember-ink: #1f0f05;
+  --brass: #f5a55c;
+  --brass-soft: #44260f;
+  --danger: #ff9f92;
+  --danger-soft: #4d2014;
+  --ok: #c3d67b;
+  --ok-soft: #2d3214;
+  --focus: var(--mustard-400);
+  --scrim: rgb(10 3 4 / 0.68);
+  --moon-glow: rgb(255 206 27 / 0.2);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(255 206 27 / 0.02);
+  --shadow-2: 0 12px 32px -14px rgb(0 0 0 / 0.7), 0 2px 6px rgb(0 0 0 / 0.3);
+  --shadow-3: 0 30px 60px -20px rgb(0 0 0 / 0.8);
+  --shadow-cta: 0 1px 2px rgb(0 0 0 / 0.5), 0 6px 18px -8px rgb(255 206 27 / 0.45), inset 0 1px 0 rgb(255 255 255 / 0.35);
   color-scheme: dark;
 }
 
@@ -139,6 +239,15 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
+  --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-ink: var(--brand-ink);
+  --color-gold: var(--gold);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-edge: var(--gold-edge);
+  --color-gold-soft: var(--gold-soft);
+  --color-ember: var(--ember);
+  --color-ember-ink: var(--ember-ink);
   --color-brass: var(--brass);
   --color-brass-soft: var(--brass-soft);
   --color-danger: var(--danger);
@@ -167,6 +276,7 @@
   --shadow-card: var(--shadow-1);
   --shadow-raised: var(--shadow-2);
   --shadow-float: var(--shadow-3);
+  --shadow-btn: var(--shadow-cta);
 
   --ease-soft: var(--ease-out);
 
@@ -253,10 +363,63 @@ button:disabled { cursor: not-allowed; }
   animation: shimmer 1.6s linear infinite;
 }
 
+/* Harvest Moon wash: a low mustard moon glow, burnt-orange dusk and a breath of burgundy. CSS only. */
 .paper {
-  background-image: radial-gradient(120% 80% at 80% -10%, color-mix(in srgb, var(--brass-soft) 70%, transparent), transparent 60%),
-    radial-gradient(90% 60% at -10% 10%, color-mix(in srgb, var(--accent-soft) 80%, transparent), transparent 55%);
+  background-image:
+    radial-gradient(34rem 26rem at 86% 4%, var(--moon-glow), transparent 68%),
+    radial-gradient(70% 55% at 100% 100%, color-mix(in srgb, var(--ember) 16%, transparent), transparent 62%),
+    radial-gradient(80% 60% at -12% 0%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 58%),
+    linear-gradient(180deg, var(--bg), color-mix(in srgb, var(--surface-2) 55%, var(--bg)));
 }
+
+/* The moon itself: a mustard disc with a soft halo. Decorative only (always aria-hidden). */
+.moon {
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 34% 30%, rgb(255 255 255 / 0.55), transparent 42%),
+    radial-gradient(circle at 68% 72%, color-mix(in srgb, var(--ember-500) 55%, transparent), transparent 60%),
+    var(--mustard-400);
+  box-shadow: 0 0 0 0.75rem color-mix(in srgb, var(--mustard-400) 16%, transparent), 0 0 5rem 1.25rem var(--moon-glow);
+}
+
+/* Burgundy brand panel (vault hero, proof band). Burgundy in both themes, cream text, mustard focus ring. */
+.brand-panel {
+  --focus: var(--gold);
+  color: var(--brand-ink);
+  background:
+    radial-gradient(22rem 16rem at 100% 0%, rgb(255 206 27 / 0.2), transparent 70%),
+    radial-gradient(26rem 18rem at 0% 110%, color-mix(in srgb, var(--ember-600) 38%, transparent), transparent 70%),
+    linear-gradient(140deg, var(--burgundy-600), var(--brand) 42%, var(--brand-deep));
+}
+.brand-panel ::selection { background: var(--gold); color: var(--gold-ink); }
+
+/* Mustard fill: always dark ink on top, and a burnt-orange edge so the shape reads at 3:1 on cream. */
+.gold-fill {
+  color: var(--gold-ink);
+  background: linear-gradient(180deg, var(--gold-hi), var(--gold));
+  box-shadow: inset 0 0 0 1.5px var(--gold-edge);
+}
+.gold-glow { box-shadow: inset 0 0 0 1.5px var(--gold-edge), 0 0 0 0.4rem color-mix(in srgb, var(--gold) 26%, transparent), 0 0 2.5rem 0.25rem var(--moon-glow); }
+
+/* Progress: burnt orange rising into mustard, outlined so the fill is visible against the track. */
+.meter-track { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.meter-fill {
+  background: linear-gradient(90deg, var(--ember), var(--gold));
+  box-shadow: inset 0 0 0 1px var(--gold-edge);
+}
+
+/* Celebration rings behind the "Confirmed" tick. */
+@keyframes ring-out {
+  from { transform: scale(0.7); opacity: 0.7; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+.confirm-ring { animation: ring-out 1.4s var(--ease-out) 0.15s 2 both; border: 2px solid var(--gold-edge); border-radius: 9999px; }
+
+@keyframes moon-rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+.moon-rise { animation: moon-rise 900ms var(--ease-out) 120ms both; }
 
 .typing-caret::after {
   content: "";
@@ -282,7 +445,7 @@ dialog.sheet {
   width: 100%;
   max-height: min(92dvh, 100dvh - var(--safe-t));
   border-radius: var(--r-xl) var(--r-xl) 0 0;
-  box-shadow: var(--shadow-3);
+  box-shadow: var(--shadow-3), 0 -1px 0 var(--line);
   overflow: hidden;
 }
 dialog.sheet[open] {
@@ -291,8 +454,20 @@ dialog.sheet[open] {
   animation: sheet-up var(--dur-base) var(--ease-out) both;
 }
 dialog.sheet.sheet-tall { height: min(92dvh, 100dvh - var(--safe-t)); }
+dialog.sheet::before {
+  content: "";
+  flex: none;
+  align-self: center;
+  width: 2.5rem;
+  height: 0.25rem;
+  margin-top: 0.5rem;
+  border-radius: 9999px;
+  background: var(--line-strong);
+  opacity: 0.55;
+}
 dialog.sheet::backdrop {
   background: var(--scrim);
+  backdrop-filter: blur(3px);
   animation: fade var(--dur-base) ease-out both;
 }
 @keyframes sheet-up {
@@ -313,6 +488,7 @@ dialog.sheet::backdrop {
   }
   dialog.sheet.sheet-tall { height: 100dvh; }
   dialog.sheet[open] { animation-name: sheet-side; }
+  dialog.sheet::before { display: none; }
 }
 
 .pb-safe { padding-bottom: var(--safe-b); }
@@ -328,4 +504,11 @@ dialog.sheet::backdrop {
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* A thin burgundy -> burnt orange -> mustard rule along the top of the sticky headers. */
+.harvest-top {
+  background-image: linear-gradient(90deg, var(--brand), var(--ember) 55%, var(--mustard-400));
+  background-size: 100% 3px;
+  background-repeat: no-repeat;
 }
