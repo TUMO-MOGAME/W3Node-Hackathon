@@ -18,7 +18,8 @@ const storage = (): Storage | null => {
 export function useNudges(): NudgesApi {
   const { snap, role, session, fx, service } = useEstate();
   const locale = useLocale();
-  const now = useNow(30_000);
+  // Demo mode re-checks every 3 s so a "make payments due" demo step shows its card at once; live mode every 30 s.
+  const now = useNow(process.env.NEXT_PUBLIC_DATA_MODE === "chain" ? 30_000 : 3_000);
   const address = session?.address ?? null;
   const persona = address ?? "guest";
   const [dismissed, setDismissed] = useState<{ persona: string | null; ids: string[] }>({ persona: null, ids: [] });
