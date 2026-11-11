@@ -15,7 +15,7 @@ import type { WalletApi } from "./types";
 import { chainConfig } from "../chain/config";
 import { decryptSeed, encryptSeed, assertPin } from "./crypto";
 import { loadActive, loadWallets, saveActive, saveWallets, type StoredWallet } from "./store";
-import { isValidSeed, newSeedPhrase, openAccount, readOnly, wdkSign, wdkSignAndSend, type WdkAccount } from "./wdk";
+import { isValidSeed, newSeedPhrase, openAccount, readOnly, wdkPartialSign, wdkSign, wdkSignAndSend, type WdkAccount } from "./wdk";
 import { mockSignature, personaSessions } from "./personas";
 import { setActiveSigner } from "./signer";
 
@@ -142,6 +142,12 @@ export function WalletProvider({ children, requestPin = defaultRequestPin }: { c
     return wdkSign(acc.account, base64Tx);
   }, [isMock, unlock]);
 
+  const signPartialAs = useCallback(async (address: Base58, base64Tx: string) => {
+    if (isMock) { const signature = mockSignature(); return { signature, wireBase64: "" }; }
+    const acc = await unlock(address);
+    return wdkPartialSign(acc.account, base64Tx);
+  }, [isMock, unlock]);
+
   const signAndSend = useCallback(async (base64Tx: string) => {
     if (!activeAddr) throw new Error("No wallet is active. Create or choose a wallet first.");
     return signAndSendAs(activeAddr, base64Tx);
@@ -153,8 +159,9 @@ export function WalletProvider({ children, requestPin = defaultRequestPin }: { c
       address: activeAddr,
       signAndSend: (tx) => signAndSendAs(activeAddr, tx),
       signOnly: (tx) => signOnlyAs(activeAddr, tx),
+      signPartial: (tx) => signPartialAs(activeAddr, tx),
     } : null);
-  }, [activeAddr, signAndSendAs, signOnlyAs]);
+  }, [activeAddr, signAndSendAs, signOnlyAs, signPartialAs]);
 
   const session = sessions.find((s) => s.address === activeAddr) ?? null;
   const api = useMemo<WalletApi>(() => ({

@@ -43,13 +43,21 @@
 ## Wave 2 (started 2026-11-11 midday): merge these branches when done
 | Agent | Where | Branch |
 |---|---|---|
-| QA + fixes + chain-mode P2P test | main checkout | (uncommitted on main) |
+| QA + fixes + chain-mode P2P test | main checkout | **DONE, merged** (66a9995). Devnet P2P send via the UI: `25PK65L8bLSCM6d1jJMBTAAaW9UeyDjk8HBdCp5pBmk8MDGAwu8JpNzKXUYxhLnzPsZeGJNqQpjBxC2Q62ofJYvT` |
 | Harvest Moon redesign (Fable): #800020 / #FFCE1B / #A52A2A / #BE5103 | `.claude/worktrees/agent-a4929912d26b8668f` | `worktree-agent-a4929912d26b8668f` |
 | isiZulu / Sesotho / Afrikaans | `.claude/worktrees/agent-ae33696ab4b5e1436` | `worktree-agent-ae33696ab4b5e1436` |
 | Tether QVAC wallet assistant | `.claude/worktrees/agent-a6233de91ce4e56f2` | `worktree-agent-a6233de91ce4e56f2` |
 | Gasless fees + Cape Town region + /api/health | `.claude/worktrees/agent-abc0ddce1a52b0691` | `worktree-agent-abc0ddce1a52b0691` |
 | **Legacy Voice** (ElevenLabs clone of the parent, consented while alive; Legacy Book; no money authority; SADAG escape) | `.claude/worktrees/legacy-voice` | `feature/legacy-voice` |
 - Pitch deck (3 slides, Harvest Moon): https://claude.ai/artifact/CRBuJE5QBNxVxcVvwJ4neA (private until Tumo shares it)
+- Never use `git stash` across worktrees (shared stash list; two agents swapped stashes once). On 2026-11-11 the disk filled up; clearing the npm cache freed about 10 GB
+
+## Fee sponsorship + hosting: DONE, merged (2026-11-11)
+- Families need no SOL: the agent's WDK wallet is fee payer. Client builds tx (fee payer = sponsor), user's WDK wallet partially signs, `POST /api/sponsor` validates (`lib/sponsor/policy.ts`, 39 tests), simulates, co-signs; the pay-once pipeline stores the bytes, then broadcasts. Falls back to user-paid if the sponsor is down/refuses
+- Tether's `@tetherto/wdk-wallet-solana-gasless` needs a Kora paymaster server (user pays fees in a token); not deployable on Vercel by Friday, so we sponsor ourselves
+- Devnet proof: Lerato → Sipho 1 USD₮, Lerato's SOL unchanged: `5NfaB421n92RHKJgcEiczMbDadP9zNo9yDZwgbXVFZyVZBxgYvQtWMdTt7GZWjt4GYpYZAx1pP97xJUY7HULkqVn` (`scripts/sponsor-devnet.ts`)
+- `GET /api/health`; `app/vercel.json`: functions in `cpt1` (Cape Town), Vercel Cron daily 06:00 UTC on `/api/scheduler/tick` (Hobby minimum: once per day; set `CRON_SECRET`)
+- Agent/sponsor wallet has only ~0.3 SOL on devnet: top it up before the demo
 
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |

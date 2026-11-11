@@ -9,7 +9,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "baseUrl": ".",
-    "paths": { "*": ["../app/node_modules/*"] }
+    "paths": { "server-only": ["../app/src/test/empty.ts"], "*": ["../app/node_modules/*"] }
   },
   "include": ["*.ts"]
 }

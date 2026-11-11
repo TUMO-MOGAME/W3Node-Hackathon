@@ -19,7 +19,10 @@ import { fetchAccountRaw, fetchActivity, fetchEstateRaw, findEstateOf, invalidat
 import { assembleSnapshot } from "../chain/snapshot";
 import { key, num, type Raw } from "../chain/decoders";
 import { getActiveSigner } from "../wallet/signer";
-import { defaultReceiptStore, newPaymentId, openReceipts, recheck, resumeOnReconnect, runPayment, waitForFinal, type ChainOps, type StoredPayment } from "../wallet/payments";
+import {
+  defaultReceiptStore, feeForReview, newPaymentId, openReceipts, recheck, resumeOnReconnect, runPayment, signSponsoredOrSelf, SponsorError, waitForFinal,
+  type ChainOps, type SponsorClient, type SponsorStatus, type StoredPayment,
+} from "../wallet/payments";
 import { readOnly } from "../wallet/wdk";
 import { loadWallets } from "../wallet/store";
 import { explorerTx, toBase } from "../format";
@@ -42,16 +45,49 @@ export function chainOps(): ChainOps {
   };
 }
 
-/** Builds the tx, WDK signs it (sign-only), signature persisted, then broadcast; returns the receipt. */
-async function pay(id: string, ixs: TransactionInstruction[], meta: Pick<StoredPayment, "kind" | "to" | "toLabel" | "amount">) {
+// ---------- fee sponsorship: the server's agent WDK wallet pays network fees (/api/sponsor) ----------
+let sponsorCache: { at: number; value: SponsorStatus | null } | null = null;
+
+const sponsorClient: SponsorClient = {
+  async status() {
+    if (sponsorCache && Date.now() - sponsorCache.at < 60_000) return sponsorCache.value;
+    const value = await api<SponsorStatus>("/api/sponsor").catch(() => null);
+    sponsorCache = { at: Date.now(), value };
+    return value;
+  },
+  async cosign(tx) {
+    const res = await fetch("/api/sponsor", { method: "POST", cache: "no-store", headers: { "content-type": "application/json" }, body: JSON.stringify({ tx, submit: false }) });
+    const data = (await res.json().catch(() => ({}))) as { signature?: string; wireBase64?: string; error?: string; code?: string };
+    if (!res.ok || !data.signature || !data.wireBase64) {
+      if (res.status === 503) sponsorCache = { at: Date.now(), value: null }; // stop trying for a minute
+      throw new SponsorError(data.code ?? `http_${res.status}`, data.error ?? `Fee sponsor refused (${res.status}).`);
+    }
+    return { signature: data.signature, wireBase64: data.wireBase64 };
+  },
+};
+
+type Ixs = TransactionInstruction[] | ((feePayer: PublicKey) => TransactionInstruction[]);
+
+/**
+ * Builds the tx (fee payer = Heirloom's sponsor when available, else the user), WDK signs it (sign-only; partial
+ * when sponsored, then the server co-signs), the signature is persisted, then broadcast; returns the receipt.
+ */
+async function pay(id: string, ixs: Ixs, meta: Pick<StoredPayment, "kind" | "to" | "toLabel" | "amount">) {
   const signer = getActiveSigner();
-  return runPayment(receipts, chainOps(), id, async () => {
-    const conn = getConnection();
-    const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
-    const tx = new Transaction({ feePayer: pk(signer.address), blockhash, lastValidBlockHeight }).add(...ixs);
-    const b64 = bytesToBase64(tx.serialize({ requireAllSignatures: false, verifySignatures: false }));
-    return { ...(await signer.signOnly(b64)), lastValidBlockHeight };
-  }, meta);
+  return runPayment(receipts, chainOps(), id, () => signSponsoredOrSelf({
+    user: signer.address,
+    async build(feePayer) {
+      const conn = getConnection();
+      const { blockhash, lastValidBlockHeight } = await conn.getLatestBlockhash("confirmed");
+      const list = typeof ixs === "function" ? ixs(pk(feePayer)) : ixs;
+      const tx = new Transaction({ feePayer: pk(feePayer), blockhash, lastValidBlockHeight }).add(...list);
+      return { base64: bytesToBase64(tx.serialize({ requireAllSignatures: false, verifySignatures: false })), lastValidBlockHeight };
+    },
+    signPartial: signer.signPartial ? (b64) => signer.signPartial!(b64) : undefined,
+    signOnly: (b64) => signer.signOnly(b64),
+    sponsor: sponsorClient,
+    onFallback: (reason) => console.warn(`Fee sponsor unavailable, paying the fee from the wallet: ${reason}`),
+  }), meta);
 }
 
 /** Every user-initiated program tx goes through the same pay-once pipeline and waits for confirmation. */
@@ -403,20 +439,27 @@ export function createChainService(): HeirloomService {
         ro.quoteTransfer({ token: mint.toBase58(), recipient: to, amount }).catch(() => null),
         conn.getAccountInfo(ata(mint, toKey), "confirmed"),
       ]);
-      const rent = recipientAta ? 0 : 2_039_280; // rent for a new token account, paid by the sender
-      if (!recipientAta) warnings.push("The recipient has no USD₮ account yet: it will be created (about 0.002 SOL, paid by you).");
-      const feeLamports = Number(quote?.fee ?? 5000n) + rent;
-      if (!quote) warnings.push("Fee estimate unavailable; using the standard network fee.");
+      const rent = recipientAta ? 0 : 2_039_280; // rent for a new token account
+      const networkFee = Number(quote?.fee ?? 5000n);
+      const sponsor = await sponsorClient.status().catch(() => null);
+      // Sponsored: two signatures (sponsor + sender) instead of one.
+      const { fee, userLamports } = feeForReview({ user: from, networkFeeLamports: sponsor?.available ? 10_000 : networkFee, rentLamports: rent, sponsor });
+      if (!recipientAta) {
+        warnings.push(fee.sponsored && sponsor?.paysRent
+          ? "The recipient has no USD₮ account yet: it will be created, and Heirloom covers the cost."
+          : "The recipient has no USD₮ account yet: it will be created (about 0.002 SOL, paid by you).");
+      }
+      if (!quote && !fee.sponsored) warnings.push("Fee estimate unavailable; using the standard network fee.");
       const sol = Number(lamports) / 1e9;
-      const sufficient = usdt >= amount && Number(lamports) >= feeLamports;
+      const sufficient = usdt >= amount && Number(lamports) >= userLamports;
       if (usdt < amount) warnings.push("Not enough USD₮ in this wallet.");
-      if (Number(lamports) < feeLamports) warnings.push("Not enough SOL to pay the network fee.");
+      if (Number(lamports) < userLamports) warnings.push("Not enough SOL to pay the network fee.");
 
       const review: PaymentReview = {
         id: newPaymentId(), kind: "p2p", from, to, toLabel, amount,
         token: { symbol: "USD₮", mint: mint.toBase58(), verified },
         network: { name: `Solana ${chainConfig.cluster}`, cluster: chainConfig.cluster === "mainnet-beta" ? "mainnet-beta" : chainConfig.cluster === "localnet" ? "localnet" : "devnet" },
-        fee: { lamports: feeLamports, sol: feeLamports / 1e9, payer: from, sponsored: false },
+        fee,
         balances: { usdt, sol, sufficient },
         warnings,
       };
@@ -430,8 +473,11 @@ export function createChainService(): HeirloomService {
       if (review.from !== getActiveSigner().address) throw new Error("Switch back to the wallet that reviewed this payment.");
       const mint = chainCtx().usdtMint;
       const from = pk(review.from), to = pk(review.to);
-      const ixs = [
-        createAssociatedTokenAccountIdempotentInstruction(from, ata(mint, to), to, mint),
+      const needsAta = !(await getConnection().getAccountInfo(ata(mint, to), "confirmed"));
+      const sponsorPaysRent = Boolean((await sponsorClient.status().catch(() => null))?.paysRent);
+      // The rent payer for a new recipient account is the sponsor when it is the fee payer and covers rent.
+      const ixs = (feePayer: PublicKey) => [
+        ...(needsAta ? [createAssociatedTokenAccountIdempotentInstruction(!feePayer.equals(from) && sponsorPaysRent ? feePayer : from, ata(mint, to), to, mint)] : []),
         createTransferCheckedInstruction(ata(mint, from), mint, ata(mint, to), from, review.amount, 6),
       ];
       return pay(review.id, ixs, { kind: "p2p", to: review.to, toLabel: review.toLabel, amount: review.amount.toString() });

@@ -9,6 +9,8 @@ export interface ActiveSigner {
   signAndSend(base64Tx: string): Promise<string>;
   /** Sign only (WDK), so the payment pipeline can store the signature before broadcasting. */
   signOnly(base64Tx: string): Promise<{ signature: string; wireBase64: string }>;
+  /** Partial signature for a tx whose fee payer is Heirloom's fee sponsor. */
+  signPartial?(base64Tx: string): Promise<{ signature: string; wireBase64: string }>;
 }
 
 let active: ActiveSigner | null = null;
