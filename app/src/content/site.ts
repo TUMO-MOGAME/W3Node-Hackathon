@@ -19,6 +19,7 @@ export const site = {
     demo: "Try the demo",
     home: "Heirloom home",
     skip: "Skip to content",
+    menu: "Main menu",
   },
   footer: {
     blurb:

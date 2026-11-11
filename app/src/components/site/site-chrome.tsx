@@ -16,7 +16,7 @@ export function SiteHeader({ site: english, minimal = false }: { site: SiteCopy;
         {/* Below 400px the wordmark gives way to the language switcher; the link keeps its accessible name. */}
         <Link href="/" aria-label={site.nav.home} className="shrink-0 rounded-full"><Logo name={site.name} className="max-[400px]:[&>span:last-child]:hidden" /></Link>
         {!minimal && (
-          <nav aria-label={site.name} className="ml-6 hidden items-center gap-1 md:flex">
+          <nav aria-label={site.nav.menu} className="ml-6 hidden items-center gap-1 md:flex">
             {[["#how", site.nav.how], ["#safety", site.nav.safety], ["#proof", site.nav.proof]].map(([href, label]) => (
               <a key={href} href={`/${href}`} className="inline-flex min-h-11 items-center rounded-full px-3.5 text-small font-semibold text-ink-2 hover:bg-surface-2 hover:text-ink">{label}</a>
             ))}

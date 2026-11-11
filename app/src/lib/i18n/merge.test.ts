@@ -42,4 +42,16 @@ describe.each([["af", af], ["st", st], ["zu", zu]] as const)("%s translation", (
     const translated = { landing: t.landing, common: t.common, screens: t.screens, pay: t.pay, assistant: t.assistant };
     for (const [path, en, tr] of pairs(english, translated)) expect(placeholders(tr), path).toBe(placeholders(en));
   });
+
+  it("translates the whole sidebar and chat home (only the agent-read drafts stay English)", () => {
+    const missing: string[] = [];
+    const walk = (en: unknown, tr: unknown, path: string) => {
+      if (/composer\.(sendMoneyDraft|defaultMessage)/.test(path)) return;
+      if (typeof en === "string") { if (typeof tr !== "string" || !tr) missing.push(path); return; }
+      if (en && typeof en === "object") for (const k of Object.keys(en)) walk((en as Record<string, unknown>)[k], (tr as Record<string, unknown> | undefined)?.[k], `${path}.${k}`);
+    };
+    walk(assistant.shell, t.assistant.shell, "shell");
+    walk(assistant.home, t.assistant.home, "home");
+    expect(missing).toEqual([]);
+  });
 });
