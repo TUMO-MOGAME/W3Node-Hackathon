@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Check, Copy, KeyRound, ShieldCheck, TriangleAlert, UsersRound, Wallet } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { Role } from "@/lib/types";
 import { useWallet } from "@/lib/hooks/wallet-source";
 import { useEstate } from "@/lib/hooks/estate";
@@ -14,7 +15,8 @@ import { usePin } from "@/components/shell/pin-gate";
 type Step = "choose" | "about" | "pin" | "seed";
 const ROLES: Exclude<Role, "agent">[] = ["owner", "beneficiary", "verifier", "buyer"];
 
-export function StartScreen({ copy }: { copy: ScreensCopy["start"] }) {
+export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
+  const copy = useLocalized(english, (t) => t.screens.start);
   const { common } = useCopy();
   const router = useRouter();
   const wallet = useWallet();

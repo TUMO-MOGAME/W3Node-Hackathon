@@ -20,6 +20,8 @@ import { PinGate } from "./pin-gate";
 import { PersonaSheet } from "./persona-sheet";
 import { ProofDrawer } from "./proof-drawer";
 import { DemoGuide } from "./demo-guide";
+import { LanguageSwitcher } from "@/components/site/language-switcher";
+import { useLocalized } from "@/lib/i18n/client";
 
 type NavKey = "estate" | "will" | "vault" | "car" | "people" | "family" | "claims" | "inbox";
 const NAV: Record<NavKey, { href: string; icon: LucideIcon }> = {
@@ -41,7 +43,11 @@ const TABS: Record<Role | "none", NavKey[]> = {
   none: ["estate"],
 };
 
-export function AppShell({ common, assistant, pay, siteName, children }: { common: CommonCopy; assistant: AssistantCopy; pay: PayCopy; siteName: string; children: ReactNode }) {
+export function AppShell({ common: commonEn, assistant: assistantEn, pay: payEn, siteName, children }: { common: CommonCopy; assistant: AssistantCopy; pay: PayCopy; siteName: string; children: ReactNode }) {
+  // English is passed from the server; the visitor's language (if any) is laid over it in the browser.
+  const common = useLocalized(commonEn, (t) => t.common);
+  const assistant = useLocalized(assistantEn, (t) => t.assistant);
+  const pay = useLocalized(payEn, (t) => t.pay);
   return (
     <CopyProvider value={{ common, assistant, pay, siteName }}>
       <MotionConfig reducedMotion="user">
@@ -115,6 +121,7 @@ function Chrome({ children }: { children: ReactNode }) {
           )}
 
           <div className="ml-auto flex min-w-0 items-center gap-1.5">
+            <LanguageSwitcher className={onboarding || !session ? undefined : "hidden! lg:inline-flex!"} />
             {isMock && (
               <button type="button" onClick={() => setPersonaOpen(true)} title={common.demo.badgeHint} aria-label={common.demo.open} className="hidden min-h-11 shrink-0 items-center rounded-full px-1 min-[440px]:inline-flex">
                 <span className="rounded-full bg-brass-soft px-2.5 py-1 text-[0.75rem] font-semibold text-brass">{common.demo.badge}</span>

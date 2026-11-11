@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Banknote, Check, FileHeart, HandHeart, Inbox as InboxIcon, Undo2 } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, WalletSession } from "@/lib/types";
 import { formatUsdt, formatZar } from "@/lib/format";
@@ -30,7 +31,8 @@ interface Item {
   act: () => Promise<void>;
 }
 
-export function InboxScreen({ copy }: { copy: Copy }) {
+export function InboxScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.inbox);
   return <Gate roles={["verifier"]}>{({ snap, session }) => <Inbox copy={copy} snap={snap!} session={session} />}</Gate>;
 }
 

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, CalendarClock, CarFront, Check, Clock, GraduationCap, Hourglass, Lock, PenLine, Phone, ShieldCheck, Sparkles, UsersRound, Zap } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocale, useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot, TxResult } from "@/lib/service";
 import type { WalletSession, WillChatMessage, WillDraft } from "@/lib/types";
 import { formatUsdt, shortAddress, toBase } from "@/lib/format";
@@ -19,7 +20,8 @@ interface Msg extends WillChatMessage { id: number; fresh?: boolean }
 const usd = (n: number) => formatUsdt(toBase(n), { decimals: 0 });
 const longDate = (iso: string | number) => new Date(typeof iso === "number" ? iso * 1000 : iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
 
-export function WillScreen({ copy }: { copy: Copy }) {
+export function WillScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.will);
   return (
     <Gate roles={["owner"]} allowEmpty>
       {({ snap, session }) => <WillFlow copy={copy} snap={snap} session={session} />}
@@ -61,6 +63,7 @@ function Done({ copy, txs }: { copy: Copy; txs: TxResult[] }) {
 /* ---------- Conversation + live preview + review + sign ---------- */
 
 function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSession; onSigned: (txs: TxResult[]) => void }) {
+  const locale = useLocale();
   const { common, assistant } = useCopy();
   const { service, run, busy, openAgent } = useEstate();
   const first = session.label.split(/[ (]/)[0];
@@ -92,7 +95,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
     setMessages((m) => [...m.map((x) => ({ ...x, fresh: false })), { id: ++id.current, role: "user", text: trimmed }]);
     setPending(true);
     try {
-      const res = await service.willChat(history);
+      const res = await service.willChat(history, locale);
       setMessages((m) => [...m, { id: ++id.current, role: "agent", text: res.reply, fresh: true }]);
       if (res.draft) setDraft(res.draft);
     } catch {

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { motion } from "motion/react";
 import { ArrowRight, Check, FileHeart, HeartPulse, LockOpen, TriangleAlert } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Role } from "@/lib/types";
 import { formatUsdt, shortAddress } from "@/lib/format";
@@ -25,7 +26,8 @@ export function clock(secs: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-export function FamilyScreen({ copy }: { copy: Copy }) {
+export function FamilyScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.family);
   return <Gate>{({ snap, role }) => <Timeline copy={copy} snap={snap!} role={role} />}</Gate>;
 }
 

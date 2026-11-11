@@ -4,17 +4,19 @@ import type { AssistantCopy } from "@/content/assistant";
 import { useEstate } from "./estate";
 import { normaliseReply, type AssistantMessage, type OrchestratorReply } from "./agent-types";
 import { mockOrchestrate } from "./mock-orchestrator";
+import { useLocale } from "@/lib/i18n/client";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** General assistant chat. Mock mode answers on-device; chain mode calls the orchestrator and falls back on-device. */
 export function useAssistant(copy: AssistantCopy, page: string) {
   const { isMock, service, snap, fx, session, role } = useEstate();
+  const locale = useLocale();
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [pending, setPending] = useState(false);
   const id = useRef(0);
-  const ctx = useRef({ snap, fx, session, role, page, isMock, ready: !!service });
-  useEffect(() => { ctx.current = { snap, fx, session, role, page, isMock, ready: !!service }; });
+  const ctx = useRef({ snap, fx, session, role, page, isMock, locale, ready: !!service });
+  useEffect(() => { ctx.current = { snap, fx, session, role, page, isMock, locale, ready: !!service }; });
 
   const name = session?.label.split(/[ (]/)[0] ?? "";
   const greetKey = role === "agent" || !role ? "none" : role;
@@ -52,6 +54,7 @@ export function useAssistant(copy: AssistantCopy, page: string) {
             wallet: c.session?.address,
             estate: c.snap?.estate.address,
             page: c.page,
+            locale: c.locale,
           }),
         });
         reply = res.ok ? normaliseReply(await res.json()) : null;

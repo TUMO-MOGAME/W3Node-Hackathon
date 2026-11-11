@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Banknote, Check, CircleX, Clock, Plus, Zap } from "lucide-react";
 import type { ScreensCopy } from "@/content/screens";
+import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";
 import type { AgentReport, Claim, Role, WalletSession } from "@/lib/types";
 import { formatUsdt, formatZar, toBase } from "@/lib/format";
@@ -19,7 +20,8 @@ import { categoryIcon } from "./estate";
 
 type Copy = ScreensCopy["claims"];
 
-export function ClaimsScreen({ copy }: { copy: Copy }) {
+export function ClaimsScreen({ copy: english }: { copy: Copy }) {
+  const copy = useLocalized(english, (t) => t.screens.claims);
   return <Gate>{({ snap, session, role }) => <Claims copy={copy} snap={snap!} session={session} role={role} />}</Gate>;
 }
 

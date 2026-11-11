@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/primitives";
 import { Avatar } from "./app-shell";
 import { fmt, useCopy } from "./copy";
 import { useInstall } from "./install";
+import { LanguageSwitcher } from "@/components/site/language-switcher";
 
 const ORDER: Role[] = ["owner", "beneficiary", "verifier", "buyer", "agent"];
 const STAGES: DemoStage[] = ["fresh", "funded", "unlocked", "listed", "lowOffers"];
@@ -124,6 +125,8 @@ export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => 
             </div>
           </section>
         )}
+
+        <LanguageSwitcher variant="list" />
 
         <fieldset>
           <legend className="mb-2 text-small font-semibold uppercase tracking-[0.12em] text-ink-2">{c.theme}</legend>
