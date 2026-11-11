@@ -1,0 +1,26 @@
+# Rust / Anchor
+target/
+.anchor/
+test-ledger/
+**/*.rs.bk
+
+# Node
+node_modules/
+.next/
+out/
+coverage/
+
+# Secrets — never commit keys or seed phrases
+.env
+.env.*
+!.env.example
+*.keypair.json
+id.json
+wallets/
+scripts/.demo-wallets*.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json

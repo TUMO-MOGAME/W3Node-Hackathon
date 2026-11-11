@@ -1,0 +1,132 @@
+/**
+ * Read side: fetch and decode every account of one estate, plus the activity feed from program events.
+ * Uses getProgramAccounts with a discriminator + parent-key memcmp (the parent pubkey is the first field
+ * after the 8-byte discriminator for Beneficiary/Payee/Rule/Claim/Asset (estate) and Offer/Hardship (asset)).
+ */
+import { EventParser } from "@anchor-lang/core";
+import { PublicKey, type Connection, type GetProgramAccountsFilter } from "@solana/web3.js";
+import bs58 from "bs58";
+import type { ActivityItem, Base58 } from "../types";
+import { accountDiscriminator, accountName, getCoder, getIdl } from "./idl";
+import {
+  hex, key, ruleCount, decodeAsset, decodeBeneficiary, decodeClaim, decodeEstate, decodeHardship, decodeOffer, decodePayee, decodeRule,
+  type OffChainNames, type Raw,
+} from "./decoders";
+import { estatePda, vaultAta } from "./pda";
+import { getConnection } from "./tx";
+import { describeEvent } from "./events";
+
+export interface RawSnapshot {
+  estate: ReturnType<typeof decodeEstate>;
+  ruleCount: number;
+  beneficiaries: ReturnType<typeof decodeBeneficiary>[];
+  payees: ReturnType<typeof decodePayee>[];
+  rules: ReturnType<typeof decodeRule>[];
+  claims: ReturnType<typeof decodeClaim>[];
+  assets: ReturnType<typeof decodeAsset>[];
+  offers: ReturnType<typeof decodeOffer>[];
+  hardships: ReturnType<typeof decodeHardship>[];
+  /** claim / hardship address → agent_report_hash (hex), for joining the off-chain AgentReport. */
+  reportHashes: Record<string, string>;
+}
+
+const programId = () => new PublicKey(getIdl().address);
+
+function decode(name: string, data: Uint8Array): Raw {
+  // Anchor's coder takes a Node-style Buffer; web3.js already gives us one.
+  return getCoder().accounts.decode(accountName(name), data as Parameters<ReturnType<typeof getCoder>["accounts"]["decode"]>[1]) as Raw;
+}
+
+async function fetchChildren(conn: Connection, type: string, parent: PublicKey): Promise<{ address: string; raw: Raw }[]> {
+  const filters: GetProgramAccountsFilter[] = [
+    { memcmp: { offset: 0, bytes: bs58.encode(accountDiscriminator(type)) } },
+    { memcmp: { offset: 8, bytes: parent.toBase58() } },
+  ];
+  const res = await conn.getProgramAccounts(programId(), { filters, commitment: "confirmed" });
+  return res.map((a) => ({ address: a.pubkey.toBase58(), raw: decode(type, a.account.data) }));
+}
+
+export async function fetchEstateRaw(estate: Base58, names: OffChainNames = {}, conn = getConnection()): Promise<RawSnapshot> {
+  const estateKey = new PublicKey(estate);
+  const info = await conn.getAccountInfo(estateKey, "confirmed");
+  if (!info) throw new Error(`No Heirloom estate at ${estate} on this cluster.`);
+  const raw = decode("Estate", info.data);
+  const mint = new PublicKey(key(raw, "usdt_mint"));
+  const vault = vaultAta(mint, estateKey);
+  const vaultBal = await conn.getTokenAccountBalance(vault, "confirmed").then((b) => BigInt(b.value.amount)).catch(() => 0n);
+  const estateObj = decodeEstate(estate, raw, vaultBal, names);
+
+  const [bens, payees, rules, claims, assets] = await Promise.all([
+    fetchChildren(conn, "Beneficiary", estateKey),
+    fetchChildren(conn, "Payee", estateKey),
+    fetchChildren(conn, "Rule", estateKey),
+    fetchChildren(conn, "Claim", estateKey),
+    fetchChildren(conn, "Asset", estateKey),
+  ]);
+  const assetObjs = assets.map((a) => {
+    const nft = key(a.raw, "nft_mint");
+    return decodeAsset(a.address, a.raw, names.assetTitles?.[nft]);
+  });
+  const perAsset = await Promise.all(assetObjs.map(async (a) => {
+    const k = new PublicKey(a.address);
+    const [o, h] = await Promise.all([fetchChildren(conn, "Offer", k), fetchChildren(conn, "Hardship", k)]);
+    return {
+      offers: o.map((x) => { const d = decodeOffer(x.address, x.raw); return { ...d, buyerName: names.buyerNames?.[d.buyer] }; }),
+      hardships: h.map((x) => decodeHardship(x.address, x.raw)),
+      hardshipReports: h.map((x) => [x.address, hex(x.raw, "agent_report_hash")] as const),
+    };
+  }));
+
+  return {
+    estate: estateObj,
+    ruleCount: ruleCount(raw),
+    beneficiaries: bens.map((b) => decodeBeneficiary(b.address, b.raw)),
+    payees: payees.map((p) => decodePayee(p.address, p.raw)),
+    rules: rules.map((r) => decodeRule(r.address, r.raw)).sort((a, b) => a.id - b.id),
+    claims: claims.map((c) => decodeClaim(c.address, c.raw)).sort((a, b) => b.createdAt - a.createdAt),
+    assets: assetObjs,
+    offers: perAsset.flatMap((x) => x.offers).sort((a, b) => (b.amount > a.amount ? 1 : b.amount < a.amount ? -1 : 0)),
+    hardships: perAsset.flatMap((x) => x.hardships),
+    reportHashes: Object.fromEntries([
+      ...claims.map((c) => [c.address, hex(c.raw, "agent_report_hash")] as const),
+      ...perAsset.flatMap((x) => x.hardshipReports),
+    ].filter(([, h]) => h !== "0".repeat(64))),
+  };
+}
+
+/** Does `owner` have an estate? Returns its address or null. */
+export async function findEstateOf(owner: Base58, conn = getConnection()): Promise<Base58 | null> {
+  const pda = estatePda(programId(), owner);
+  const info = await conn.getAccountInfo(pda, "confirmed");
+  return info ? pda.toBase58() : null;
+}
+
+/** Recent program events that touched the estate (newest first). */
+export async function fetchActivity(estate: Base58, limit = 40, conn = getConnection()): Promise<ActivityItem[]> {
+  const sigs = await conn.getSignaturesForAddress(new PublicKey(estate), { limit }, "confirmed");
+  const ok = sigs.filter((s) => !s.err);
+  if (ok.length === 0) return [];
+  const txs = await conn.getTransactions(ok.map((s) => s.signature), { maxSupportedTransactionVersion: 0, commitment: "confirmed" });
+  const parser = new EventParser(programId(), getCoder());
+  const items: ActivityItem[] = [];
+  txs.forEach((tx, i) => {
+    const logs = tx?.meta?.logMessages;
+    if (!logs) return;
+    const ts = tx.blockTime ?? ok[i].blockTime ?? 0;
+    try {
+      for (const ev of parser.parseLogs(logs)) {
+        const d = describeEvent(ev.name, ev.data as Raw);
+        items.push({ ts, kind: d.kind, text: d.text, amount: d.amount, txSignature: ok[i].signature });
+      }
+    } catch {
+      // A log we cannot decode (e.g. older IDL) is skipped, not fatal for the feed.
+    }
+  });
+  return items.sort((a, b) => b.ts - a.ts);
+}
+
+/** Fetch and decode a single program account (raw IDL field names). Null if it does not exist. */
+export async function fetchAccountRaw(type: string, address: Base58, conn = getConnection()): Promise<Raw | null> {
+  const info = await conn.getAccountInfo(new PublicKey(address), "confirmed");
+  return info ? decode(type, info.data) : null;
+}

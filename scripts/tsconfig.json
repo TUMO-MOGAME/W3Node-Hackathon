@@ -1,0 +1,15 @@
+{
+  "//": "Lets the scripts resolve packages from app/node_modules. Run from app/: npx tsx --tsconfig ../scripts/tsconfig.json ../scripts/<name>.ts",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": { "*": ["../app/node_modules/*"] }
+  },
+  "include": ["*.ts"]
+}

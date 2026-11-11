@@ -1,0 +1,19 @@
+[toolchain]
+anchor_version = "1.2.2"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+heirloom = "b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY"
+
+[programs.devnet]
+heirloom = "b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"
