@@ -40,6 +40,11 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
+## LATEST (2026-11-11 late night): main 0381565, live
+- Plan page (`/will`, `app/src/components/screens/will.tsx`): chat card + plan card now equal height and aligned on desktop, each scrolls inside itself, composer pinned, page doesn't jump. Tumo reports **a few bugs still remain on the Plan/will page**: next session starts with a full audit (see the prompt Tumo was given)
+- Disk: C: filled up twice (headless Edge profiles in the Claude scratchpad, npm cache). Clean profiles after browser tests
+- Agent worktrees merged and removed; only `.deploy/` (Vercel snapshot) remains
+
 ## CURRENT (2026-11-11 night): main 6e369ee, live
 - **Chat-first shell**: left sidebar (grouped nav, saved chats per persona, utilities, persona card; collapses to a rail; mobile drawer), home `/chat` with nudge cards + pinned composer (dictate, call, review a document, send money). Data layer in `app/src/lib/chat/*`
 - **Icons: Flaticon UIcons, regular rounded** via `app/src/components/ui/icons.tsx`; subset font 10.7 KB built by `npm run icons` (runs in prebuild). The free licence requires the credit line "Uicons by Flaticon" (footer + README Credits): keep it
