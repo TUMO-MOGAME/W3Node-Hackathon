@@ -40,6 +40,13 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
+## CURRENT (2026-11-11 evening): main f4c701e, live
+- **Design is now pure black and white** (Tumo's call, replaces Harvest Moon). No hue, no gradients; `node app/scripts/contrast.mjs` guards this (fails on any hue or gradient). Status shown by icons, words and line styles
+- **Legacy Voice merged**: `/legacy` (parent consent + voice samples + Legacy Book; child opt-in, messages, chat, live call). ElevenLabs IVC + a private per-estate agent; wallet-signed requests; no money authority; SADAG escape. Needs a paid ElevenLabs plan (Starter+) for real cloning
+- Checks: 199/199 tests, tsc + eslint clean, build 44 pages, mono guard passes
+- Live https://heirloom-one-iota.vercel.app (mock mode, Tumo approved). Pitch deck converted to black and white
+- Remaining: Tumo's keys (Gemini, ElevenLabs, Supabase) → Vercel env; top up the agent/sponsor wallet `261pQ…sjNg`; a devnet-mode launcher for the laptop demo; record the video; make the repo public; submit on BuilderBase by Fri 13 Nov 23:59
+
 ## Merged into main (2026-11-11 afternoon); live redeploy 402d07b
 - QA ✅ · Gasless + Cape Town + /api/health ✅ · QVAC ✅ · isiZulu/Sesotho/Afrikaans ✅ · Harvest Moon redesign ✅ (landing styling ported into the localised `LandingBody`). 172 tests, eslint clean, build OK
 - Live https://heirloom-one-iota.vercel.app (mock mode); `/api/health` reports programDeployed=true
