@@ -16,6 +16,7 @@ import type { Role } from "@/lib/types";
 import type { ChatThread } from "@/lib/chat/types";
 import { shortAddress } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
+import { useWallet } from "@/lib/hooks/wallet-source";
 import { LogoMark } from "@/components/ui/primitives";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { useChat } from "@/components/chat/chat-context";
@@ -68,6 +69,9 @@ export function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
   const { dark } = useTheme();
+  // The role (and so which links show) is known once the wallet has loaded; hide the list until then so it
+  // appears in place instead of shifting.
+  const { ready } = useWallet();
   const [chatsOpen, setChatsOpen] = useState(true);
   const chatsId = useId();
   const onChat = pathname === "/chat";
@@ -132,7 +136,7 @@ export function Sidebar({
       </div>
 
       {/* Navigation, chats and utilities scroll together between the brand and the persona card. */}
-      <div className={clsx("scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-contain pb-3", rail ? "px-2" : "px-3")}>
+      <div className={clsx("scroll-thin min-h-0 flex-1 overflow-y-auto overscroll-contain pb-3", rail ? "px-2" : "px-3", !ready && "invisible")}>
         <nav aria-label={common.nav.label}>
           <ul className="flex flex-col gap-0.5">
             <li>

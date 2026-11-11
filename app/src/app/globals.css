@@ -86,6 +86,8 @@
   /* Layout */
   --tabbar-h: 4rem;
   --header-h: 3.75rem;
+  /* Desktop sidebar width; <html data-sidebar="collapsed"> (set before first paint) makes it the icon rail. */
+  --sidebar-w: 18.25rem;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
 
@@ -375,10 +377,14 @@ h1, h2, h3 {
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -0.015em;
-  text-wrap: balance;
 }
 
-p { text-wrap: pretty; }
+/* In the base layer so utilities win: unlayered, `text-wrap` (a shorthand that also sets the wrap mode)
+   overrode Tailwind's `truncate` (white-space: nowrap), so truncated lines wrapped instead. */
+@layer base {
+  h1, h2, h3 { text-wrap: balance; }
+  p { text-wrap: pretty; }
+}
 
 :focus-visible {
   outline: 2px solid var(--focus);
@@ -452,6 +458,8 @@ button:disabled { cursor: not-allowed; }
   background: currentColor;
   animation: caret 1s steps(1) infinite;
 }
+
+:root[data-sidebar="collapsed"] { --sidebar-w: 5.25rem; }
 
 /* Native dialog based sheets */
 dialog.sheet {

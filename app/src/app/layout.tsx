@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: site.shortName, statusBarStyle: "default" },
   formatDetection: { telephone: false },
   icons: {
+    icon: [{ url: "/icons/icon.svg", type: "image/svg+xml" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
   },
   openGraph: { type: "website", siteName: site.name, title: site.title, description: site.description, url: "/", locale: "en_ZA" },
@@ -37,10 +38,14 @@ export const viewport: Viewport = {
   ],
 };
 
+const PREPAINT = `try{var d=document.documentElement,l=localStorage,t=l.getItem("heirloom.theme");if(t==="light"||t==="dark")d.dataset.theme=t;if(l.getItem("heirloom.sidebar")==="collapsed")d.dataset.sidebar="collapsed"}catch(e){}`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-ZA" className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}>
+    <html lang="en-ZA" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}>
       <head>
+        {/* Before first paint: the saved appearance and sidebar width, so a dark choice or a collapsed rail never flashes or shifts the page. */}
+        <script dangerouslySetInnerHTML={{ __html: PREPAINT }} />
         {/* The icon subset is tiny (~10 KB) and render-blocking by design (font-display: block), so fetch it early. */}
         <link rel="preload" href="/fonts/uicons-rr-subset.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       </head>

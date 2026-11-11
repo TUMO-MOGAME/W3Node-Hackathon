@@ -10,6 +10,8 @@ import type { AssistantCopy } from "@/content/assistant";
 import type { PayCopy } from "@/content/pay";
 import { ConnectionBars, PaymentProvider } from "@/components/pay/payment";
 import { EstateProvider, useEstate } from "@/lib/hooks/estate";
+import { useWallet } from "@/lib/hooks/wallet-source";
+import { chainConfig } from "@/lib/chain/config";
 import { LogoMark } from "@/components/ui/primitives";
 import { Toaster } from "@/components/ui/client";
 import { AgentSheet } from "@/components/agent/agent-sheet";
@@ -63,7 +65,10 @@ function CountDot({ n }: { n: number }) {
 function Chrome({ children }: { children: ReactNode }) {
   const { common, assistant, siteName } = useCopy();
   const s = assistant.shell;
-  const { session, role, snap, isMock, setProofOpen } = useEstate();
+  const { session, role, snap, isMock: mockService, service, setProofOpen } = useEstate();
+  // The service is created after mount; until then the build's data mode says whether this is the demo, so the
+  // demo guide's space is reserved from the first paint.
+  const isMock = service ? mockService : chainConfig.dataMode === "mock";
   const { nudges } = useAttention();
   const pathname = usePathname();
   const { theme } = useTheme();
@@ -71,8 +76,11 @@ function Chrome({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawer = useRef<HTMLDialogElement>(null);
+  const wallet = useWallet();
   const onboarding = pathname.startsWith("/start");
-  const framed = !onboarding && !!session;
+  // Until the wallet has loaded (it lives in this browser), assume the signed-in frame: in demo mode there is
+  // always a persona, so the sidebar and demo guide are laid out from the first paint and nothing jumps.
+  const framed = !onboarding && (!!session || !wallet.ready);
   const isChat = pathname === "/chat";
   const inboxCount = role === "verifier" && snap ? pendingFor(snap, session?.address ?? "") : 0;
   const ownerCount = role === "owner" && snap ? ownerPending(snap) : 0;
@@ -82,12 +90,15 @@ function Chrome({ children }: { children: ReactNode }) {
 
   // The collapse choice is remembered on this device; read after mount so the server markup matches.
   useEffect(() => {
+    // The width itself comes from <html data-sidebar>, set before first paint by the script in layout.tsx.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     try { setCollapsed(window.localStorage.getItem(COLLAPSE_KEY) === "collapsed"); } catch { /* ignore */ }
   }, []);
   const toggleCollapsed = () => {
     const next = !collapsed;
     setCollapsed(next);
+    if (next) document.documentElement.dataset.sidebar = "collapsed";
+    else delete document.documentElement.dataset.sidebar;
     try { window.localStorage.setItem(COLLAPSE_KEY, next ? "collapsed" : "open"); } catch { /* ignore */ }
   };
 
@@ -111,7 +122,7 @@ function Chrome({ children }: { children: ReactNode }) {
   const openPersona = () => setPersonaOpen(true);
   const personaLabel = session ? fmt(common.persona.switchLabel, { name: session.label.replace(/\s*\(.*\)$/, ""), role: common.roles[session.role] }) : "";
   // --tabbar-h is the height of whatever is pinned to the bottom of the screen (the chat composer), so toasts clear it.
-  const vars = { "--sidebar-w": collapsed ? "5.25rem" : "18.25rem", "--tabbar-h": framed && isChat ? "11.5rem" : "0rem" } as CSSProperties;
+  const vars = { "--tabbar-h": framed && isChat ? "11.5rem" : "0rem" } as CSSProperties;
 
   return (
     <div className="min-h-dvh" style={vars}>
@@ -160,8 +171,10 @@ function Chrome({ children }: { children: ReactNode }) {
             <div className="ml-auto flex min-w-0 items-center gap-2">
               {!framed && <LanguageSwitcher />}
               {!framed && isMock && (
-                <button type="button" onClick={openPersona} title={common.demo.badgeHint} aria-label={common.demo.open} className="hidden min-h-11 shrink-0 items-center rounded-full px-1 min-[440px]:inline-flex">
+                <button type="button" onClick={openPersona} title={common.demo.badgeHint} aria-haspopup="dialog" className="hidden min-h-11 shrink-0 items-center rounded-full px-1 min-[440px]:inline-flex">
+                  {/* The accessible name starts with the visible words (WCAG 2.5.3), then says what the button does. */}
                   <span className="rounded-full border border-dashed border-ink px-2.5 py-1 text-[0.75rem] font-semibold text-ink">{common.demo.badge}</span>
+                  <span className="sr-only">: {common.demo.open}</span>
                 </button>
               )}
               {framed && (
@@ -206,6 +219,8 @@ function Chrome({ children }: { children: ReactNode }) {
       {framed && (
         <>
           {!isChat && pathname !== "/will" && (
+            // In a landmark of its own, so screen-reader users can find it from the landmarks list.
+            <nav aria-label={assistant.sheet.fabLabel} className="contents">
             <Link
               href="/chat"
               className="fixed bottom-[calc(var(--safe-b)+0.875rem)] right-4 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-ink pl-4 pr-5 font-semibold text-bg shadow-raised ring-2 ring-bg transition-transform active:scale-95 lg:hidden"
@@ -213,6 +228,7 @@ function Chrome({ children }: { children: ReactNode }) {
               <MessageCircle className="size-6" aria-hidden="true" />
               <span className="text-small">{assistant.sheet.fabLabel}</span>
             </Link>
+            </nav>
           )}
           <dialog
             ref={drawer} className="drawer" aria-label={s.sidebarLabel}

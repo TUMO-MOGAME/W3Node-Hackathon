@@ -51,7 +51,9 @@ export function DemoGuide() {
   const wallet = useWallet();
   const { snap, session, phase, setProofOpen } = useEstate();
   const pathname = usePathname();
-  if (phase === "loading" || phase === "error") return null;
+  // While the estate loads, hold the guide's height (min-h-14) so the page below doesn't jump when it appears.
+  if (phase === "loading") return <div className="brand-panel min-h-14" aria-hidden="true" />;
+  if (phase === "error") return null;
   const step = nextStep(snap, wallet.sessions);
   const copy = d.steps[step.key];
   const n = ORDER.indexOf(step.key) + 1;
@@ -62,7 +64,7 @@ export function DemoGuide() {
 
   return (
     <div className="brand-panel">
-      <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-1.5" role="status" aria-live="polite">
+      <div className="mx-auto flex min-h-14 w-full max-w-6xl items-center gap-3 px-4 py-1.5" role="status" aria-live="polite">
         <Compass className="hidden size-5 shrink-0 sm:block" aria-hidden="true" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[0.7rem] font-semibold uppercase tracking-wider text-ink-2">
