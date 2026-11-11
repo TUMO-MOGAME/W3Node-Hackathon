@@ -43,10 +43,15 @@ nothing makes sure it is spent on the children.
 
 ## Screenshots
 
-<!-- SCREENSHOTS: add 4–6 phone-width captures to docs/img/ and reference them here -->
-| Plan builder | Payment review | Contract blocks a rule break | Proof drawer |
+Phone width (360px), "Harvest Moon" theme, light and dark:
+
+| Landing | Estate dashboard | Payment review | Payment confirmed |
 |---|---|---|---|
-| *docs/img/plan.png* | *docs/img/review.png* | *docs/img/blocked.png* | *docs/img/proof.png* |
+| <img src="docs/screenshots/landing-360-light.png" width="200" alt="Landing page"> | <img src="docs/screenshots/estate-360-light.png" width="200" alt="Estate dashboard with vault, rules and scheduled payments"> | <img src="docs/screenshots/pay-review-360-light.png" width="200" alt="Payment review: recipient, amount, network, fee, verified USD₮"> | <img src="docs/screenshots/pay-confirmed-360-light.png" width="200" alt="Payment confirmed with Explorer link"> |
+
+| Claims | Talk to Heirloom | Dark mode | Desktop |
+|---|---|---|---|
+| <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claims with caps"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Voice call with the agent"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/estate-1280-light.png" width="200" alt="Estate dashboard on desktop"> |
 
 ---
 
