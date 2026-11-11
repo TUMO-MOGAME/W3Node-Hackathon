@@ -81,8 +81,34 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
   const [view, setView] = useState<"chat" | "review">("chat");
   const id = useRef(0);
   const end = useRef<HTMLDivElement>(null);
-  const scroll = useCallback(() => end.current?.scrollIntoView({ block: "nearest" }), []);
-  useEffect(() => { if (messages.length > 1 || pending) scroll(); }, [messages.length, pending, scroll]);
+  const log = useRef<HTMLDivElement>(null);
+  // Scroll only the chat's own message pane, never the page, so the layout stays put while chatting.
+  // While a reply types out, follow it only if the reader is already near the bottom (don't yank them back up).
+  // "pinned" = the reader is at the bottom; updated only by the reader's own scrolling, so long typed lines can't unpin it.
+  const pinned = useRef(true);
+  const stickToEnd = useCallback((force: boolean) => {
+    const el = log.current;
+    if (!el) return;
+    if (force) pinned.current = true;
+    if (pinned.current) el.scrollTop = el.scrollHeight;
+  }, []);
+  useEffect(() => {
+    const el = log.current;
+    if (!el) return;
+    let last = el.scrollTop;
+    const onScroll = () => {
+      // Only an upward scroll by the reader unpins; reaching the bottom again re-pins.
+      if (el.scrollTop < last - 4) pinned.current = false;
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < 24) pinned.current = true;
+      last = el.scrollTop;
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [view]);
+  const scroll = useCallback(() => stickToEnd(false), [stickToEnd]);
+  useEffect(() => {
+    if (messages.length > 1 || pending) requestAnimationFrame(() => stickToEnd(true));
+  }, [messages.length, pending, stickToEnd]);
 
   const turns = messages.filter((m) => m.role === "user").length;
   const complete = !!draft && draft.assets.length > 0 && draft.verifiers.length >= 3 && draft.rules.length > 0;
@@ -122,44 +148,53 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
         eyebrow={copy.eyebrow} title={copy.title} body={copy.body}
         action={<Button variant="secondary" small onClick={() => openAgent("call")}><Phone className="size-4" aria-hidden="true" />{copy.talk}</Button>}
       />
-      <div className="grid gap-5 *:min-w-0 lg:grid-cols-[1.2fr_1fr] lg:items-start">
-        <section aria-label={copy.eyebrow} className="flex min-w-0 flex-col rounded-xl border border-line bg-surface p-3 shadow-card sm:p-4">
-          <ul role="log" aria-live="polite" aria-relevant="additions" className="flex flex-col gap-4">
-            {messages.map((m) => (
-              <Bubble key={m.id} role={m.role} text={m.text} fresh={m.fresh} specialist={m.role === "agent" ? "WillWriter" : undefined} copy={assistant} onTick={scroll} onTyped={scroll} />
-            ))}
-            {pending && <Thinking label={copy.thinking} />}
-          </ul>
-          {failed && (
-            <Notice tone="danger" className="mt-3">
-              <p role="alert">{copy.error}</p>
-              <Button small variant="secondary" className="mt-2" onClick={() => { const t = failed; setMessages((m) => m.slice(0, -1)); void send(t); }}>{copy.retry}</Button>
-            </Notice>
-          )}
-          <div ref={end} className="h-3" />
+      {/* Two aligned cards of equal height; each scrolls inside itself so chatting never pushes the page down. */}
+      <div className="grid gap-5 *:min-w-0 lg:h-[max(32rem,calc(100dvh-var(--header-h)-15rem))] lg:grid-cols-[1.2fr_1fr] lg:items-stretch">
+        <section aria-label={copy.eyebrow} className="flex h-[min(42rem,72dvh)] min-h-0 min-w-0 flex-col rounded-xl border border-line bg-surface shadow-card lg:h-full">
+          <div ref={log} tabIndex={0} aria-label={copy.eyebrow} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] sm:p-4">
+            <ul role="log" aria-live="polite" aria-relevant="additions" className="flex flex-col gap-4">
+              {messages.map((m) => (
+                <Bubble key={m.id} role={m.role} text={m.text} fresh={m.fresh} specialist={m.role === "agent" ? "WillWriter" : undefined} copy={assistant} onTick={scroll} onTyped={scroll} />
+              ))}
+              {pending && <Thinking label={copy.thinking} />}
+            </ul>
+            {failed && (
+              <Notice tone="danger" className="mt-3">
+                <p role="alert">{copy.error}</p>
+                <Button small variant="secondary" className="mt-2" onClick={() => { const t = failed; setMessages((m) => m.slice(0, -1)); void send(t); }}>{copy.retry}</Button>
+              </Notice>
+            )}
+            <div ref={end} className="h-1" />
+          </div>
 
-          {!consent && turns === 0 ? (
-            <div className="mt-2">
-              <p className="mb-1.5 text-small font-semibold">{copy.consentLead}</p>
-              <Consent id="will-consent" checked={consent} onChange={setConsent} copy={common.consent} />
-            </div>
-          ) : (
-            <div className="mt-2 flex flex-col gap-3">
-              {!pending && !failed && <Chips items={chips} onPick={(s) => (s === copy.suggestions[3][1] ? setView("review") : void send(s))} label={copy.suggestionsLabel} />}
-              <Composer onSend={send} disabled={pending} copy={copy.composer} />
-            </div>
-          )}
+          <div className="shrink-0 border-t border-line p-3 sm:p-4">
+            {!consent && turns === 0 ? (
+              <div>
+                <p className="mb-1.5 text-small font-semibold">{copy.consentLead}</p>
+                <Consent id="will-consent" checked={consent} onChange={setConsent} copy={common.consent} />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {!pending && !failed && <Chips items={chips} onPick={(s) => (s === copy.suggestions[3][1] ? setView("review") : void send(s))} label={copy.suggestionsLabel} />}
+                <Composer onSend={send} disabled={pending} copy={copy.composer} />
+              </div>
+            )}
+          </div>
         </section>
 
-        <div className="lg:sticky lg:top-[calc(var(--header-h)+4.5rem)]">
-          <Preview copy={copy} draft={draft} onStart={(i, now) => setStarts((prev) => ({ ...prev, [i]: now }))} />
-          <AnimatePresence>
-            {complete && (
-              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-4">
-                <Button block onClick={() => setView("review")}><PenLine className="size-5" aria-hidden="true" />{copy.reviewCta}</Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="flex max-h-[min(42rem,80dvh)] min-h-0 flex-col lg:h-full lg:max-h-none">
+          <Preview
+            copy={copy} draft={draft} onStart={(i, now) => setStarts((prev) => ({ ...prev, [i]: now }))}
+            footer={
+              <AnimatePresence>
+                {complete && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-3 shrink-0 border-t border-line pt-3">
+                    <Button block onClick={() => setView("review")}><PenLine className="size-5" aria-hidden="true" />{copy.reviewCta}</Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            }
+          />
         </div>
       </div>
     </>
@@ -180,20 +215,20 @@ function Slot({ icon, title, filled, pending, children }: { icon: ReactNode; tit
   );
 }
 
-function Preview({ copy, draft, onStart }: { copy: Copy; draft: WillDraft | null; onStart: (index: number, now: boolean) => void }) {
+function Preview({ copy, draft, onStart, footer }: { copy: Copy; draft: WillDraft | null; onStart: (index: number, now: boolean) => void; footer?: ReactNode }) {
   const { common } = useCopy();
   const p = copy.preview;
   const parts = [!!draft?.beneficiaries.length, !!draft?.rules.length, (draft?.verifiers.length ?? 0) >= 3, !!draft?.assets.length];
   const done = parts.filter(Boolean).length;
   const item = { initial: { opacity: 0, x: -8 }, animate: { opacity: 1, x: 0 } };
   return (
-    <Card aria-label={p.title} className="bg-surface-2/50">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <Card aria-label={p.title} className="flex min-h-0 flex-1 flex-col bg-surface-2/50">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h2 className="text-h3">{p.title}</h2>
         <Badge tone={done === 4 ? "ok" : "accent"}><Sparkles className="size-3.5" aria-hidden="true" />{done === 4 ? p.ready : p.live}</Badge>
       </div>
-      <p className="mt-1 text-small text-ink-2" role="status" aria-live="polite">{draft ? fmt(p.progress, { done }) : p.emptyHint}</p>
-      <div className="mt-3 grid gap-2.5">
+      <p className="mt-1 shrink-0 text-small text-ink-2" role="status" aria-live="polite">{draft ? fmt(p.progress, { done }) : p.emptyHint}</p>
+      <div tabIndex={0} aria-label={p.title} className="-mr-2 mt-3 grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]">
         <Slot icon={<UsersRound className="size-4" aria-hidden="true" />} title={p.family} filled={parts[0]} pending={p.pending}>
           <ul className="flex flex-wrap gap-1.5">
             {draft?.beneficiaries.map((b) => (
@@ -257,6 +292,7 @@ function Preview({ copy, draft, onStart }: { copy: Copy; draft: WillDraft | null
           <p className="flex items-center gap-2 px-1 text-small text-ink-2"><Clock className="size-4 shrink-0" aria-hidden="true" />{p.waiting}: {fmt(p.waitingValue, { days: draft.waitingPeriodDays })}</p>
         )}
       </div>
+      {footer}
     </Card>
   );
 }
