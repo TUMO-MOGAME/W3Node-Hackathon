@@ -19,6 +19,9 @@ export interface StoredPayment extends PaymentReceipt {
   amount?: string; // base units as string (JSON-safe)
   wireBase64?: string;
   lastValidBlockHeight?: number;
+  /** Fee payer of the signed tx; `sponsored` = Heirloom's sponsor wallet paid the network fee. */
+  feePayer?: string;
+  sponsored?: boolean;
 }
 
 export interface ReceiptStore {
@@ -27,7 +30,7 @@ export interface ReceiptStore {
   list(): StoredPayment[];
 }
 
-export interface SignedTx { signature: string; wireBase64: string; lastValidBlockHeight: number }
+export interface SignedTx { signature: string; wireBase64: string; lastValidBlockHeight: number; feePayer?: string; sponsored?: boolean }
 
 export interface ChainOps {
   /** null = the cluster does not know this signature (yet). */
@@ -141,6 +144,7 @@ export async function runPayment(
   p = save(store, p, {
     status: "submitted", signature: signed.signature, explorerUrl: explorerTx(signed.signature),
     wireBase64: signed.wireBase64, lastValidBlockHeight: signed.lastValidBlockHeight,
+    feePayer: signed.feePayer, sponsored: signed.sponsored,
   });
   try {
     await ops.broadcast(signed.wireBase64);
@@ -190,4 +194,66 @@ export function resumeOnReconnect(store: ReceiptStore, ops: ChainOps, onUpdate?:
   window.addEventListener("online", run);
   document.addEventListener("visibilitychange", vis);
   return () => { window.removeEventListener("online", run); document.removeEventListener("visibilitychange", vis); };
+}
+
+// ---------- fee sponsorship (families do not need SOL) ----------
+
+export interface SponsorStatus { available: boolean; feePayer: string | null; maxFeeLamports: number; paysRent: boolean }
+
+export class SponsorError extends Error {
+  constructor(public code: string, message: string) { super(message); this.name = "SponsorError"; }
+  /** The sponsor refused for a reason that also applies if the user pays (the program would reject the tx). */
+  get fatal(): boolean { return this.code === "simulation_failed"; }
+}
+
+export interface SponsorClient {
+  status(): Promise<SponsorStatus | null>;
+  /** Server validates + co-signs as fee payer; never broadcasts (submit=false), so the caller can persist first. */
+  cosign(partialWireBase64: string): Promise<{ signature: string; wireBase64: string }>;
+}
+
+export interface SponsoredSignDeps {
+  user: string;
+  /** Builds the unsigned base64 tx with the given fee payer (fresh blockhash). */
+  build(feePayer: string): Promise<{ base64: string; lastValidBlockHeight: number }>;
+  /** User's WDK partial signature (fee payer = someone else). Absent → user pays. */
+  signPartial?: (base64: string) => Promise<{ wireBase64: string }>;
+  /** User's WDK signature as fee payer (fallback). */
+  signOnly(base64: string): Promise<{ signature: string; wireBase64: string }>;
+  sponsor?: SponsorClient | null;
+  onFallback?: (reason: string) => void;
+}
+
+/**
+ * Signs with the sponsor as fee payer when it is available, else the user pays. Falling back is safe for
+ * pay-once: the sponsor never broadcasts, so a co-signed tx whose response was lost can never land.
+ * A simulation failure is not retried as user-paid (the program would reject it either way).
+ */
+export async function signSponsoredOrSelf(d: SponsoredSignDeps): Promise<SignedTx> {
+  const st = d.sponsor && d.signPartial ? await d.sponsor.status().catch(() => null) : null;
+  if (st?.available && st.feePayer && st.feePayer !== d.user && d.signPartial && d.sponsor) {
+    try {
+      const { base64, lastValidBlockHeight } = await d.build(st.feePayer);
+      const partial = await d.signPartial(base64);
+      const full = await d.sponsor.cosign(partial.wireBase64);
+      return { signature: full.signature, wireBase64: full.wireBase64, lastValidBlockHeight, feePayer: st.feePayer, sponsored: true };
+    } catch (e) {
+      if (e instanceof SponsorError && e.fatal) throw e;
+      d.onFallback?.(e instanceof Error ? e.message : String(e));
+    }
+  }
+  const { base64, lastValidBlockHeight } = await d.build(d.user);
+  return { ...(await d.signOnly(base64)), lastValidBlockHeight, feePayer: d.user, sponsored: false };
+}
+
+/** Fee shown on the review screen: sponsored → the sponsor pays fee (and rent when it covers rent). */
+export function feeForReview(opts: { user: string; networkFeeLamports: number; rentLamports: number; sponsor: SponsorStatus | null }) {
+  const s = opts.sponsor;
+  if (s?.available && s.feePayer && opts.networkFeeLamports <= s.maxFeeLamports) {
+    const userLamports = s.paysRent ? 0 : opts.rentLamports;
+    const lamports = opts.networkFeeLamports + (s.paysRent ? opts.rentLamports : 0);
+    return { fee: { lamports, sol: lamports / 1e9, payer: s.feePayer, sponsored: true }, userLamports };
+  }
+  const lamports = opts.networkFeeLamports + opts.rentLamports;
+  return { fee: { lamports, sol: lamports / 1e9, payer: opts.user, sponsored: false }, userLamports: lamports };
 }

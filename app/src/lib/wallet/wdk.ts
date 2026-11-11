@@ -121,3 +121,62 @@ export function encodeWire(sigs: (Uint8Array | null)[], message: Uint8Array): st
   for (let i = 0; i < out.length; i += 0x8000) bin += String.fromCharCode(...out.subarray(i, i + 0x8000));
   return btoa(bin);
 }
+
+// ---------- partial signing (sponsored fees) ----------
+
+/** The parts of a Solana wire transaction we need for partial signing. Works for legacy and v0 messages. */
+export interface DecodedWire { signatures: (Uint8Array | null)[]; message: Uint8Array; signerKeys: Uint8Array[]; versioned: boolean }
+
+function readCompactU16(b: Uint8Array, at: number): [value: number, next: number] {
+  let value = 0, shift = 0, i = at;
+  for (;;) {
+    if (i >= b.length || shift > 14) throw new Error("Malformed transaction.");
+    const byte = b[i++];
+    value |= (byte & 0x7f) << shift;
+    if (!(byte & 0x80)) return [value, i];
+    shift += 7;
+  }
+}
+
+export function decodeWire(wire: Uint8Array): DecodedWire {
+  const [n, sigStart] = readCompactU16(wire, 0);
+  const msgStart = sigStart + n * 64;
+  if (n === 0 || msgStart > wire.length) throw new Error("Malformed transaction.");
+  const signatures = Array.from({ length: n }, (_, i) => {
+    const s = wire.slice(sigStart + i * 64, sigStart + (i + 1) * 64);
+    return s.every((x) => x === 0) ? null : s;
+  });
+  const message = wire.slice(msgStart);
+  const versioned = (message[0] & 0x80) !== 0;
+  const h = versioned ? 1 : 0;
+  const numRequired = message[h];
+  if (numRequired !== n) throw new Error("Signature count does not match the message header.");
+  const [keyCount, keysStart] = readCompactU16(message, h + 3);
+  if (keyCount < numRequired || keysStart + keyCount * 32 > message.length) throw new Error("Malformed transaction.");
+  const signerKeys = Array.from({ length: numRequired }, (_, i) => message.slice(keysStart + i * 32, keysStart + (i + 1) * 32));
+  return { signatures, message, signerKeys, versioned };
+}
+
+/**
+ * Partially signs a base64 wire tx with a WDK account, for transactions whose fee payer is someone else (the
+ * Heirloom fee sponsor). WDK's public signTransaction() insists the account is the fee payer, so we use the
+ * account's own @solana/kit KeyPairSigner (the same signer WDK signs with internally): the key never leaves WDK.
+ * Returns the wire bytes with this account's signature in its slot; other slots are left as they were.
+ */
+export async function wdkPartialSign(account: WalletAccountSolanaT, base64Tx: string): Promise<{ wireBase64: string; signature: string }> {
+  const { default: bs58 } = await import("bs58");
+  const wire = Uint8Array.from(atob(base64Tx), (c) => c.charCodeAt(0));
+  const d = decodeWire(wire);
+  const me = await account.getAddress();
+  const idx = d.signerKeys.findIndex((k) => bs58.encode(k) === me);
+  if (idx < 0) throw new Error("This wallet is not a signer of the transaction.");
+  const getSigner = (account as unknown as { _getSigner?: () => Promise<{ address: string; signMessages(m: { content: Uint8Array; signatures: Record<string, Uint8Array> }[]): Promise<Record<string, Uint8Array>[]> }> })._getSigner;
+  if (typeof getSigner !== "function") throw new Error("This WDK version cannot co-sign sponsored transactions.");
+  const signer = await getSigner.call(account);
+  if (signer.address !== me) throw new Error("WDK signer does not match the wallet address.");
+  const [map] = await signer.signMessages([{ content: d.message, signatures: {} }]);
+  const sig = map?.[me];
+  if (!sig || sig.length !== 64) throw new Error("WDK did not return a signature.");
+  d.signatures[idx] = sig;
+  return { wireBase64: encodeWire(d.signatures, d.message), signature: bs58.encode(sig) };
+}

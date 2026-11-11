@@ -98,3 +98,65 @@ describe("pay-once pipeline", () => {
     expect(cancelPayment(store, "c2")?.status).toBe("pending");
   });
 });
+
+describe("fee sponsorship (signSponsoredOrSelf / feeForReview)", () => {
+  const deps = (over: Partial<import("./payments").SponsoredSignDeps> = {}) => {
+    const built: string[] = [];
+    const d: import("./payments").SponsoredSignDeps = {
+      user: "USER",
+      build: async (fp) => { built.push(fp); return { base64: `tx-${fp}`, lastValidBlockHeight: 99 }; },
+      signPartial: async (b) => ({ wireBase64: `partial(${b})` }),
+      signOnly: async (b) => ({ signature: "USERSIG", wireBase64: `signed(${b})` }),
+      sponsor: {
+        status: async () => ({ available: true, feePayer: "SPONSOR", maxFeeLamports: 20_000, paysRent: true }),
+        cosign: async (w) => ({ signature: "SPONSORSIG", wireBase64: `cosigned(${w})` }),
+      },
+      ...over,
+    };
+    return { d, built };
+  };
+
+  it("uses the sponsor as fee payer when available", async () => {
+    const { signSponsoredOrSelf } = await import("./payments");
+    const { d, built } = deps();
+    const r = await signSponsoredOrSelf(d);
+    expect(built).toEqual(["SPONSOR"]);
+    expect(r).toMatchObject({ signature: "SPONSORSIG", wireBase64: "cosigned(partial(tx-SPONSOR))", sponsored: true, feePayer: "SPONSOR", lastValidBlockHeight: 99 });
+  });
+
+  it("falls back to the user paying when the sponsor refuses or is down", async () => {
+    const { signSponsoredOrSelf, SponsorError } = await import("./payments");
+    const { d, built } = deps({ sponsor: { status: async () => ({ available: true, feePayer: "SPONSOR", maxFeeLamports: 1, paysRent: false }), cosign: async () => { throw new SponsorError("rate_limited", "slow down"); } } });
+    const onFallback = vi.fn();
+    const r = await signSponsoredOrSelf({ ...d, onFallback });
+    expect(built).toEqual(["SPONSOR", "USER"]);
+    expect(r).toMatchObject({ signature: "USERSIG", sponsored: false, feePayer: "USER" });
+    expect(onFallback).toHaveBeenCalledWith("slow down");
+    const off = deps({ sponsor: { status: async () => null, cosign: async () => { throw new Error("unreachable"); } } });
+    expect((await signSponsoredOrSelf(off.d)).sponsored).toBe(false);
+    expect(off.built).toEqual(["USER"]);
+  });
+
+  it("does not retry as user-paid when the program would reject the tx anyway", async () => {
+    const { signSponsoredOrSelf, SponsorError } = await import("./payments");
+    const { d } = deps({ sponsor: { status: async () => ({ available: true, feePayer: "SPONSOR", maxFeeLamports: 1, paysRent: false }), cosign: async () => { throw new SponsorError("simulation_failed", "Rejected by the Heirloom program"); } } });
+    await expect(signSponsoredOrSelf(d)).rejects.toThrow(/Heirloom program/);
+  });
+
+  it("works with runPayment: the sponsored signature is stored before broadcast", async () => {
+    const { signSponsoredOrSelf } = await import("./payments");
+    const store = memoryReceiptStore();
+    const { ops } = fakeChain();
+    const { d } = deps();
+    await runPayment(store, ops, "sp1", () => signSponsoredOrSelf(d), { kind: "p2p" });
+    expect(store.get("sp1")).toMatchObject({ signature: "SPONSORSIG", sponsored: true, feePayer: "SPONSOR" });
+  });
+
+  it("review fee: sponsored → sponsor pays fee and rent; otherwise the user does", async () => {
+    const { feeForReview } = await import("./payments");
+    const s = { available: true, feePayer: "SPONSOR", maxFeeLamports: 20_000, paysRent: true };
+    expect(feeForReview({ user: "U", networkFeeLamports: 10_000, rentLamports: 2_039_280, sponsor: s })).toEqual({ fee: { lamports: 2_049_280, sol: 0.00204928, payer: "SPONSOR", sponsored: true }, userLamports: 0 });
+    expect(feeForReview({ user: "U", networkFeeLamports: 10_000, rentLamports: 2_039_280, sponsor: { ...s, paysRent: false } }).userLamports).toBe(2_039_280);
+    expect(feeForReview({ user: "U", networkFeeLamports: 5_000, rentLamports: 0, sponsor: null }).fee).toEqual({ lamports: 5_000, sol: 0.000005, payer: "U", sponsored: false });
+  });
+});

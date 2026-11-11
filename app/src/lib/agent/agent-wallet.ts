@@ -10,7 +10,7 @@ import { chainConfig } from "../chain/config";
 import { findInstruction, getIdl } from "../chain/idl";
 import { prepareTx } from "../chain/client";
 import { confirmOrThrow } from "../chain/tx";
-import { openAccount, wdkSignAndSend, type WdkAccount } from "../wallet/wdk";
+import { openAccount, wdkPartialSign, wdkSignAndSend, type WdkAccount } from "../wallet/wdk";
 import { explorerTx } from "../format";
 
 export const AGENT_ALLOWED = ["review_death", "review_claim", "review_hardship", "list_asset", "accept_offer", "execute_scheduled"] as const;
@@ -52,4 +52,13 @@ export async function agentSignAndSend(ixs: TransactionInstruction[]): Promise<{
   const signature = await wdkSignAndSend(acc.account, b64);
   await confirmOrThrow(signature);
   return { signature, explorerUrl: explorerTx(signature) };
+}
+
+/**
+ * Fee sponsorship: the agent's WDK wallet adds its fee-payer signature to a user's partially signed tx.
+ * Only ever called by /api/sponsor AFTER lib/sponsor/policy.ts validated the exact bytes.
+ */
+export async function agentCoSign(wireBase64: string): Promise<{ wireBase64: string; signature: string }> {
+  const acc = await agentAccount();
+  return wdkPartialSign(acc.account, wireBase64);
 }
