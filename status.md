@@ -33,6 +33,13 @@
 - **Tumo must create `app/.env.local`** (Claude is blocked from writing secret files): `Copy-Item scripts\.env.devnet app\.env.local`, then add the GEMINI / ELEVENLABS / SUPABASE keys (names in `app/.env.example`)
 - Open gaps: `Claim.ownerApproved` isn't exposed in types; recurring rules created from a new will become claim-based until a payee wallet is known; in-memory rate limits
 
+## UI: DONE. Integrated build green. LIVE (2026-11-11)
+- **Live: https://heirloom-one-iota.vercel.app** (Vercel project `heirloom`, account tumo-mogame; currently **mock mode**, from commit 60d53ae)
+- Deploy method: snapshot worktree `.deploy/` (gitignored) → `cd .deploy/app; npx vercel deploy --prod --yes`. Refresh it with `git -C .deploy checkout --detach <commit>`
+- Integrated: tsc clean, 90/90 tests, `next build` OK (36 routes)
+- Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
+- Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
+
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |
 |---|---|---|

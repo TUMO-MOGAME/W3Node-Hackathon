@@ -24,3 +24,7 @@ scripts/.demo-wallets*.json
 Thumbs.db
 .vscode/*
 !.vscode/extensions.json
+
+# Vercel deploy snapshot worktree
+.deploy/
+.vercel/
