@@ -2,8 +2,8 @@ import { z } from "zod";
 import { handler, json, parseJson, rateLimit } from "@/lib/api/http";
 import { interpret, qvacStatus } from "@/lib/assistant/qvac";
 
-/** QVAC needs Node (it spawns a Bare worker with native llama.cpp); never the edge runtime. */
-export const runtime = "nodejs";
+// QVAC needs Node (it spawns a Bare worker with native llama.cpp). Route handlers run on the Node.js runtime by
+// default; an explicit `runtime` export is not allowed with cacheComponents, so none is set here.
 export const maxDuration = 30;
 
 const body = z.object({

@@ -115,7 +115,10 @@ export function parseIntentFallback(text: string, recipients: RecipientLike[] = 
   else if (matched.length === 1) recipient = matched[0].label;
   else {
     const m = t.match(/\bto\s+(?:my\s+)?([\p{L}][\p{L}'.-]*(?:\s+[\p{Lu}][\p{L}'.-]*)?)/u);
+    // "pay Zola 20", with a capitalised name straight after the verb.
+    const v = t.match(/\b(?:send|pay|give|transfer)\s+([\p{Lu}][\p{L}'-]+)/u);
     if (m && !/^(the|a|an|pay|send|buy)$/i.test(m[1])) recipient = m[1].trim();
+    else if (v && !/^(R|ZAR|USDT|USD|My|The)$/.test(v[1])) recipient = v[1];
     else if (matched.length > 1) recipient = t.match(/\bmy\s+([\p{L}]+)/u)?.[1] ?? matched[0].label;
   }
 

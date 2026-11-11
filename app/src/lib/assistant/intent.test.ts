@@ -36,6 +36,11 @@ describe("parseIntentFallback", () => {
     expect(parseIntentFallback("send R100 to Zola for taxi fare").recipient).toBe("Zola");
   });
 
+  it("finds a capitalised name straight after the verb", () => {
+    expect(parseIntentFallback("pay Zola 20 USDT").recipient).toBe("Zola");
+    expect(parseIntentFallback("send R50 to my brother").recipient).toBe("brother");
+  });
+
   it("does not take a person for a memo", () => {
     expect(parseIntentFallback("pay R200 for Lerato", PEOPLE)).toMatchObject({ recipient: "Lerato Mokoena", memo: null });
   });
