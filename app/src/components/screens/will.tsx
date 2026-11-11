@@ -18,7 +18,8 @@ import { categoryIcon } from "./estate";
 type Copy = ScreensCopy["will"];
 interface Msg extends WillChatMessage { id: number; fresh?: boolean }
 const usd = (n: number) => formatUsdt(toBase(n), { decimals: 0 });
-const longDate = (iso: string | number) => new Date(typeof iso === "number" ? iso * 1000 : iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
+const ruleKey = (r: WillDraft["rules"][number]) => `${r.beneficiaryLabel}|${r.category}|${r.recurring ? "recurring" : "claim"}`;
+const longDate =(iso: string | number) => new Date(typeof iso === "number" ? iso * 1000 : iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
 
 export function WillScreen({ copy: english }: { copy: Copy }) {
   const copy = useLocalized(english, (t) => t.screens.will);
@@ -70,9 +71,10 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
   const [messages, setMessages] = useState<Msg[]>([{ id: 0, role: "agent", text: fmt(copy.greeting, { name: first }) }]);
   const [rawDraft, setDraft] = useState<WillDraft | null>(null);
   // The owner's own Now / After-I'm-gone choices, kept when the agent sends a fresh draft.
-  const [starts, setStarts] = useState<Record<number, boolean>>({});
+  // Keyed by who + what (not row position), so a re-ordered or extended draft can't move a choice onto another rule.
+  const [starts, setStarts] = useState<Record<string, boolean>>({});
   const draft = useMemo<WillDraft | null>(
-    () => (rawDraft ? { ...rawDraft, rules: rawDraft.rules.map((r, i) => (i in starts ? { ...r, startsNow: starts[i] } : r)) } : null),
+    () => (rawDraft ? { ...rawDraft, rules: rawDraft.rules.map((r) => { const k = ruleKey(r); return k in starts ? { ...r, startsNow: starts[k] } : r; }) } : null),
     [rawDraft, starts],
   );
   const [pending, setPending] = useState(false);
@@ -113,12 +115,13 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
   const turns = messages.filter((m) => m.role === "user").length;
   const complete = !!draft && draft.assets.length > 0 && draft.verifiers.length >= 3 && draft.rules.length > 0;
 
-  const send = async (text: string) => {
+  // `base` lets a retry resend from the history *without* the failed message (state updates aren't visible yet).
+  const send = async (text: string, base: Msg[] = messages) => {
     const trimmed = text.trim();
     if (!trimmed || !service || pending) return;
     setFailed(null);
-    const history: WillChatMessage[] = [...messages.map(({ role, text: t }) => ({ role, text: t })), { role: "user", text: trimmed }];
-    setMessages((m) => [...m.map((x) => ({ ...x, fresh: false })), { id: ++id.current, role: "user", text: trimmed }]);
+    const history: WillChatMessage[] = [...base.map(({ role, text: t }) => ({ role, text: t })), { role: "user", text: trimmed }];
+    setMessages([...base.map((x) => ({ ...x, fresh: false })), { id: ++id.current, role: "user", text: trimmed }]);
     setPending(true);
     try {
       const res = await service.willChat(history, locale);
@@ -161,7 +164,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
             {failed && (
               <Notice tone="danger" className="mt-3">
                 <p role="alert">{copy.error}</p>
-                <Button small variant="secondary" className="mt-2" onClick={() => { const t = failed; setMessages((m) => m.slice(0, -1)); void send(t); }}>{copy.retry}</Button>
+                <Button small variant="secondary" className="mt-2" onClick={() => void send(failed, messages.slice(0, -1))}>{copy.retry}</Button>
               </Notice>
             )}
             <div ref={end} className="h-1" />
@@ -175,7 +178,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {!pending && !failed && <Chips items={chips} onPick={(s) => (s === copy.suggestions[3][1] ? setView("review") : void send(s))} label={copy.suggestionsLabel} />}
+                {!pending && !failed && <Chips items={chips} onPick={(s) => (s === copy.suggestions[copy.suggestions.length - 1]?.[1] && complete ? setView("review") : void send(s))} label={copy.suggestionsLabel} />}
                 <Composer onSend={send} disabled={pending} copy={copy.composer} />
               </div>
             )}
@@ -184,7 +187,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
 
         <div className="flex max-h-[min(42rem,80dvh)] min-h-0 flex-col lg:h-full lg:max-h-none">
           <Preview
-            copy={copy} draft={draft} onStart={(i, now) => setStarts((prev) => ({ ...prev, [i]: now }))}
+            copy={copy} draft={draft} onStart={(i, now) => { const r = draft?.rules[i]; if (r) setStarts((prev) => ({ ...prev, [ruleKey(r)]: now })); }}
             footer={
               <AnimatePresence>
                 {complete && (
