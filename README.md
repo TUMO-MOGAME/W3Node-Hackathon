@@ -291,7 +291,7 @@ cd app && npm test                 # 230 Vitest tests: payments (pay-once), WDK 
 cd app && npx tsc --noEmit         # type check
 anchor build && cargo test -p heirloom   # 25 LiteSVM program tests (Linux / WSL, Anchor 1.2.2)
 ```
-`scripts/build-program.sh` wraps the last line for the author's WSL setup (it mirrors the repo from a fixed path).
+`bash scripts/build-program.sh test` does the same inside WSL: it copies the program to the Linux disk for a faster build, then runs the tests.
 
 ## Security notes
 

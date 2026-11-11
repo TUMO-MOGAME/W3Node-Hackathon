@@ -11,7 +11,7 @@
 set -euo pipefail
 
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$HOME/.avm/bin:$HOME/.cargo/bin:$PATH"
-REPO="/mnt/c/Users/tumom/Hackathons/W3Node Hacathon"
+REPO="${HEIRLOOM_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 WORK="$HOME/heirloom-build"
 MODE="${1:-test}"
 
