@@ -45,8 +45,8 @@ export function ChildTalk({ copy, safety, status, snap, reload }: { copy: Legacy
       finally { setBusy(false); }
     };
     return (
-      <Card className="border-brass/40">
-        <h2 className="flex items-center gap-2 text-h3"><HeartHandshake className="size-5 text-brass" aria-hidden="true" />{fmt(c.optIn.title, vars)}</h2>
+      <Card className="border-2 border-ink">
+        <h2 className="flex items-center gap-2 text-h3"><HeartHandshake className="size-5" aria-hidden="true" />{fmt(c.optIn.title, vars)}</h2>
         <p className="mt-2">{fmt(c.optIn.body, vars)}</p>
         <DisclosureLabel className="mt-3" text={fmt(c.label, { called, date: fmtDate(status.voice.consentedAt) })} simulated={status.voice.simulated} simulatedText={c.labelSimulated} />
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">

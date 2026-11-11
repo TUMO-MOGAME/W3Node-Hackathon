@@ -32,6 +32,7 @@ export const legacyEntry = {
   childBody: "{called} recorded {possessive} voice and left words for you. Hear them in {possessive} voice, with care.",
   childCta: "Talk with {called}",
   childLocked: "{called} left words for you. They open once the estate unlocks.",
+  childMaybe: "If {called} recorded {possessive} voice for you, you can hear the words {pronoun} left here.",
   sheetCta: "Talk with {called} instead",
   sheetHint: "An AI voice made with {called}'s consent, speaking only the words {pronoun} left.",
   moment: {
@@ -41,6 +42,7 @@ export const legacyEntry = {
     label: "AI voice, created with {called}'s consent",
     simulated: "Simulated voice: the real voice needs ElevenLabs",
     optInFirst: "Switch on {called}'s voice to hear it",
+    maybe: "{called} may have left you a message for this moment",
   },
 } as const;
 

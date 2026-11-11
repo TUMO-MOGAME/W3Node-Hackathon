@@ -35,8 +35,8 @@ export function OwnerStudio({ copy, status, snap, reload }: { copy: Copy; status
         {o.steps.map((name, i) => {
           const done = voice ? i <= 2 : false;
           return (
-            <li key={name} className={clsx("inline-flex items-center gap-1.5", done ? "text-ok" : i === step ? "font-semibold text-ink" : "text-ink-2")}>
-              <span className={clsx("grid size-6 place-items-center rounded-full border text-[0.75rem] font-bold", done ? "border-ok bg-ok-soft" : "border-line-strong")} aria-hidden="true">
+            <li key={name} className={clsx("inline-flex items-center gap-1.5", done ? "text-ink" : i === step ? "font-semibold text-ink" : "text-ink-2")}>
+              <span className={clsx("grid size-6 place-items-center rounded-full border text-[0.75rem] font-bold", done ? "border-ink" : "border-line-strong border-dashed")} aria-hidden="true">
                 {done ? <Check className="size-3.5" /> : i + 1}
               </span>
               {name}
@@ -48,7 +48,7 @@ export function OwnerStudio({ copy, status, snap, reload }: { copy: Copy; status
       <Card>
         <h2 className="text-h3">{o.promise.title}</h2>
         <ul className="mt-2 grid gap-1.5 text-small">
-          {o.promise.items.map((t) => <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-ok" aria-hidden="true" />{t}</li>)}
+          {o.promise.items.map((t) => <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0" aria-hidden="true" />{t}</li>)}
         </ul>
       </Card>
 
@@ -127,7 +127,7 @@ function CreateVoice({ copy, ownerName, onDone }: { copy: Copy; ownerName: strin
   };
   const live = (slot: number | "consent") => rec.state === "recording" && active === slot && (
     <div className="mt-2 flex items-center gap-3" role="status">
-      <span className="size-2.5 animate-pulse-soft rounded-full bg-danger" aria-hidden="true" />
+      <Mic className="size-4 shrink-0 motion-safe:animate-pulse-soft" aria-hidden="true" />
       <span className="text-small font-semibold tabular-nums">{fmt(o.record.recording, { secs: rec.secs })}</span>
       <LevelMeter level={rec.level} label={o.record.level} />
     </div>
@@ -144,15 +144,15 @@ function CreateVoice({ copy, ownerName, onDone }: { copy: Copy; ownerName: strin
           <Field label={o.consent.nameLabel} htmlFor={nameId} hint={o.consent.nameHint}>
             <input id={nameId} className={inputClass} value={name} autoComplete="name" onChange={(e) => { setName(e.target.value); setConsent(null); }} />
           </Field>
-          <figure className="rounded-md border border-accent/30 bg-accent-soft p-4">
-            <figcaption className="text-small font-semibold text-accent">{o.consent.lineLabel}</figcaption>
+          <figure className="rounded-md border-2 border-ink bg-surface p-4">
+            <figcaption className="text-small font-semibold text-ink-2">{o.consent.lineLabel}</figcaption>
             <blockquote className="mt-1 font-display text-lead">“{line}”</blockquote>
           </figure>
           <div>
             <div className="flex flex-wrap items-center gap-2">
               {recBtn("consent", !!consent)}
               {consent && <PlayButton small playing={playing === "consent"} onPlay={() => listen("consent", consent)} onStop={stop} label={o.record.play} stopLabel={o.record.stop} />}
-              {consent && <span className="text-small text-ok">{fmt(o.record.recorded, { secs: consent.secs })}</span>}
+              {consent && <span className="inline-flex items-center gap-1 text-small font-semibold"><Check className="size-4" aria-hidden="true" />{fmt(o.record.recorded, { secs: consent.secs })}</span>}
             </div>
             {live("consent")}
           </div>
@@ -173,13 +173,13 @@ function CreateVoice({ copy, ownerName, onDone }: { copy: Copy; ownerName: strin
         {o.record.prompts.map((p, i) => {
           const t = takes[i];
           return (
-            <li key={p.title} className={clsx("rounded-md border p-3.5", t ? "border-ok/40 bg-ok-soft/40" : "border-line")}>
+            <li key={p.title} className={clsx("rounded-md border p-3.5", t ? "border-ink" : "border-dashed border-line-strong")}>
               <p className="font-semibold">{i + 1}. {p.title}</p>
               <p className="mt-0.5 text-small text-ink-2">{p.text}</p>
               <div className="mt-2.5 flex flex-wrap items-center gap-2">
                 {recBtn(i, !!t)}
                 {t && <PlayButton small playing={playing === `t${i}`} onPlay={() => listen(`t${i}`, t)} onStop={stop} label={o.record.play} stopLabel={o.record.stop} />}
-                <span className={clsx("text-small", t ? "text-ok" : "text-ink-2")}>{t ? fmt(o.record.recorded, { secs: t.secs }) : o.record.notRecorded}</span>
+                <span className={clsx("inline-flex items-center gap-1 text-small", t ? "font-semibold text-ink" : "text-ink-2")}>{t && <Check className="size-4" aria-hidden="true" />}{t ? fmt(o.record.recorded, { secs: t.secs }) : o.record.notRecorded}</span>
               </div>
               {live(i)}
             </li>
@@ -226,7 +226,7 @@ function VoiceCard({ copy, status, canChange, onRerecord, reload }: { copy: Copy
     <Card>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="flex items-center gap-2 text-h3"><Volume2 className="size-5 text-accent" aria-hidden="true" />{o.title}</h2>
+          <h2 className="flex items-center gap-2 text-h3"><Volume2 className="size-5" aria-hidden="true" />{o.title}</h2>
           <p className="mt-1 text-small text-ink-2">{fmt(o.created, { date: fmtDate(v.consentedAt) })} · {fmt(o.samples, { n: v.samples })}</p>
         </div>
         <PlayButton playing={playing === "sample"} onPlay={() => void hear()} onStop={stop} label={o.hear} stopLabel={copy.owner.record.stop} disabled={busy === "hear"} />
@@ -359,7 +359,7 @@ function BookEditor({ copy, initial, readOnly, reload }: { copy: Copy; initial: 
               </Field>
               {area(`${m.id}-text`, b.milestoneText, m.text, (v) => setM(m.id, { text: v }), undefined, 4)}
               {!readOnly && (
-                <Button variant="ghost" small className="justify-self-start text-danger" onClick={() => setBook((x) => ({ ...x, milestones: x.milestones.filter((y) => y.id !== m.id) }))}>
+                <Button variant="ghost" small className="justify-self-start" onClick={() => setBook((x) => ({ ...x, milestones: x.milestones.filter((y) => y.id !== m.id) }))}>
                   <Trash2 className="size-4" aria-hidden="true" />{b.removeMilestone}
                 </Button>
               )}
@@ -374,7 +374,7 @@ function BookEditor({ copy, initial, readOnly, reload }: { copy: Copy; initial: 
             <Button type="submit" className="flex-1" loading={busy}>{b.save}</Button>
             {confirmDelete
               ? <Button variant="danger" loading={busy} onClick={() => void del()}>{b.deleteBookConfirm}</Button>
-              : <Button variant="ghost" className="text-danger" onClick={() => setConfirmDelete(true)}><Trash2 className="size-4" aria-hidden="true" />{b.deleteBook}</Button>}
+              : <Button variant="ghost" onClick={() => setConfirmDelete(true)}><Trash2 className="size-4" aria-hidden="true" />{b.deleteBook}</Button>}
           </div>
         )}
       </form>
