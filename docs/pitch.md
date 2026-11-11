@@ -43,12 +43,12 @@
 ### 1:15–3:30 Live demo (cut to the app; show, don't tell)
 Follow the demo guide in the app. **Say less, click more.** One sentence per step:
 
-1. **(15 s) Plan builder.** Try the demo → Start as Thabo → tap a suggested reply. "The agent turns plain words
+1. **(15 s) Plan builder.** Try the demo → Start as Thabo → chat home → **Plan** in the sidebar → tap a suggested reply. "The agent turns plain words
    into strict rules. Each one starts **now** or **after I'm gone**." Flip a toggle → **Sign and lock**.
 2. **(20 s) Fund the vault: the one payment flow.** 24,000 USD₮. Stop on the review: "Recipient, amount in USD₮
    and rand, network, fee, verified USD₮. Approve. WDK signs on the phone. **Pending… confirmed.**" Tap the receipt
    → Explorer.
-3. **(8 s) Living plan.** Scheduled payments → **Pay now**: "Lerato's 85-dollar book allowance pays the bookstore
+3. **(8 s) Living plan.** Chat home card "A payment is due today" → **Pay it now**: "Lerato's 85-dollar book allowance pays the bookstore
    every month. He's alive; it's already working."
 4. **(5 s) Car.** Valuation → add car: "Floor price nine thousand."
 5. **(22 s) The contract says no.** As Lerato, claim 5,000 to UCT → **ExceedsPerClaimCap**. "The AI didn't stop
@@ -61,7 +61,7 @@ Follow the demo guide in the app. **Say less, click more.** One sentence per ste
 8. **(8 s) Hardship.** "With a SAPS affidavit and two verifiers it can sell lower, never below the hardship floor."
 9. **(10 s) Send to family.** "It's also how the family sends money: same review, same receipt, and if the signal
    drops, it re-checks the payment instead of paying twice."
-10. **(7 s) Proof drawer.** "Program, estate, USD₮ mint, every transaction: all on Solana Explorer."
+10. **(7 s) Proof drawer** (sidebar **Proof**). "Program, estate, USD₮ mint, every transaction: all on Solana Explorer."
 
 **If the live demo breaks:** switch to the recorded video at the same step and keep talking. Don't debug
 on stage. Mock mode (no network) is the backup for the live room.

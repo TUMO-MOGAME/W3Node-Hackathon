@@ -9,13 +9,15 @@
 | Layer | What | Where |
 |---|---|---|
 | **PWA (browser / phone)** | Next.js 16 App Router, React 19, Tailwind 4. Installable (manifest + service worker), offline page | `app/src/app/`, `app/src/app/manifest.ts`, `app/public/sw.js`, `app/src/components/shell/service-worker.tsx` |
-| **Screens** | Estate, plan builder (will), vault, claims, car, hardship, people, inbox (verifiers), family, send (P2P), start | `app/src/components/screens/*.tsx` |
+| **Shell** | Chat-first: sidebar with grouped navigation (Plan, Family, Trusted people, Money), saved chats per persona, collapse to an icon rail, drawer on phones; demo guide and persona sheet in mock mode | `app/src/components/shell/{app-shell,sidebar,persona-sheet,demo-guide}.tsx` |
+| **Chat home** | `/chat`, where the app opens: "Needs your attention" nudge cards and a composer (dictate, call, review a document, send money); threads saved per persona on the device | `app/src/components/chat/*`, `app/src/lib/chat/*` |
+| **Screens** | Estate, plan builder (will), vault, claims, car, hardship, people, inbox (verifiers), family (timeline), send (P2P), legacy voice, start | `app/src/components/screens/*.tsx`, `app/src/components/legacy/` |
 | **One payment sheet** | Review → Approve/Cancel → Signing (WDK) → Pending → Confirmed, for every USD₮ movement | `app/src/components/pay/payment.tsx` |
 | **Service interface** | One `HeirloomService` with two implementations: `mock` (in-browser, default) and `chain` (Solana + WDK) | `app/src/lib/service/{types,index,mock,chain}.ts` |
 | **Wallets** | Tether WDK (`@tetherto/wdk-wallet-solana`), PIN-encrypted seed in localStorage, active-signer singleton | `app/src/lib/wallet/{wdk,crypto,store,signer,context}.ts(x)` |
 | **Pay-once pipeline** | Sign → persist signature → broadcast → re-check; resume on reconnect | `app/src/lib/wallet/payments.ts` (+ `payments.test.ts`) |
 | **Chain client** | IDL-driven instruction builders (accounts resolved by name), PDAs, decoders, unsigned tx builder | `app/src/lib/chain/{instructions,pda,decoders,reads,tx,client,config}.ts`, `idl/heirloom.json` |
-| **API routes** | Agent orchestrate, document review, valuation, offers, list/accept, scheduler tick, FX, off-ramp, reports, estate metadata, voice session | `app/src/app/api/**/route.ts`, shared guards in `app/src/lib/api/http.ts` |
+| **API routes** | Agent orchestrate, will chat, document review, valuation, offers, list/accept, scheduler tick, fee sponsor, health, QVAC wallet assistant, legacy voice (voice, book, chat, speak), FX, off-ramp, reports, estate metadata, voice session | `app/src/app/api/**/route.ts`, shared guards in `app/src/lib/api/http.ts` |
 | **AI agent** | Gemini orchestrator (forced `route_to` function call; keyword fallback) + 6 specialists with zod-typed tools | `app/src/lib/agent/{orchestrator,specialists,prompts,gemini,will,review,offers,valuation,facts}.ts` |
 | **Agent wallet** | Server-side WDK wallet; allow-list `review_death`, `review_claim`, `review_hardship`, `list_asset`, `accept_offer`, `execute_scheduled` | `app/src/lib/agent/agent-wallet.ts` |
 | **Scheduler** | Finds due recurring rules, calls `execute_scheduled` (agent pays only the fee) | `app/src/lib/server/scheduler.ts`, `POST /api/scheduler/tick`, `scripts/run-scheduler.ts` |

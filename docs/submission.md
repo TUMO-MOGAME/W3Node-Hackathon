@@ -31,7 +31,7 @@ The plan starts today. A monthly book allowance pays the bookstore automatically
 
 Every USD₮ movement, including a "Send to family" P2P transfer, follows Tether's payment flow: address, network and token checks; balance and fee quote; review; approve; WDK signs; pending until confirmed. Payments are signed once and re-checked on reconnect, so nobody pays twice.
 
-Built during the hackathon: 27-instruction Anchor program on devnet (25 tests), a Next.js PWA (90 tests), and real WDK-signed USD₮ transfers on devnet. The rand settlement to institutions is simulated and labelled.
+Built during the hackathon: 27-instruction Anchor program on devnet (25 tests), a Next.js PWA (230 tests), and real WDK-signed USD₮ transfers on devnet. The rand settlement to institutions is simulated and labelled.
 ```
 *(about 290 words; recount after any edit with `wc -w`)*
 
@@ -49,6 +49,7 @@ Heirloom is mobile money for families, built on USD₮ and Tether WDK. Every rol
 - @anchor-lang/core, @solana/web3.js, @solana/spl-token, @solana/kit
 - Google Gemini (@google/genai): orchestrator + 6 specialist agents with typed function calling
 - ElevenLabs Agents Platform (@elevenlabs/react) for voice calls
+- Tether QVAC (@qvac/sdk, optional, runs locally) for the on-device "Ask your wallet" payment parser; a labelled fallback parser on the hosted demo
 - Supabase (Postgres + private storage) for off-chain metadata and documents; only SHA-256 hashes on-chain
 - VALR public API for the live USD₮/ZAR rate
 - Zod, Vitest, Vercel
@@ -58,7 +59,7 @@ Heirloom is mobile money for families, built on USD₮ and Tether WDK. Every rol
 | Field | Value |
 |---|---|
 | GitHub repo (public) | https://github.com/TUMO-MOGAME/W3Node-Hackathon |
-| Live demo | <!-- VERCEL_URL --> |
+| Live demo (mock mode: simulated in the browser, labelled) | https://heirloom-one-iota.vercel.app |
 | Demo video (≤ 3 min) | <!-- VIDEO_URL --> |
 | Program on Solana Explorer (devnet) | https://explorer.solana.com/address/b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY?cluster=devnet |
 | Example WDK-signed USD₮ transfer | https://explorer.solana.com/tx/nNUMsVDqmAbHxKYqTVXz1kggi2wfYXJawGod7gsXFpsysXFxBpnKG1vdL7m26UCm7hxwLc7cnDxpD6DvBEpKSCj?cluster=devnet |
@@ -79,7 +80,7 @@ None. All code was written during the hackathon (10–13 November 2026). It uses
 **Repo**
 - [ ] Repo is **public** (github.com/TUMO-MOGAME/W3Node-Hackathon); open it in a private window while logged out
 - [ ] `README.md` renders: Mermaid diagram draws, tables fit, no broken links (click every Explorer link)
-- [ ] `<!-- VERCEL_URL -->`, `<!-- VIDEO_URL -->`, screenshots and team placeholders replaced in README and here
+- [ ] `<!-- VIDEO_URL -->` replaced in README and here (the live URL and team are already filled)
 - [ ] `LICENSE` present (MIT, 2026 Tumo Mogame)
 - [ ] Final commit pushed to `main`; commit author is the right identity
 

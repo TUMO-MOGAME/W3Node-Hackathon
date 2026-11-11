@@ -13,21 +13,26 @@ nothing makes sure it is spent on the children.
 
 | | |
 |---|---|
-| **Live demo** | **https://heirloom-one-iota.vercel.app** *(works on a phone; installable as an app)* |
+| **Live demo** | **https://heirloom-one-iota.vercel.app** *(works on a phone; installable as an app)*. Runs in **mock mode**: the whole story is simulated in your browser with "Simulated" badges, and the agent gives labelled canned answers (no Gemini or ElevenLabs keys on the hosted demo). The on-chain proof is in the devnet links below |
 | **Demo video (≤ 3 min)** | <!-- VIDEO_URL --> *(link added at submission)* |
 | **Pitch deck** | [`docs/pitch.md`](docs/pitch.md) |
 | **Program on devnet** | [`b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY`](https://explorer.solana.com/address/b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY?cluster=devnet) |
 | **Real WDK USD₮ transfer** | [`nNUMsVDq…D6DvBEpKSCj`](https://explorer.solana.com/tx/nNUMsVDqmAbHxKYqTVXz1kggi2wfYXJawGod7gsXFpsysXFxBpnKG1vdL7m26UCm7hxwLc7cnDxpD6DvBEpKSCj?cluster=devnet) |
-| **Tests** | 25/25 program tests (LiteSVM) · 90/90 app tests (Vitest) |
+| **Tests** | 25/25 program tests (LiteSVM) · 230/230 app tests (Vitest) |
 
 ---
 
 ## What it does, in 60 seconds
 
-1. **Write the plan with an AI agent.** Thabo types his wishes in plain language. The agent turns them into strict
+The app opens on a **chat home** (`/chat`): "Needs your attention" cards (a payment that is due, a claim to approve,
+a passing to confirm) above a composer where you can type, **Dictate**, call (**Call Heirloom**), **Review a document**
+or **Send money**. A sidebar groups the screens (Plan, Family, Trusted people, Money), keeps your saved chats per
+person, collapses to an icon rail on desktop and becomes a drawer on phones.
+
+1. **Write the plan with an AI agent.** On the **Plan** screen, Thabo types his wishes in plain language. The agent turns them into strict
    rules: who gets what, for which purpose, paid to which institution, with a cap per claim and per lifetime.
-   Each rule is set to **Now** (a living plan, running today) or **After I'm gone**. He signs and locks it with his
-   Tether WDK wallet.
+   Each rule is set to **Now** (a living plan, running today) or **After I'm gone**. He reviews it in plain language
+   and taps **Sign and lock** with his Tether WDK wallet.
 2. **Fund the vault in USD₮.** The money sits in a vault owned by the Heirloom Solana program, not by us.
 3. **Living plan: it already works.** A monthly book allowance (85 USD₮, about R1,500) pays itself to the bookstore.
    His daughter Lerato can claim her university fees; the AI checks the fee statement, Thabo approves, and the
@@ -39,19 +44,23 @@ nothing makes sure it is spent on the children.
    swapping money and digital title atomically. Below the floor only with a sworn hardship affidavit and 2 verifiers,
    and never below the hardship floor.
 6. **Send to family.** A plain peer-to-peer USD₮ send to a saved family member, with the full Tether review → approve →
-   pending → confirmed flow, and pay-once protection if the connection drops.
+   pending → confirmed flow, and pay-once protection if the connection drops. You can also type "Send R500 to Lerato
+   for books" in the chat: the wallet assistant reads it and opens the same review sheet.
 
 ## Screenshots
 
 Phone width (360px), pure black and white, light and dark:
 
-| Landing | Estate dashboard | Payment review | Payment confirmed |
+| Chat home | Estate dashboard | Payment review | Payment confirmed |
 |---|---|---|---|
-| <img src="docs/screenshots/landing-360-light.png" width="200" alt="Landing page"> | <img src="docs/screenshots/estate-360-light.png" width="200" alt="Estate dashboard with vault, rules and scheduled payments"> | <img src="docs/screenshots/pay-review-360-light.png" width="200" alt="Payment review: recipient, amount, network, fee, verified USD₮"> | <img src="docs/screenshots/pay-confirmed-360-light.png" width="200" alt="Payment confirmed with Explorer link"> |
+| <img src="docs/screenshots/chat-360-light.png" width="200" alt="Chat home with a 'payment is due' card and the composer"> | <img src="docs/screenshots/estate-360-light.png" width="200" alt="Estate dashboard with vault, rules and scheduled payments"> | <img src="docs/screenshots/pay-review-360-light.png" width="200" alt="Payment review: recipient, amount, network, fee, verified USD₮"> | <img src="docs/screenshots/pay-confirmed-360-light.png" width="200" alt="Payment confirmed with Explorer link"> |
 
 | Claims | Talk to Heirloom | Dark mode | Desktop |
 |---|---|---|---|
-| <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claims with caps"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Voice call with the agent"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/estate-1280-light.png" width="200" alt="Estate dashboard on desktop"> |
+| <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claims with caps"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Voice call with the agent"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/chat-1440-light.png" width="200" alt="Desktop: sidebar with grouped navigation and saved chats, chat home"> |
+
+*Screenshots were taken just before the icons moved to Flaticon UIcons, so a few icons look slightly different in the
+live app.*
 
 ---
 
@@ -213,6 +222,7 @@ Anchor 1.2.2 · [`programs/heirloom/`](programs/heirloom/) · full spec in [`doc
 | Death certificate, fee statement, affidavit | **Sample documents** marked SAMPLE |
 | Waiting period and payment intervals | **60 seconds** for the demo instead of weeks / months |
 | Mock mode (default) | Whole story **simulated** in the browser, with a "Simulated" badge; Explorer will not find mock receipts |
+| Hosted demo (heirloom-one-iota.vercel.app) | **Mock mode**, with no Gemini, ElevenLabs or Supabase keys: canned agent answers and the simulated call preview, both labelled. The devnet links in this README are the on-chain proof |
 
 ## Run it locally
 
@@ -225,7 +235,8 @@ git clone https://github.com/TUMO-MOGAME/W3Node-Hackathon.git
 cd W3Node-Hackathon/app && npm install
 npm run dev
 ```
-Open <http://localhost:3000> → **Try the demo** → **Start as Thabo**. The demo guide and persona switcher walk you
+Open <http://localhost:3000> → **Try the demo** → **Start as Thabo**. You land on the chat home; the demo guide bar
+(**Take me there**, **Switch to …**) and **Demo mode** in the sidebar (persona switcher and demo controls) walk you
 through the story.
 
 ### Chain mode (Solana devnet + Tether WDK)
@@ -275,10 +286,12 @@ All names are in [`app/.env.example`](app/.env.example). Only `NEXT_PUBLIC_*` re
 ## Tests
 
 ```bash
-cd app && npm test                 # 90 Vitest tests: payments (pay-once), PDAs, IDL ↔ client, agent schemas, offers, scheduler, hashing
+cd app && npm test                 # 230 Vitest tests: payments (pay-once), WDK errors, PDAs, IDL ↔ client, agent schemas,
+                                   # offers, scheduler, hashing, fee-sponsor policy, QVAC intent parser, chat, legacy voice, i18n, icons
 cd app && npx tsc --noEmit         # type check
-bash scripts/build-program.sh test # 25 LiteSVM program tests (Linux / WSL, Anchor 1.2.2)
+anchor build && cargo test -p heirloom   # 25 LiteSVM program tests (Linux / WSL, Anchor 1.2.2)
 ```
+`scripts/build-program.sh` wraps the last line for the author's WSL setup (it mirrors the repo from a fixed path).
 
 ## Security notes
 
