@@ -69,7 +69,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
 
   /* ----- optional real backend on a demo deployment ----- */
   let remote: Promise<boolean> | null = null;
-  const useRemote = () => {
+  const isRemote = () => {
     if (typeof window === "undefined") return Promise.resolve(false);
     remote ??= legacyApi.probe().then((p) => p.available && p.elevenlabs).catch(() => false);
     return remote;
@@ -83,7 +83,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
     resetLegacy() { st = seed(); save(); },
 
     async legacyStatus() {
-      if (await useRemote()) {
+      if (await isRemote()) {
         let s = await legacyApi.status(signer());
         if (!s.book) { await legacyApi.saveBook(signer("owner"), demoLegacyBook(d.wallets)); s = await legacyApi.status(signer()); }
         return { ...s, unlocked: s.viewer === "owner" ? true : unlocked() };
@@ -109,7 +109,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
       });
       if (problems.length) fail("Invalid", problems[0]);
       if (input.consentText !== consentLine(input.ownerName)) fail("Invalid", "The consent line must be the exact sentence shown.");
-      if (await useRemote()) { const v = await legacyApi.createVoice(signer("owner"), input); st.voice = v; save(); return v; }
+      if (await isRemote()) { const v = await legacyApi.createVoice(signer("owner"), input); st.voice = v; save(); return v; }
       await sleep(1800); // "creating the voice"
       st.voice = { ownerName: input.ownerName.trim(), consentedAt: Date.now(), samples: input.samples.length, simulated: true, liveCall: false };
       save();
@@ -118,7 +118,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
 
     async deleteLegacyVoice() {
       needOwner();
-      if (await useRemote()) await legacyApi.deleteVoice(signer("owner"));
+      if (await isRemote()) await legacyApi.deleteVoice(signer("owner"));
       await sleep(600);
       st.voice = null; save();
     },
@@ -126,7 +126,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
     async saveLegacyBook(_e, book) {
       needOwner(); needAlive();
       const parsed = legacyBookSchema.parse(book);
-      if (await useRemote()) { const b = await legacyApi.saveBook(signer("owner"), parsed); st.book = b; save(); return b; }
+      if (await isRemote()) { const b = await legacyApi.saveBook(signer("owner"), parsed); st.book = b; save(); return b; }
       await sleep(500);
       st.book = parsed; save();
       return parsed;
@@ -134,21 +134,21 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
 
     async deleteLegacyBook() {
       needOwner();
-      if (await useRemote()) await legacyApi.deleteBook(signer("owner"));
+      if (await isRemote()) await legacyApi.deleteBook(signer("owner"));
       await sleep(400);
       st.book = null; save();
     },
 
     async setLegacyOptIn(_e, on) {
       if (!isChild()) fail("NotBeneficiary", "Only a named family member can do this.");
-      if (await useRemote()) await legacyApi.optIn(signer(), on);
+      if (await isRemote()) await legacyApi.optIn(signer(), on);
       await sleep(250);
       st.optIns = { ...st.optIns, [me().address]: on }; save();
     },
 
     async legacyChat(_e, history, opts) {
       needTalk();
-      if (await useRemote()) return legacyApi.chat(signer(), history, opts?.previewChildId);
+      if (await isRemote()) return legacyApi.chat(signer(), history, opts?.previewChildId);
       if (!st.book) fail("NoBook", "There is no Legacy Book.");
       await sleep(700);
       const kid = isOwner() ? st.book!.children.find((c) => c.id === opts?.previewChildId) ?? null : child();
@@ -158,7 +158,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
 
     async legacySpeak(_e, input, voice = "parent") {
       needTalk();
-      if (await useRemote() && voice === "parent") return legacyApi.speak(signer(), input, voice);
+      if (await isRemote() && voice === "parent") return legacyApi.speak(signer(), input, voice);
       if (!st.voice && voice === "parent") fail("NoVoice", "No legacy voice has been created.");
       let text: string;
       if ("milestoneId" in input) {
@@ -171,7 +171,7 @@ export function createMockLegacy(d: Deps): LegacyMethods & { resetLegacy(): void
 
     async legacyCall(_e, opts) {
       needTalk();
-      if (await useRemote()) {
+      if (await isRemote()) {
         try { return await legacyApi.session(signer(), opts?.previewChildId); }
         catch { return null; }
       }

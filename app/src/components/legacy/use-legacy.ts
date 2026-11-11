@@ -31,8 +31,13 @@ export function useLegacyStatus() {
     }
   }, [service, estate, who]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { void reload(); }, [reload, estateStatus]);
+  useEffect(() => {
+    if (!service || !estate || !who) return;
+    const n = ++seq.current;
+    service.legacyStatus(estate)
+      .then((s) => { if (n === seq.current) { setStatus(s); setError(null); } })
+      .catch((e) => { if (n === seq.current) setError(legacyError(e, "Could not load the legacy voice.")); });
+  }, [service, estate, who, estateStatus]);
 
   return { status, error, reload, estate };
 }

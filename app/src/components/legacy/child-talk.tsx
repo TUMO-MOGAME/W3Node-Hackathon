@@ -84,9 +84,7 @@ function Talk({ copy, safety, status, snap, reload }: { copy: LegacyCopy; safety
 
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [lines.length, pending]);
   // Safety also watches the live call's transcript.
-  useEffect(() => {
-    if (callVoice.transcript.some((l) => l.role === "user" && detectDistress(l.text))) setShowSafety(true);
-  }, [callVoice.transcript]);
+  const callDistress = callVoice.transcript.some((l) => l.role === "user" && detectDistress(l.text));
 
   /** The disclosure is spoken (in Heirloom's voice) before the first thing played in the parent's voice. */
   const say = useCallback(async (id: string, s: LegacySpeech) => {
@@ -149,7 +147,7 @@ function Talk({ copy, safety, status, snap, reload }: { copy: LegacyCopy; safety
         <DisclosureLabel text={fmt(c.label, { called, date: fmtDate(voiceInfo.consentedAt) })} simulated={voiceInfo.simulated} simulatedText={c.labelSimulated} />
       </div>
 
-      {showSafety && <SafetyCard copy={safety} called={called} adults={adults} />}
+      {(showSafety || callDistress) && <SafetyCard copy={safety} called={called} adults={adults} />}
 
       {ms.length > 0 && (
         <Card>

@@ -86,11 +86,10 @@ function CreateVoice({ copy, ownerName, onDone }: { copy: Copy; ownerName: strin
   const record = async (slot: number | "consent") => {
     if (rec.state === "recording") { rec.stop(); return; }
     setError(null); setActive(slot);
-    const t0 = Date.now();
-    const blob = await rec.start();
+    const got = await rec.start();
     setActive(null);
-    if (!blob) return;
-    const take: Take = { blob, secs: Math.max(1, Math.round((Date.now() - t0) / 1000)), url: URL.createObjectURL(blob) };
+    if (!got) return;
+    const take: Take = { blob: got.blob, secs: got.secs, url: URL.createObjectURL(got.blob) };
     if (slot === "consent") setConsent(take);
     else setTakes((t) => t.map((x, i) => (i === slot ? take : x)));
   };

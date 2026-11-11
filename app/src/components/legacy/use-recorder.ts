@@ -25,7 +25,7 @@ export function useRecorder() {
   const ctx = useRef<AudioContext | null>(null);
   const raf = useRef<number | null>(null);
   const timer = useRef<number | null>(null);
-  const resolve = useRef<((b: Blob | null) => void) | null>(null);
+  const resolve = useRef<((b: { blob: Blob; secs: number } | null) => void) | null>(null);
 
   const cleanup = useCallback(() => {
     if (raf.current !== null) cancelAnimationFrame(raf.current);
@@ -44,7 +44,7 @@ export function useRecorder() {
   }, [cleanup]);
 
   /** Starts recording; the returned promise resolves with the audio when stop() is called (or at the time limit). */
-  const start = useCallback(async (): Promise<Blob | null> => {
+  const start = useCallback(async (): Promise<{ blob: Blob; secs: number } | null> => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
       setState("unsupported"); setError("unsupported"); return null;
     }
@@ -59,12 +59,13 @@ export function useRecorder() {
     rec.current = r;
     const chunks: Blob[] = [];
     r.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-    const done = new Promise<Blob | null>((res) => { resolve.current = res; });
+    const done = new Promise<{ blob: Blob; secs: number } | null>((res) => { resolve.current = res; });
+    const began = Date.now();
     r.onstop = () => {
       cleanup();
       setState("idle");
       const type = (r.mimeType || mime || "audio/webm").split(";")[0];
-      resolve.current?.(chunks.length ? new Blob(chunks, { type }) : null);
+      resolve.current?.(chunks.length ? { blob: new Blob(chunks, { type }), secs: Math.max(1, Math.round((Date.now() - began) / 1000)) } : null);
       resolve.current = null;
     };
 

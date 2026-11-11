@@ -29,7 +29,7 @@ export const legacyChildSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]{1,32}$/),
   name: line(40).min(1),
   /** Wallet of the beneficiary, when known, so the server can match the signed-in child. */
-  wallet: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/).optional(),
+  wallet: z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,48}$/).optional(),
   guidance: guidanceSchema,
   note: text(800),
 });

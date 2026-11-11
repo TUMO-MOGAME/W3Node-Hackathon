@@ -15,7 +15,8 @@ import { loadSnapshot } from "@/lib/server/estate";
 import type { EstateSnapshot } from "@/lib/service/types";
 import { AUTH_HEADER, AUTH_MAX_SKEW_MS, authMessage, type LegacyAction } from "../auth-message";
 
-const addr = z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/);
+// 32–48: the mock demo addresses are base58-looking but not always 44 chars; chain mode decodes the key anyway.
+const addr = z.string().regex(/^[1-9A-HJ-NP-Za-km-z]{32,48}$/);
 const authSchema = z.object({
   estate: addr,
   wallet: addr,
