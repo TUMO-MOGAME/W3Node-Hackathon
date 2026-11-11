@@ -101,6 +101,23 @@ export const privacy = {
       heading: "12. Changes",
       paragraphs: ["We will post any change to this policy on this page and update the date above."],
     },
+    {
+      heading: "13. Legacy voice (optional)",
+      paragraphs: [
+        "An estate owner may choose to create an AI copy of their own voice and write a Legacy Book (values, guidance for each child and messages for moments such as fees being paid or a graduation). After the owner passes away, each child may choose to hear that guidance in the owner's voice. This section is part of the template for legal review.",
+        "Who may create it: only the estate owner, while alive, from recordings of their own voice made in the app. They first read a consent sentence out loud and tick an unticked consent box. Recordings of anyone else, or of a person who has died, are not accepted.",
+      ],
+      list: [
+        "What we collect: the recorded consent sentence, three to eight short voice recordings, the voice copy made from them, the Legacy Book text, each child's on/off choice, and the audio of messages the voice has spoken.",
+        "Why: to let the owner's children hear the words the owner left for them, in the owner's voice, clearly labelled as an AI voice. The voice speaks only from the Legacy Book and the estate's real status; it cannot approve claims, move money or ask anyone for money or passwords.",
+        "Children's information: a child's conversations with the legacy voice are not stored by default. If a child seems to be in distress, the app shows South African helplines (SADAG) and suggests a trusted adult.",
+        "Operator: ElevenLabs Inc. creates and hosts the voice copy (Instant Voice Cloning), turns text into speech in that voice and runs live voice calls. Google LLC (Gemini API) may write replies grounded in the Legacy Book. Supabase Inc. stores the recordings and the Legacy Book in private, access-controlled storage.",
+        "Transfer outside South Africa: ElevenLabs and Google process this information outside South Africa, including in the United States and the European Union, under the safeguards in section 8.",
+        "How long we keep it: until the owner deletes the voice or the Legacy Book, which they can do at any time in the app (the voice copy is then also deleted at ElevenLabs), or [N] years after the estate's final payment, whichever comes first. [Placeholder: the responsible party must set N with its legal adviser.]",
+        "Nothing about the legacy voice is written on the public ledger. If a record is ever anchored on-chain, it is only a SHA-256 fingerprint.",
+        "Your rights in section 10 apply. A child can switch the legacy voice off at any time, and the owner's executor may ask us to delete it.",
+      ],
+    },
   ] satisfies LegalSection[],
 } as const;
 

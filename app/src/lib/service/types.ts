@@ -10,6 +10,8 @@ import type {
   Hardship, Offer, OfferRanking, PayeeKind, Payee, Rule, Beneficiary, WillChatMessage, WillDraft,
   PaymentReview, PaymentReceipt, SavedRecipient,
 } from "../types";
+import type { LegacyBook, LegacyChatReply, LegacySpeech, LegacyStatus, LegacyVoiceInfo } from "../legacy/schema";
+import type { LegacyVoiceUpload, SpeakInput } from "../legacy/client";
 
 export interface TxResult { signature: string; explorerUrl: string }
 
@@ -82,4 +84,22 @@ export interface HeirloomService {
   placeOffer(estate: Base58, asset: Base58, amountUsdt: number): Promise<TxResult>;
   withdrawOffer(estate: Base58, asset: Base58): Promise<TxResult>;
   acceptBestOffer(estate: Base58, asset: Base58): Promise<{ tx: TxResult; ranking: OfferRanking }>;
+
+  // Legacy voice (lib/legacy/*): the owner's consented voice clone + Legacy Book; children talk after unlock.
+  // Writes are owner-only; the voice id never reaches the browser. Mock: browser speech stands in, clearly labelled.
+  legacyStatus(estate: Base58): Promise<LegacyStatus>;
+  /** Owner, while alive: spoken consent line + ticked box + ≥ 3 samples → Instant Voice Clone. */
+  createLegacyVoice(estate: Base58, input: LegacyVoiceUpload): Promise<LegacyVoiceInfo>;
+  /** Owner: deletes the voice everywhere (ElevenLabs too), with its recordings and rendered messages. */
+  deleteLegacyVoice(estate: Base58): Promise<void>;
+  saveLegacyBook(estate: Base58, book: LegacyBook): Promise<LegacyBook>;
+  deleteLegacyBook(estate: Base58): Promise<void>;
+  /** Child: switch the legacy voice on or off for themselves. */
+  setLegacyOptIn(estate: Base58, on: boolean): Promise<void>;
+  /** Text chat with the LegacyCompanion; owner may preview as one of the children. */
+  legacyChat(estate: Base58, history: { role: "user" | "agent"; text: string }[], opts?: { previewChildId?: string }): Promise<LegacyChatReply>;
+  /** Audio in the parent's voice for a milestone or a companion reply (token), or simulated text to speak locally. */
+  legacySpeak(estate: Base58, input: SpeakInput, voice?: LegacySpeech["voice"]): Promise<LegacySpeech>;
+  /** Signed URL for a live call in the parent's voice, or null when live calls are not available (simulated). */
+  legacyCall(estate: Base58, opts?: { previewChildId?: string }): Promise<{ signedUrl: string } | null>;
 }

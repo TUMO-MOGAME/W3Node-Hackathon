@@ -12,6 +12,7 @@ import type {
 } from "../types";
 import type { EstateSnapshot, HeirloomService, TxResult } from "./types";
 import { DEMO_PERSONAS as WALLET_PERSONAS } from "../wallet/personas";
+import { createMockLegacy } from "./mock-legacy";
 
 export interface MockActor { address: Base58; role: Role; label: string }
 export type DemoStage = "fresh" | "funded" | "unlocked" | "listed" | "lowOffers";
@@ -705,8 +706,15 @@ export function createMockService(): MockService {
     return out;
   };
 
+  const legacy = createMockLegacy({
+    actor: () => actor, estate: est, snap: () => s.snap, created: () => s.created,
+    wallets: { lerato: s.bind.lerato, sipho: s.bind.sipho, naledi: s.bind.naledi },
+  });
+  const { resetLegacy, ...legacyMethods } = legacy;
+
   return {
     mode: "mock",
+    ...legacyMethods,
 
     setActor(a) {
       actor = a;
@@ -718,7 +726,7 @@ export function createMockService(): MockService {
         save();
       }
     },
-    resetDemo(stage) { seed(stage); save(); },
+    resetDemo(stage) { seed(stage); save(); resetLegacy(); },
 
     async reviewSend({ to, toLabel, amountUsdt }) {
       await sleep(500);

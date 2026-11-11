@@ -20,12 +20,18 @@ export interface VoiceTranscriptLine {
   specialist?: SpecialistName;
 }
 
-export type SpecialistName = "Orchestrator" | "WillWriter" | "DocumentReviewer" | "ClaimsGuide" | "CarBroker" | "EstateGuide" | "Compliance";
+export type SpecialistName = "Orchestrator" | "WillWriter" | "DocumentReviewer" | "ClaimsGuide" | "CarBroker" | "EstateGuide" | "Compliance" | "LegacyCompanion";
 
 export interface VoiceContext {
   persona: string; // e.g. "owner:Thabo Mokoena"
   estate?: string; // estate address
   page?: string;   // current route, lets the agent say "on this screen…"
+  /**
+   * Legacy mode: a signed URL the app already obtained from POST /api/voice/session { mode: "legacy" } (wallet-signed).
+   * The session then talks to the estate's private legacy agent (parent's cloned voice, persona prompt and disclosure
+   * first message set server-side), with no client tools and no client overrides, so the voice id never reaches here.
+   */
+  signedUrl?: string;
 }
 
 export interface HeirloomVoice {

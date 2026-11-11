@@ -12,7 +12,7 @@ import { VoiceConversation } from "@elevenlabs/react";
 import type { HeirloomVoice, SpecialistName, VoiceContext, VoiceStatus, VoiceTranscriptLine } from "./types";
 import { dispatchAgentAction, uiActionSchema, type UiAction } from "../agent/actions";
 
-const SPECIALISTS: SpecialistName[] = ["Orchestrator", "WillWriter", "DocumentReviewer", "ClaimsGuide", "CarBroker", "EstateGuide", "Compliance"];
+const SPECIALISTS: SpecialistName[] = ["Orchestrator", "WillWriter", "DocumentReviewer", "ClaimsGuide", "CarBroker", "EstateGuide", "Compliance", "LegacyCompanion"];
 
 /** Client tools the ElevenLabs agent may call (names must match scripts/elevenlabs-agent.md). */
 function clientTools(emit: (a: UiAction) => void) {
@@ -88,15 +88,23 @@ export function useHeirloomVoice(): HeirloomVoice {
       stream.getTracks().forEach((t) => t.stop()); // permission only; the SDK opens its own stream
 
       setStatus("connecting");
-      const res = await fetch("/api/voice/session", { cache: "no-store" });
-      if (res.status === 503) { setStatus("unavailable"); return; }
-      const data = (await res.json().catch(() => ({}))) as { signedUrl?: string; error?: string };
-      if (!res.ok || !data.signedUrl) throw new Error(data.error ?? "Could not start a voice session.");
+      let signedUrl = ctx.signedUrl;
+      if (!signedUrl) {
+        const res = await fetch("/api/voice/session", { cache: "no-store" });
+        if (res.status === 503) { setStatus("unavailable"); return; }
+        const data = (await res.json().catch(() => ({}))) as { signedUrl?: string; error?: string };
+        if (!res.ok || !data.signedUrl) throw new Error(data.error ?? "Could not start a voice session.");
+        signedUrl = data.signedUrl;
+      }
+      const legacy = Boolean(ctx.signedUrl);
 
       conv.current = await VoiceConversation.startSession({
-        signedUrl: data.signedUrl,
-        dynamicVariables: { persona: ctx.persona, persona_name: ctx.persona.split(":")[1]?.split(" ")[0] || "there", estate: ctx.estate ?? "none", page: ctx.page ?? "/" },
-        clientTools: clientTools(emit),
+        signedUrl,
+        // The legacy agent gets nothing from the client: no tools (no navigation, no claims), no variables.
+        ...(legacy ? {} : {
+          dynamicVariables: { persona: ctx.persona, persona_name: ctx.persona.split(":")[1]?.split(" ")[0] || "there", estate: ctx.estate ?? "none", page: ctx.page ?? "/" },
+          clientTools: clientTools(emit),
+        }),
         onConnect: () => { setStatus("connected"); startMeter(); },
         onDisconnect: () => { stopMeter(); conv.current = null; setSpeaking(false); setStatus((s) => (s === "error" ? s : "ended")); },
         onError: (message: string) => { setError(message); setStatus("error"); },

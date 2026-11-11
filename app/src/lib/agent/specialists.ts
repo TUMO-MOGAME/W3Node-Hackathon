@@ -18,11 +18,14 @@ import { toBase } from "../format";
 import { willChat, toContents } from "./will";
 import { valueCar } from "./valuation";
 import { CANNED_PREFIX } from "./canned";
+import { legacyCompanion, type LegacyContext } from "./legacy-companion";
 
 export interface SpecialistInput {
   history: WillChatMessage[];          // last message is the user's
   facts: EstateFacts | null;
   context: { persona?: string; role?: string; page?: string; channel?: "text" | "voice" };
+  /** Only for LegacyCompanion: the server-verified Legacy Book, child and persona prompt. */
+  legacy?: LegacyContext;
 }
 
 export interface SpecialistResult {
@@ -31,6 +34,8 @@ export interface SpecialistResult {
   actions: UiAction[];
   draft?: WillDraft | null;
   needsHuman?: string[];
+  /** LegacyCompanion only: which voice should speak the reply, and why. */
+  legacy?: { voice: "parent" | "heirloom"; source: "book" | "ai" | "safety" | "refusal"; safety?: boolean };
 }
 
 interface Tool<A extends z.ZodType> {
@@ -118,7 +123,7 @@ const flagForHuman = tool({
   run: (a, st) => { st.needsHuman.push(a.reason); return { flagged: true }; },
 });
 
-const SPECS: Record<Exclude<SpecialistName, "Orchestrator" | "WillWriter">, { system: string; tools: Tool<z.ZodType>[] }> = {
+const SPECS: Record<Exclude<SpecialistName, "Orchestrator" | "WillWriter" | "LegacyCompanion">, { system: string; tools: Tool<z.ZodType>[] }> = {
   DocumentReviewer: { system: `${DOCUMENT_REVIEWER}\nIn conversation (no file attached yet): explain which document is needed and what it must show, then call start_upload.`, tools: [startUpload, getStatus] },
   ClaimsGuide: { system: CLAIMS_GUIDE, tools: [listRules, checkClaimTool, openClaimForm, showRule, startUpload] },
   CarBroker: { system: CAR_BROKER, tools: [getStatus, rankOffersTool, valueCarTool, navigate] },
@@ -133,6 +138,12 @@ function contextLine(i: SpecialistInput): string {
 }
 
 export async function runSpecialist(name: Exclude<SpecialistName, "Orchestrator">, input: SpecialistInput): Promise<SpecialistResult> {
+  if (name === "LegacyCompanion") {
+    // Never routed automatically: only the legacy routes call it, with a verified book and child.
+    if (!input.legacy) return { specialist: name, reply: "The legacy voice is not available in this conversation.", actions: [] };
+    const r = await legacyCompanion(input.history, input.legacy);
+    return { specialist: name, reply: r.reply, actions: [], legacy: { voice: r.voice, source: r.source, safety: r.safety } };
+  }
   if (name === "WillWriter") {
     const r = await willChat(input.history);
     return { specialist: name, reply: r.reply, draft: r.draft, actions: [] };
@@ -178,7 +189,7 @@ export async function runSpecialist(name: Exclude<SpecialistName, "Orchestrator"
   return { specialist: name, reply: "I need a human to look at this one. Please ask a verifier.", actions: st.actions, needsHuman: st.needsHuman };
 }
 
-function cannedSpecialist(name: Exclude<SpecialistName, "Orchestrator" | "WillWriter">, input: SpecialistInput): SpecialistResult {
+function cannedSpecialist(name: Exclude<SpecialistName, "Orchestrator" | "WillWriter" | "LegacyCompanion">, input: SpecialistInput): SpecialistResult {
   const f = input.facts;
   const text: Record<typeof name, string> = {
     DocumentReviewer: "Please upload the document as a PDF, JPG or PNG. A person will check it because the AI reviewer is not configured.",

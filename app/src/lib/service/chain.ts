@@ -28,6 +28,13 @@ import { hashJson, sha256Hex } from "../agent/hash";
 import { intervalSecs, willDraftSchema } from "../agent/schemas";
 import type { EstateMeta } from "../db";
 import bs58 from "bs58";
+import { legacyApi, type LegacySigner } from "../legacy/client";
+
+// ---------- legacy voice: requests signed by the acting WDK wallet; the server checks the on-chain role ----------
+function legacySigner(estate: Base58): LegacySigner {
+  const s = getActiveSigner();
+  return { estate, wallet: s.address, sign: (m) => s.signMessage(m) };
+}
 
 // ---------- small helpers ----------
 const pk = (a: string) => new PublicKey(a);
@@ -448,6 +455,19 @@ export function createChainService(): HeirloomService {
       const data = (await res.json()) as { tx: TxResult | null; ranking: Parameters<typeof reviveRanking>[0]; error?: string };
       if (!res.ok || !data.tx) throw new Error(data.error ?? `Could not accept an offer (${res.status}).`);
       return { tx: data.tx, ranking: reviveRanking(data.ranking) };
+    },
+
+    legacyStatus: (estate) => legacyApi.status(legacySigner(estate)),
+    createLegacyVoice: (estate, input) => legacyApi.createVoice(legacySigner(estate), input),
+    deleteLegacyVoice: (estate) => legacyApi.deleteVoice(legacySigner(estate)),
+    saveLegacyBook: (estate, book) => legacyApi.saveBook(legacySigner(estate), book),
+    deleteLegacyBook: (estate) => legacyApi.deleteBook(legacySigner(estate)),
+    setLegacyOptIn: (estate, on) => legacyApi.optIn(legacySigner(estate), on),
+    legacyChat: (estate, history, opts) => legacyApi.chat(legacySigner(estate), history, opts?.previewChildId),
+    legacySpeak: (estate, input, voice) => legacyApi.speak(legacySigner(estate), input, voice),
+    async legacyCall(estate, opts) {
+      try { return await legacyApi.session(legacySigner(estate), opts?.previewChildId); }
+      catch (e) { if ((e as { status?: number }).status === 503) return null; throw e; }
     },
   };
 }
