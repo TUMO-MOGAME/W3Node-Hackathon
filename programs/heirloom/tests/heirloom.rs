@@ -165,10 +165,10 @@ fn send(svm: &mut LiteSVM, instruction: Instruction, signers: &[&Keypair]) -> Re
     res.map(|_| ()).map_err(|e| format!("{:?}", e.err))
 }
 
-fn expect_err(res: Result<(), String>, err: HeirloomError) {
+fn expect_err<T>(res: Result<T, String>, err: HeirloomError) {
     let code = 6000 + err as u32;
     match res {
-        Ok(()) => panic!("expected error {code}, but the transaction succeeded"),
+        Ok(_) => panic!("expected error {code}, but the transaction succeeded"),
         Err(e) => assert!(
             e.contains(&format!("Custom({code})")),
             "expected Custom({code}), got {e}"

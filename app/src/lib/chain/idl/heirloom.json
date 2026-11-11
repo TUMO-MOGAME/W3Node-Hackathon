@@ -4,7 +4,7 @@
     "name": "heirloom",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Heirloom: programmable estate trust holding USDT under strict on-chain rules. Hand-written; replaced by target/idl/heirloom.json after anchor build."
+    "description": "Heirloom: programmable estate trust holding USDT under strict on-chain rules"
   },
   "instructions": [
     {
@@ -22,15 +22,27 @@
       "accounts": [
         {
           "name": "agent",
+          "docs": [
+            "The agent; pays rent for the recipient's and buyer's ATAs if missing."
+          ],
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
           "name": "asset",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "offer"
+          ]
         },
         {
           "name": "offer",
@@ -38,7 +50,10 @@
         },
         {
           "name": "buyer",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "offer"
+          ]
         },
         {
           "name": "recipient"
@@ -56,41 +71,8 @@
                 "path": "offer"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -146,41 +128,8 @@
                 "path": "recipient"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -239,41 +188,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -329,41 +245,8 @@
                 "path": "buyer"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -440,7 +323,10 @@
         {
           "name": "owner",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -527,7 +413,10 @@
         {
           "name": "owner",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -616,7 +505,10 @@
         {
           "name": "owner",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -639,10 +531,17 @@
                 "path": "owner"
               }
             ]
-          }
+          },
+          "relations": [
+            "beneficiary",
+            "payee"
+          ]
         },
         {
-          "name": "beneficiary"
+          "name": "beneficiary",
+          "docs": [
+            "The Beneficiary PDA the rule is for."
+          ]
         },
         {
           "name": "rule",
@@ -669,6 +568,14 @@
               }
             ]
           }
+        },
+        {
+          "name": "payee",
+          "docs": [
+            "Payee PDA for a recurring rule (scheduled payments go to its wallet). Optional: pass the",
+            "program id (Anchor's \"None\") when `recurring_amount == 0`."
+          ],
+          "optional": true
         },
         {
           "name": "system_program",
@@ -703,6 +610,22 @@
         {
           "name": "valid_until",
           "type": "i64"
+        },
+        {
+          "name": "starts_now",
+          "type": "bool"
+        },
+        {
+          "name": "recurring_amount",
+          "type": "u64"
+        },
+        {
+          "name": "interval_secs",
+          "type": "i64"
+        },
+        {
+          "name": "first_due",
+          "type": "i64"
         }
       ]
     },
@@ -724,7 +647,10 @@
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "claim"
+          ]
         },
         {
           "name": "claim",
@@ -751,11 +677,17 @@
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
           "name": "asset",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "hardship"
+          ]
         },
         {
           "name": "hardship",
@@ -834,6 +766,9 @@
         },
         {
           "name": "vault",
+          "docs": [
+            "USD₮ vault = ATA(usdt_mint, estate). init_if_needed so a pre-created ATA can't block setup."
+          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -842,41 +777,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -982,7 +884,10 @@
       "accounts": [
         {
           "name": "owner",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -1023,41 +928,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -1130,15 +1002,25 @@
       "accounts": [
         {
           "name": "payer",
+          "docs": [
+            "Anyone; pays the payee ATA rent if it doesn't exist yet."
+          ],
           "writable": true,
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "rule",
+            "claim"
+          ]
         },
         {
           "name": "rule",
-          "writable": true
+          "writable": true,
+          "relations": [
+            "claim"
+          ]
         },
         {
           "name": "claim",
@@ -1160,41 +1042,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -1250,41 +1099,174 @@
                 "path": "payee_wallet"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "usdt_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "execute_scheduled",
+      "discriminator": [
+        37,
+        191,
+        159,
+        62,
+        120,
+        255,
+        106,
+        37
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "Anyone (a keeper/cron); pays the payee ATA rent if it doesn't exist yet."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "estate",
+          "relations": [
+            "rule"
+          ]
+        },
+        {
+          "name": "rule",
+          "writable": true
+        },
+        {
+          "name": "payee_wallet"
+        },
+        {
+          "name": "usdt_mint"
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "estate"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "usdt_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "payee_usdt",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "payee_wallet"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -1380,7 +1362,10 @@
       "accounts": [
         {
           "name": "owner",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -1423,10 +1408,16 @@
       "accounts": [
         {
           "name": "authority",
+          "docs": [
+            "The agent or one of the verifiers."
+          ],
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
           "name": "asset",
@@ -1439,6 +1430,65 @@
           "type": "i64"
         }
       ]
+    },
+    {
+      "name": "owner_approve_claim",
+      "discriminator": [
+        85,
+        16,
+        171,
+        47,
+        127,
+        64,
+        42,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
+        },
+        {
+          "name": "estate",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          },
+          "relations": [
+            "rule",
+            "claim"
+          ]
+        },
+        {
+          "name": "rule",
+          "relations": [
+            "claim"
+          ]
+        },
+        {
+          "name": "claim",
+          "writable": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "place_offer",
@@ -1459,7 +1509,10 @@
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
           "name": "asset"
@@ -1499,6 +1552,9 @@
         },
         {
           "name": "offer_escrow",
+          "docs": [
+            "Offer escrow = ATA(usdt_mint, offer). init_if_needed so a pre-created ATA can't block offers."
+          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -1507,41 +1563,8 @@
                 "path": "offer"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -1623,7 +1646,10 @@
         {
           "name": "owner",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -1656,6 +1682,9 @@
         },
         {
           "name": "nft_escrow",
+          "docs": [
+            "NFT escrow = ATA(nft_mint, estate)."
+          ],
           "writable": true,
           "pda": {
             "seeds": [
@@ -1664,41 +1693,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -1826,10 +1822,16 @@
       "accounts": [
         {
           "name": "agent",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "claim"
+          ]
         },
         {
           "name": "claim",
@@ -1867,7 +1869,10 @@
       "accounts": [
         {
           "name": "agent",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -1905,13 +1910,22 @@
       "accounts": [
         {
           "name": "agent",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
-          "name": "asset"
+          "name": "asset",
+          "relations": [
+            "hardship"
+          ]
         },
         {
           "name": "hardship",
@@ -1949,7 +1963,10 @@
       "accounts": [
         {
           "name": "owner",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -2010,7 +2027,11 @@
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "rule",
+            "payee"
+          ]
         },
         {
           "name": "beneficiary_account",
@@ -2048,7 +2069,10 @@
           "writable": true
         },
         {
-          "name": "payee"
+          "name": "payee",
+          "docs": [
+            "The Payee PDA the money will go to."
+          ]
         },
         {
           "name": "claim",
@@ -2182,7 +2206,10 @@
           "signer": true
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
           "name": "beneficiary_account",
@@ -2279,7 +2306,10 @@
       "accounts": [
         {
           "name": "owner",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -2322,7 +2352,10 @@
       "accounts": [
         {
           "name": "owner",
-          "signer": true
+          "signer": true,
+          "relations": [
+            "estate"
+          ]
         },
         {
           "name": "estate",
@@ -2363,41 +2396,8 @@
                 "path": "estate"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -2471,13 +2471,22 @@
         {
           "name": "buyer",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "relations": [
+            "offer"
+          ]
         },
         {
-          "name": "estate"
+          "name": "estate",
+          "relations": [
+            "asset"
+          ]
         },
         {
-          "name": "asset"
+          "name": "asset",
+          "relations": [
+            "offer"
+          ]
         },
         {
           "name": "usdt_mint"
@@ -2522,41 +2531,8 @@
                 "path": "offer"
               },
               {
-                "kind": "const",
-                "value": [
-                  6,
-                  221,
-                  246,
-                  225,
-                  215,
-                  101,
-                  161,
-                  147,
-                  217,
-                  203,
-                  225,
-                  70,
-                  206,
-                  235,
-                  121,
-                  172,
-                  28,
-                  180,
-                  133,
-                  237,
-                  95,
-                  91,
-                  55,
-                  145,
-                  58,
-                  140,
-                  245,
-                  133,
-                  126,
-                  255,
-                  0,
-                  169
-                ]
+                "kind": "account",
+                "path": "token_program"
               },
               {
                 "kind": "account",
@@ -2770,6 +2746,19 @@
       ]
     },
     {
+      "name": "ClaimOwnerApproved",
+      "discriminator": [
+        115,
+        51,
+        61,
+        62,
+        176,
+        78,
+        235,
+        96
+      ]
+    },
+    {
       "name": "ClaimPaid",
       "discriminator": [
         212,
@@ -2952,6 +2941,19 @@
       ]
     },
     {
+      "name": "ScheduledPaid",
+      "discriminator": [
+        143,
+        160,
+        230,
+        193,
+        200,
+        214,
+        33,
+        98
+      ]
+    },
+    {
       "name": "WillSet",
       "discriminator": [
         238,
@@ -3085,11 +3087,24 @@
       "code": 6023,
       "name": "MathOverflow",
       "msg": "Math overflow"
+    },
+    {
+      "code": 6024,
+      "name": "PayeeRequired",
+      "msg": "A recurring rule needs a payee account"
+    },
+    {
+      "code": 6025,
+      "name": "NotDue",
+      "msg": "The scheduled payment is not due yet"
     }
   ],
   "types": [
     {
       "name": "Asset",
+      "docs": [
+        "Seeds: [\"asset\", estate, nft_mint]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3258,6 +3273,9 @@
     },
     {
       "name": "Beneficiary",
+      "docs": [
+        "Seeds: [\"beneficiary\", estate, wallet]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3309,6 +3327,9 @@
     },
     {
       "name": "Claim",
+      "docs": [
+        "Seeds: [\"claim\", rule, id.to_le_bytes() (u32)]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3326,10 +3347,16 @@
           },
           {
             "name": "beneficiary",
+            "docs": [
+              "Beneficiary wallet."
+            ],
             "type": "pubkey"
           },
           {
             "name": "payee",
+            "docs": [
+              "Payee wallet."
+            ],
             "type": "pubkey"
           },
           {
@@ -3364,6 +3391,9 @@
           },
           {
             "name": "approvals",
+            "docs": [
+              "Bitmap: verifier i sets bit 1 << i."
+            ],
             "type": "u8"
           },
           {
@@ -3377,6 +3407,13 @@
           {
             "name": "created_at",
             "type": "i64"
+          },
+          {
+            "name": "owner_approved",
+            "docs": [
+              "Set by `owner_approve_claim` (living plans, estate Active): replaces the verifier quorum."
+            ],
+            "type": "bool"
           },
           {
             "name": "bump",
@@ -3401,6 +3438,26 @@
           {
             "name": "count",
             "type": "u8"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimOwnerApproved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "claim",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
           },
           {
             "name": "ts",
@@ -3538,10 +3595,16 @@
           },
           {
             "name": "count",
+            "docs": [
+              "Number of attestations so far."
+            ],
             "type": "u8"
           },
           {
             "name": "pending",
+            "docs": [
+              "True once the estate is DeathPending (threshold reached)."
+            ],
             "type": "bool"
           },
           {
@@ -3627,6 +3690,9 @@
     },
     {
       "name": "Estate",
+      "docs": [
+        "Seeds: [\"estate\", owner]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3711,6 +3777,9 @@
           },
           {
             "name": "death_attestations",
+            "docs": [
+              "Bitmap: verifier i sets bit 1 << i."
+            ],
             "type": "u8"
           },
           {
@@ -3798,6 +3867,9 @@
     },
     {
       "name": "Hardship",
+      "docs": [
+        "Seeds: [\"hardship\", asset, beneficiary_wallet]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -3807,6 +3879,9 @@
           },
           {
             "name": "beneficiary",
+            "docs": [
+              "Beneficiary wallet."
+            ],
             "type": "pubkey"
           },
           {
@@ -3837,6 +3912,9 @@
           },
           {
             "name": "approvals",
+            "docs": [
+              "Bitmap: verifier i sets bit 1 << i."
+            ],
             "type": "u8"
           },
           {
@@ -3877,6 +3955,9 @@
           },
           {
             "name": "quorum_reached",
+            "docs": [
+              "True once the quorum is reached and the hardship floor applies."
+            ],
             "type": "bool"
           },
           {
@@ -3958,6 +4039,9 @@
     },
     {
       "name": "Offer",
+      "docs": [
+        "Seeds: [\"offer\", asset, buyer]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4042,6 +4126,9 @@
     },
     {
       "name": "Payee",
+      "docs": [
+        "Seeds: [\"payee\", estate, wallet]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4094,6 +4181,9 @@
     },
     {
       "name": "Rule",
+      "docs": [
+        "Seeds: [\"rule\", estate, id.to_le_bytes() (u16)]"
+      ],
       "type": {
         "kind": "struct",
         "fields": [
@@ -4107,6 +4197,9 @@
           },
           {
             "name": "beneficiary",
+            "docs": [
+              "Beneficiary wallet (not the Beneficiary PDA)."
+            ],
             "type": "pubkey"
           },
           {
@@ -4146,8 +4239,72 @@
             "type": "u32"
           },
           {
+            "name": "starts_now",
+            "docs": [
+              "Living plan: claims (and scheduled payments) work while the estate is still Active."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "recurring_amount",
+            "docs": [
+              "Scheduled payment per interval; 0 = not recurring."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "interval_secs",
+            "type": "i64"
+          },
+          {
+            "name": "next_due",
+            "docs": [
+              "Unix time the next scheduled payment may be executed."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "fixed_payee",
+            "docs": [
+              "Payee wallet of the scheduled payment; Pubkey::default() = none."
+            ],
+            "type": "pubkey"
+          },
+          {
             "name": "bump",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ScheduledPaid",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "estate",
+            "type": "pubkey"
+          },
+          {
+            "name": "rule",
+            "type": "pubkey"
+          },
+          {
+            "name": "payee",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "next_due",
+            "type": "i64"
+          },
+          {
+            "name": "ts",
+            "type": "i64"
           }
         ]
       }

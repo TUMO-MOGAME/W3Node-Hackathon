@@ -48,7 +48,9 @@ cargo test -p heirloom
 
 if [ "$MODE" = "deploy" ]; then
   echo "== anchor deploy (devnet)"
-  anchor deploy --provider.cluster devnet
+  # The program deploy works; the follow-up on-chain IDL upload shells out to `npx`, which in WSL resolves
+  # to the Windows npx and fails ("Failed to initialize IDL"). The app ships the IDL itself, so that's harmless.
+  anchor deploy --provider.cluster devnet || echo "!! deploy reported an error: if only the IDL step failed, the program is still deployed (check: solana program show <id> --url devnet)"
 fi
 
 echo "== program id: $(solana-keygen pubkey target/deploy/heirloom-keypair.json)"
