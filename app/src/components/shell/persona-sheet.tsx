@@ -21,6 +21,15 @@ const SHORTCUTS: DemoShortcut[] = ["simulatePassing", "skipWait", "makeDue"];
 type Theme = "system" | "light" | "dark";
 
 /** The persona switcher: pick who you are acting as, plus demo controls and appearance. */
+
+/** Applies a theme choice to the page and remembers it on this device. */
+function writeTheme(t: "light" | "dark" | "system") {
+  const root = document.documentElement;
+  if (t === "system") delete root.dataset.theme;
+  else root.dataset.theme = t;
+  try { window.localStorage.setItem("heirloom.theme", t); } catch { /* ignore */ }
+}
+
 export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { common } = useCopy();
   const c = common.persona;
@@ -33,15 +42,15 @@ export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => 
   useEffect(() => {
     try {
       const t = window.localStorage.getItem("heirloom.theme");
+      // Read localStorage after mount so the server-rendered markup matches.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (t === "light" || t === "dark") setTheme(t);
     } catch { /* ignore */ }
   }, []);
 
   const applyTheme = (t: Theme) => {
     setTheme(t);
-    if (t === "system") delete document.documentElement.dataset.theme;
-    else document.documentElement.dataset.theme = t;
-    try { window.localStorage.setItem("heirloom.theme", t); } catch { /* ignore */ }
+    writeTheme(t);
   };
 
   const pick = (address: string, name: string) => {

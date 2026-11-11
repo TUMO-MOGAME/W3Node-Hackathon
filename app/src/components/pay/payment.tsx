@@ -79,6 +79,8 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const activeId = useRef<string | null>(null);
   const rate = fx?.usdtZar ?? null;
 
+  // Hydrate from localStorage after mount (not during render, so SSR markup matches).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setPendingIds(readPending()); }, []);
   // Also pick up payments the service itself still has open: on load, on reconnect and when the tab returns.
   useEffect(() => {
@@ -189,7 +191,7 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const contractBlock = error && !["generic", "InsufficientFunds", "InvalidAddress", "cancelled"].includes(error.code);
 
   return (
-    <Ctx.Provider value={{ pay, online, rechecking: pendingIds.filter((id) => id !== activeId.current).length }}>
+    <Ctx.Provider value={{ pay, online, rechecking: pendingIds.filter((id) => id !== review?.id).length }}>
       {children}
       <Sheet open={!!req} onClose={close} title={phase === "review" ? c.title : phase === "signing" ? copy.signing.title : phase === "pending" ? copy.pending.title : phase === "confirmed" ? copy.confirmed.title : copy.failed.title} description={phase === "review" ? c.body : undefined} closeLabel={phase === "review" ? c.cancel : copy.failed.close}>
         {req && review && (

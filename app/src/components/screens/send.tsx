@@ -34,11 +34,17 @@ function Send({ copy }: { copy: Copy }) {
   const [sent, setSent] = useState(false);
   const person = session?.address;
 
+  // A different person or service: forget the old list and choice (adjusted during render, not in an effect).
+  const [seen, setSeen] = useState({ service, person });
+  if (seen.service !== service || seen.person !== person) {
+    setSeen({ service, person });
+    setPeople(null); setTo(null);
+  }
+
   useEffect(() => {
     let alive = true;
     if (!service) return;
-    setPeople(null); setTo(null);
-    service.savedRecipients().then((r) => { if (alive) setPeople(r); }).catch(() => { if (alive) setPeople([]); });
+    service.savedRecipients().then((r) => { if (!alive) return; setPeople(r); if (r.length === 0) setOther(true); /* nobody saved yet: go straight to the address field */ }).catch(() => { if (alive) setPeople([]); });
     return () => { alive = false; };
   }, [service, person]);
 

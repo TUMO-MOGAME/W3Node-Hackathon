@@ -8,7 +8,7 @@
  */
 import { explorerTx, fromBase, toBase } from "../format";
 import type {
-  AgentReport, Asset, Base58, CarValuation, Claim, Hardship, Offer, OfferRanking, PaymentReceipt, PaymentReview, Role, SavedRecipient, WillChatMessage, WillDraft,
+  AgentReport, Asset, Base58, CarValuation, Claim, Hardship, OfferRanking, PaymentReceipt, PaymentReview, Role, SavedRecipient, WillChatMessage, WillDraft,
 } from "../types";
 import type { EstateSnapshot, HeirloomService, TxResult } from "./types";
 import { DEMO_PERSONAS as WALLET_PERSONAS } from "../wallet/personas";
@@ -289,7 +289,7 @@ export function createMockService(): MockService {
       log("DeathReviewed", "The agent read the death certificate and found no problems", tx());
     } else {
       d.certHash = null; d.submittedBy = null; d.verdict = "Pending";
-      (d as { agentReport?: AgentReport }).agentReport = undefined;
+      d.agentReport = undefined;
       log("DeathReviewed", "The agent could not accept the certificate. Nothing has changed", tx());
     }
     return t;
@@ -352,7 +352,7 @@ export function createMockService(): MockService {
     const claim: Claim = {
       address: fakeAddr(), rule: rule.address, id: s.snap.claims.length, beneficiary: me(), payee: payee.wallet, amount: amt,
       evidenceHash, agentVerdict: approved ? "Approved" : "Rejected", agentReport: report,
-      approvals: [false, false, false], status: approved ? "Open" : "Rejected", createdAt: nowSecs(),
+      approvals: [false, false, false], ownerApproved: false, status: approved ? "Open" : "Rejected", createdAt: nowSecs(),
     };
     s.snap.claims.unshift(claim);
     const t = tx();
@@ -380,8 +380,10 @@ export function createMockService(): MockService {
     const rule = s.snap.rules.find((r) => r.address === c.rule)!;
     need(rule.startsNow, "BadStatus", "Only living-plan rules can be approved by the owner.");
     need(est().status === "Active", "BadStatus", "Owner approval only applies while the estate is active.");
-    need(c.status === "Open" && c.agentVerdict === "Approved", "BadStatus", "This claim cannot be approved.");
-    c.approvals = [true, true, true];
+    need(c.status === "Open", "BadStatus", "This claim cannot be approved.");
+    need(c.agentVerdict === "Approved", "AgentNotApproved", "The agent has not cleared this claim.");
+    need(!c.ownerApproved, "AlreadyApproved", "You have already approved this.");
+    c.ownerApproved = true;
     const t = tx();
     log("ClaimApproved", `${first(me())} approved ${first(c.beneficiary)}'s claim under the living plan`, t);
     return t;
@@ -393,7 +395,7 @@ export function createMockService(): MockService {
     need(r.recurringAmount > 0n && !!r.fixedPayee, "BadStatus", "This rule has no schedule.");
     const st = est().status;
     need(st === "Unlocked" || (r.startsNow && st === "Active"), "BadStatus", r.startsNow ? "Scheduled payments pause while a passing is being confirmed." : "This schedule starts after the estate is unlocked.");
-    need(force || (r.nextDue !== null && nowSecs() >= r.nextDue), "NotDueYet", "This payment is not due yet.");
+    need(force || (r.nextDue !== null && nowSecs() >= r.nextDue), "NotDue", "This payment is not due yet.");
     need(nowSecs() <= r.validUntil, "RuleExpired", "This rule has ended.");
     need(r.spentTotal + r.recurringAmount <= r.lifetimeCap, "ExceedsLifetimeCap", `Only ${usd(r.lifetimeCap - r.spentTotal)} is left under this rule.`);
     need(est().vaultBalance >= r.recurringAmount, "InsufficientFunds", "The vault does not hold enough for this payment.");
@@ -410,8 +412,12 @@ export function createMockService(): MockService {
     needCreated();
     const c = s.snap.claims.find((x) => x.address === address) ?? fail("BadStatus", "That claim does not exist.");
     const rule = s.snap.rules.find((r) => r.address === c.rule)!;
-    need(c.status === "Open" && c.agentVerdict === "Approved", "BadStatus", "This claim cannot be paid.");
-    need(count(c.approvals) >= est().claimThreshold, "InsufficientApprovals", "A trusted person still needs to approve this.");
+    need(est().status === "Unlocked" || (rule.startsNow && est().status === "Active"), "BadStatus", "This claim cannot be paid right now.");
+    need(c.status === "Open", "BadStatus", "This claim cannot be paid.");
+    need(c.agentVerdict === "Approved", "AgentNotApproved", "The agent has not cleared this claim.");
+    // As on-chain: while the owner is alive only his approval counts; after unlock his approval or the quorum.
+    const approvedToPay = est().status === "Active" ? c.ownerApproved : c.ownerApproved || count(c.approvals) >= est().claimThreshold;
+    need(approvedToPay, "InsufficientApprovals", est().status === "Active" ? "The owner still needs to approve this." : "A trusted person still needs to approve this.");
     need(rule.spentTotal + c.amount <= rule.lifetimeCap, "ExceedsLifetimeCap", "This would go over the rule's total limit.");
     need(nowSecs() <= rule.validUntil, "RuleExpired", "This rule has ended.");
     need(est().vaultBalance >= c.amount, "InsufficientFunds", "The vault does not hold enough for this payment.");
@@ -686,7 +692,7 @@ export function createMockService(): MockService {
     if (stage === "funded") return;
     as("lerato", () => {
       const f = new File(["demo"], "death-certificate.pdf");
-      (est().death as { agentReport?: AgentReport }).agentReport = report("death", f, { who: "Lerato Mokoena" });
+      est().death.agentReport = report("death", f, { who: "Lerato Mokoena" });
       submitDeath(fakeHash(), true);
     });
     as("nomsa", attestDeath);
@@ -782,7 +788,7 @@ export function createMockService(): MockService {
       if (!est().death.certHash) {
         as("lerato", () => {
           const f = new File(["demo"], "death-certificate.pdf");
-          (est().death as { agentReport?: AgentReport }).agentReport = report("death", f, { who: "Lerato Mokoena" });
+          est().death.agentReport = report("death", f, { who: "Lerato Mokoena" });
           submitDeath(fakeHash(), true);
         });
       }
@@ -860,7 +866,7 @@ export function createMockService(): MockService {
     },
     deposit: (_e, amountUsdt) => mutate(900, () => deposit(amountUsdt)),
     withdraw: (_e, amountUsdt) => mutate(900, () => withdraw(amountUsdt)),
-    heartbeat: (_e) => mutate(600, () => {
+    heartbeat: () => mutate(600, () => {
       needCreated(); needOwner();
       need(est().status === "Active" || est().status === "DeathPending", "BadStatus", "The estate has already unlocked.");
       est().lastHeartbeat = nowSecs();
@@ -901,7 +907,7 @@ export function createMockService(): MockService {
     }),
     ownerApproveClaim: (_e, claim) => mutate(900, () => ownerApproveClaim(claim)),
     executeScheduled: (_e, rule) => mutate(1000, () => executeScheduled(rule)),
-    vetoDeath: (_e) => mutate(800, vetoDeath),
+    vetoDeath: () => mutate(800, vetoDeath),
 
     async submitDeathClaim(_e, certificate) {
       needCreated(); needBeneficiary();
@@ -910,7 +916,7 @@ export function createMockService(): MockService {
       await sleep(1900);
       const r = report("death", certificate, {});
       const t = submitDeath(hash, r.verdict === "approve");
-      if (r.verdict === "approve") (est().death as { agentReport?: AgentReport }).agentReport = r;
+      if (r.verdict === "approve") est().death.agentReport = r;
       save();
       return { tx: t, report: r };
     },
@@ -932,10 +938,10 @@ export function createMockService(): MockService {
       return { tx: t, report: r };
     },
 
-    attestDeath: (_e) => mutate(900, attestDeath),
+    attestDeath: () => mutate(900, attestDeath),
     approveClaim: (_e, claim) => mutate(900, () => approveClaim(claim)),
     approveHardship: (_e, h) => mutate(900, () => approveHardship(h)),
-    finalizeUnlock: (_e) => mutate(800, () => finalizeUnlock()),
+    finalizeUnlock: () => mutate(800, () => finalizeUnlock()),
     executeClaim: (_e, claim) => mutate(1100, () => executeClaim(claim)),
 
     listAsset: (_e, asset, durationSecs) => mutate(900, () => listAsset(asset, durationSecs)),

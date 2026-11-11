@@ -40,6 +40,17 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
+## Wave 2 (started 2026-11-11 midday): merge these branches when done
+| Agent | Where | Branch |
+|---|---|---|
+| QA + fixes + chain-mode P2P test | main checkout | (uncommitted on main) |
+| Harvest Moon redesign (Fable): #800020 / #FFCE1B / #A52A2A / #BE5103 | `.claude/worktrees/agent-a4929912d26b8668f` | `worktree-agent-a4929912d26b8668f` |
+| isiZulu / Sesotho / Afrikaans | `.claude/worktrees/agent-ae33696ab4b5e1436` | `worktree-agent-ae33696ab4b5e1436` |
+| Tether QVAC wallet assistant | `.claude/worktrees/agent-a6233de91ce4e56f2` | `worktree-agent-a6233de91ce4e56f2` |
+| Gasless fees + Cape Town region + /api/health | `.claude/worktrees/agent-abc0ddce1a52b0691` | `worktree-agent-abc0ddce1a52b0691` |
+| **Legacy Voice** (ElevenLabs clone of the parent, consented while alive; Legacy Book; no money authority; SADAG escape) | `.claude/worktrees/legacy-voice` | `feature/legacy-voice` |
+- Pitch deck (3 slides, Harvest Moon): https://claude.ai/artifact/CRBuJE5QBNxVxcVvwJ4neA (private until Tumo shares it)
+
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |
 |---|---|---|

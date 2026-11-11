@@ -170,15 +170,21 @@ function Listing({ copy, snap, car, session, role }: { copy: Copy; snap: EstateS
   const [ranking, setRanking] = useState<OfferRanking | null>(null);
   const offersKey = offers.map((o) => `${o.address}:${o.amount}`).join("|") + (car.hardshipBeneficiary ?? "");
 
+  // When the offers change, clear the last block and (if none are left) the ranking: adjusted during render, not in an effect.
+  const [seenOffers, setSeenOffers] = useState(offersKey);
+  if (seenOffers !== offersKey) {
+    setSeenOffers(offersKey);
+    setBlocked(null);
+    if (offers.length === 0) setRanking(null);
+  }
+
   useEffect(() => {
     let alive = true;
-    if (!service || offers.length === 0) { setRanking(null); return; }
+    if (!service || offers.length === 0) return;
     service.rankOffers(car.address).then((r) => { if (alive) setRanking(r); }).catch(() => { if (alive) setRanking(null); });
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [service, offersKey, car.address]);
-
-  useEffect(() => { setBlocked(null); }, [offersKey]);
 
   const settle = async () => {
     setBlocked(null);

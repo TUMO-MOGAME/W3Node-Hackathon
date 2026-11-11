@@ -70,6 +70,7 @@ export function EstateProvider({ children, errors }: { children: ReactNode; erro
   const estateRef = useRef<string | null>(null);
   const toastId = useRef(0);
   const loadSeq = useRef(0);
+  const inFlight = useRef(0);
 
   const explain = useCallback((error: unknown) => {
     const raw = error instanceof Error ? error.message : String(error);
@@ -101,7 +102,11 @@ export function EstateProvider({ children, errors }: { children: ReactNode; erro
 
   const load = useCallback(async (quiet: boolean) => {
     if (!service) return;
+    // A background refresh never overtakes a load still in flight: on a slow or rate-limited RPC a load can take
+    // longer than the poll interval, and each new load would discard the previous one, so nothing would ever land.
+    if (quiet && inFlight.current > 0) return;
     const seq = ++loadSeq.current;
+    inFlight.current++;
     if (!quiet) setPhase((p) => (p === "ready" ? p : "loading"));
     try {
       if (isMockService(service)) {
@@ -136,16 +141,20 @@ export function EstateProvider({ children, errors }: { children: ReactNode; erro
       if (quiet && estateRef.current) return; // keep showing the last good data during a blip
       setLoadError(e instanceof Error ? e.message : String(e));
       setPhase("error");
+    } finally {
+      inFlight.current--;
     }
   }, [service, address, sessionRole, sessionLabel, sessionUsdt]);
 
+  // Fetching on mount / when the session changes; load() marks the phase as loading before it awaits.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(false); }, [load]);
 
   useEffect(() => {
     if (!service) return;
     const id = window.setInterval(() => {
       if (document.visibilityState === "visible") void load(true);
-    }, 5000);
+    }, isMockService(service) ? 5000 : 15000); // public RPCs rate-limit: poll the chain less often
     return () => window.clearInterval(id);
   }, [service, load]);
 

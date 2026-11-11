@@ -4,8 +4,7 @@
  * after the 8-byte discriminator for Beneficiary/Payee/Rule/Claim/Asset (estate) and Offer/Hardship (asset)).
  */
 import { EventParser } from "@anchor-lang/core";
-import { PublicKey, type Connection, type GetProgramAccountsFilter } from "@solana/web3.js";
-import bs58 from "bs58";
+import { PublicKey, type Connection } from "@solana/web3.js";
 import type { ActivityItem, Base58 } from "../types";
 import { accountDiscriminator, accountName, getCoder, getIdl } from "./idl";
 import {
@@ -37,13 +36,37 @@ function decode(name: string, data: Uint8Array): Raw {
   return getCoder().accounts.decode(accountName(name), data as Parameters<ReturnType<typeof getCoder>["accounts"]["decode"]>[1]) as Raw;
 }
 
+/**
+ * One getProgramAccounts scan of the whole program, shared by every read for a few seconds.
+ * The public devnet RPC throttles getProgramAccounts per method (HTTP 429 after a handful of calls), and one
+ * estate load used to need 7+ filtered scans, so the dashboard could never finish loading. A single unfiltered
+ * scan is cheap at hackathon scale; a production deployment would use an indexer or a paid RPC with filters.
+ */
+export interface ProgramAccount { pubkey: PublicKey; data: Uint8Array }
+let scan: { at: number; accounts: Promise<ProgramAccount[]> } | null = null;
+export function programAccounts(conn = getConnection(), maxAgeMs = 8_000): Promise<ProgramAccount[]> {
+  if (scan && Date.now() - scan.at < maxAgeMs) return scan.accounts;
+  const accounts = conn.getProgramAccounts(programId(), { commitment: "confirmed" })
+    .then((res) => res.map((a) => ({ pubkey: a.pubkey, data: a.account.data as Uint8Array })));
+  const entry = { at: Date.now(), accounts };
+  scan = entry;
+  accounts.catch(() => { if (scan === entry) scan = null; });
+  return accounts;
+}
+/** Forget the shared scan (call after a write so the next read sees it). */
+export function invalidateProgramAccounts(): void { scan = null; }
+
+const startsWith = (data: Uint8Array, prefix: Uint8Array, at = 0) => prefix.every((b, i) => data[at + i] === b);
+
+/** Accounts of `type` whose first field (after the 8-byte discriminator) is `parent`, optionally another key at `offset`. */
+export async function scanAccounts(type: string, match: { offset: number; key: PublicKey }[], conn = getConnection()): Promise<ProgramAccount[]> {
+  const disc = accountDiscriminator(type);
+  return (await programAccounts(conn)).filter((a) => startsWith(a.data, disc) && match.every((m) => startsWith(a.data, m.key.toBytes(), m.offset)));
+}
+
 async function fetchChildren(conn: Connection, type: string, parent: PublicKey): Promise<{ address: string; raw: Raw }[]> {
-  const filters: GetProgramAccountsFilter[] = [
-    { memcmp: { offset: 0, bytes: bs58.encode(accountDiscriminator(type)) } },
-    { memcmp: { offset: 8, bytes: parent.toBase58() } },
-  ];
-  const res = await conn.getProgramAccounts(programId(), { filters, commitment: "confirmed" });
-  return res.map((a) => ({ address: a.pubkey.toBase58(), raw: decode(type, a.account.data) }));
+  const res = await scanAccounts(type, [{ offset: 8, key: parent }], conn);
+  return res.map((a) => ({ address: a.pubkey.toBase58(), raw: decode(type, a.data) }));
 }
 
 export async function fetchEstateRaw(estate: Base58, names: OffChainNames = {}, conn = getConnection()): Promise<RawSnapshot> {
@@ -116,7 +139,9 @@ export async function fetchActivity(estate: Base58, limit = 40, conn = getConnec
     try {
       for (const ev of parser.parseLogs(logs)) {
         const d = describeEvent(ev.name, ev.data as Raw);
-        items.push({ ts, kind: d.kind, text: d.text, amount: d.amount, txSignature: ok[i].signature });
+        let reportHash: string | undefined;
+        try { reportHash = d.kind.endsWith("Reviewed") ? hex(ev.data as Raw, "report_hash") : undefined; } catch { /* no hash on this event */ }
+        items.push({ ts, kind: d.kind, text: d.text, amount: d.amount, txSignature: ok[i].signature, ...(reportHash ? { reportHash } : {}) });
       }
     } catch {
       // A log we cannot decode (e.g. older IDL) is skipped, not fatal for the feed.

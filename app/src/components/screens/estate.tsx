@@ -171,6 +171,8 @@ function RuleCard({ rule, snap, copy, rate, now }: { rule: Rule; snap: EstateSna
 
   useEffect(() => {
     if (!hit) return;
+    // Reacts to a one-off "show me this rule" intent from the agent.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGlow(true);
     ref.current?.scrollIntoView({ block: "center", behavior: "smooth" });
     setIntent(null);

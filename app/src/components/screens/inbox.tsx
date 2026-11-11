@@ -52,7 +52,7 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
       key: "death", kind: "death",
       title: fmt(copy.death.title, { name: e.ownerName }),
       body: fmt(copy.death.body, { by: d.submittedBy ? label(d.submittedBy) : "" }),
-      report: (d as { agentReport?: AgentReport }).agentReport,
+      report: d.agentReport,
       approvals: d.attestations, need: e.deathThreshold, mine: !!d.attestations[me], approveLabel: copy.death.approve,
       act: async () => { await run("death", (s, est) => s.attestDeath(est), copy.death.done); },
     });

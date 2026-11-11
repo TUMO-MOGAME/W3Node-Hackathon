@@ -118,7 +118,7 @@ export function Typewriter({ text, active, onDone, onTick }: { text: string; act
   const [n, setN] = useState(animate ? 0 : text.length);
   const done = useRef(!animate);
   useEffect(() => {
-    if (!animate) { setN(text.length); if (!done.current) { done.current = true; onDone?.(); } return; }
+    if (!animate) { if (!done.current) { done.current = true; onDone?.(); } return; }
     const step = Math.max(2, Math.round(text.length / 110));
     const id = window.setInterval(() => {
       setN((prev) => {
@@ -134,10 +134,11 @@ export function Typewriter({ text, active, onDone, onTick }: { text: string; act
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, animate]);
-  const typing = n < text.length;
+  const shown = animate ? n : text.length;
+  const typing = shown < text.length;
   return (
     <>
-      <span aria-hidden={typing || undefined} className={clsx("whitespace-pre-line", typing && "typing-caret")}>{text.slice(0, n)}</span>
+      <span aria-hidden={typing || undefined} className={clsx("whitespace-pre-line", typing && "typing-caret")}>{text.slice(0, shown)}</span>
       {typing && <span className="sr-only">{text}</span>}
     </>
   );

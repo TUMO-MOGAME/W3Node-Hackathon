@@ -24,7 +24,8 @@ export const common = {
   },
   persona: {
     actingAs: "Acting as",
-    switchLabel: "Switch person. Currently acting as {name}, {role}",
+    // Starts with the visible text (role, then name) so voice-control users can say what they see.
+    switchLabel: "{role} {name}: switch person",
     sheetTitle: "Who are you acting as?",
     sheetBody: "One browser can hold several wallets. Pick a person to see Heirloom exactly as they would.",
     current: "Current",

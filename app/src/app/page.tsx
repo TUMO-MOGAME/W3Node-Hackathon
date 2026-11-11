@@ -26,7 +26,7 @@ export default function LandingPage() {
       <SiteHeader site={site} />
       <main id="main">
         {/* Hero: CSS-only entrance, no JavaScript needed for the first screen */}
-        <section className="paper border-b border-line/70">
+        <section className="paper overflow-x-clip border-b border-line/70">
           <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 pb-14 pt-10 *:min-w-0 md:grid-cols-[1.1fr_0.9fr] md:pb-20 md:pt-16">
             <div>
               <Eyebrow className="rise">{hero.eyebrow}</Eyebrow>

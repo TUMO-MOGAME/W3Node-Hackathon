@@ -52,6 +52,8 @@ export function InstallBanner({ copy }: { copy: { title: string; body: string; c
   const { state, prompt } = useInstall();
   const [hidden, setHidden] = useState(true);
   useEffect(() => {
+    // Read localStorage after mount so the server-rendered markup matches.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     try { setHidden(window.localStorage.getItem("heirloom.install.dismissed") === "1"); } catch { setHidden(false); }
   }, []);
   if (hidden || (state !== "ready" && state !== "ios")) return null;

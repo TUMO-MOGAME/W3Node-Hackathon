@@ -133,7 +133,7 @@ function Chrome({ children }: { children: ReactNode }) {
             {session && (
               <button
                 type="button" onClick={() => setPersonaOpen(true)}
-                aria-label={fmt(common.persona.switchLabel, { name: session.label, role: common.roles[session.role] })}
+                aria-label={fmt(common.persona.switchLabel, { name: session.label.replace(/\s*\(.*\)$/, ""), role: common.roles[session.role] })}
                 className="flex min-h-11 min-w-0 items-center gap-2 rounded-full border border-line-strong/70 bg-surface py-1 pl-1 pr-2.5 shadow-card hover:bg-surface-2 md:shrink-0"
               >
                 <Avatar name={session.label} role={session.role} />

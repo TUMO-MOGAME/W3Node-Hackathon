@@ -35,6 +35,8 @@ export function StartScreen({ copy }: { copy: ScreensCopy["start"] }) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    // Read the URL after mount so the server-rendered markup matches.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (new URLSearchParams(window.location.search).get("new") === "1") setStep("about");
   }, []);
 

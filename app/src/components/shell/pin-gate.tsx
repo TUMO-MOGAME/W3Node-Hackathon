@@ -35,10 +35,10 @@ export function PinGate({ children }: { children: ReactNode }) {
     finish(pin);
   };
 
-  const api = useRef<PinApi>({ preset: (p) => { presetPin.current = p; } });
+  const [api] = useState<PinApi>(() => ({ preset: (p) => { presetPin.current = p; } }));
 
   return (
-    <Ctx.Provider value={api.current}>
+    <Ctx.Provider value={api}>
       <WalletProvider requestPin={requestPin}>{children}</WalletProvider>
       <Sheet open={!!req} onClose={() => finish(null)} title={c.unlockTitle} description={req ? fmt(c.unlockBody, { label: req.label }) : undefined} closeLabel={c.cancel}>
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>

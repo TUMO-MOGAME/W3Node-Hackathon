@@ -37,8 +37,11 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
 
   useEffect(() => {
     if (!intent || !canClaim) return;
+    // Consumes a one-off intent handed over by the agent (an external event), then clears it.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (intent.kind === "claim") { setWizard({ rule: intent.rule, payee: intent.payee, amount: intent.amount }); setIntent(null); }
     else if (intent.kind === "upload" && intent.purpose === "claim") { setWizard({}); setIntent(null); }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [intent, canClaim, setIntent]);
 
   return (
@@ -93,7 +96,7 @@ export function ClaimTracker({ claim, need, copy, waitingFor }: { claim: Claim; 
   const steps = [
     { label: t.submitted, done: true },
     { label: declined ? t.declined : t.checked, done: claim.agentVerdict !== "Pending", bad: declined },
-    { label: t.approved, done: claim.status === "Paid" || got >= need, note: !declined && claim.status === "Open" ? (waitingFor ?? fmt(t.approvals, { got, need })) : undefined },
+    { label: t.approved, done: claim.status === "Paid" || claim.ownerApproved || got >= need, note: !declined && claim.status === "Open" ? (waitingFor ?? fmt(t.approvals, { got, need })) : undefined },
     { label: t.paid, done: claim.status === "Paid" },
   ];
   const current = steps.findIndex((s) => !s.done);
@@ -171,7 +174,9 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
   const [ruleAddr, setRuleAddr] = useState(preset.rule && rules.some((r) => r.address === preset.rule && usable(r)) ? preset.rule : rules.filter(usable).length === 1 ? rules.filter(usable)[0].address : "");
   const rule = rules.find((r) => r.address === ruleAddr);
   const payees = rule ? snap.payees.filter((p) => p.kind === rule.allowedPayeeKind) : [];
-  const [payee, setPayee] = useState(preset.payee ?? "");
+  const [picked, setPayee] = useState(preset.payee ?? "");
+  // With only one approved payee for the rule, it is chosen for the user.
+  const payee = picked || (payees.length === 1 ? payees[0].wallet : "");
   const [amount, setAmount] = useState(preset.amount ? String(preset.amount) : "");
   const [file, setFile] = useState<File | null>(null);
   const [consent, setConsent] = useState(false);
@@ -184,8 +189,6 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
   const validAmount = Number.isFinite(n) && n > 0;
   const left = rule ? rule.lifetimeCap - rule.spentTotal : BigInt(0);
   const payeeName = snap.payees.find((p) => p.wallet === payee)?.name ?? "";
-
-  useEffect(() => { if (payees.length === 1 && !payee) setPayee(payees[0].wallet); }, [payees, payee]);
 
   const next = () => {
     if (step === 0 && !rule) return;
@@ -347,7 +350,8 @@ function OwnerApproval({ claim, snap, copy }: { claim: Claim; snap: EstateSnapsh
         className="mt-3" block disabled={!!busy}
         onClick={() => void pay({
           kind: "claim-payout", source: "vault", to: claim.payee, toLabel: payee, amount: claim.amount,
-          execute: async (svc, est) => { await svc.ownerApproveClaim(est, claim.address); return svc.executeClaim(est, claim.address); },
+          // Skip the approval if it already went through on an earlier attempt (the program rejects a second one).
+          execute: async (svc, est) => { if (!claim.ownerApproved) await svc.ownerApproveClaim(est, claim.address); return svc.executeClaim(est, claim.address); },
           successText: fmt(copy.owner.done, { payee }),
         })}
       >

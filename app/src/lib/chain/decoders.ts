@@ -152,7 +152,8 @@ export const decodeRule = (address: string, r: Raw): Rule => {
 export const decodeClaim = (address: string, r: Raw): Claim => ({
   address, rule: key(r, "rule"), id: num(r, "id"), beneficiary: key(r, "beneficiary"), payee: key(r, "payee"),
   amount: big(r, "amount"), evidenceHash: hex(r, "evidence_hash"), agentVerdict: enumOf(r, "agent_verdict", VERDICT),
-  approvals: bits(num(r, "approvals")), status: enumOf(r, "status", CLAIM_STATUS), createdAt: num(r, "created_at"),
+  approvals: bits(num(r, "approvals")), ownerApproved: has(r, "owner_approved") ? bool(r, "owner_approved") : false,
+  status: enumOf(r, "status", CLAIM_STATUS), createdAt: num(r, "created_at"),
 });
 
 export const decodeAsset = (address: string, r: Raw, title?: string): Asset => {

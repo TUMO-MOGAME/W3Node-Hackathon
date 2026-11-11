@@ -39,6 +39,8 @@ export interface Estate {
     verdict: Verdict;
     attestations: boolean[]; // index = verifier index
     pendingSince: number | null;
+    /** The agent's review of the death certificate (off-chain JSON; its hash is in the DeathReviewed event). */
+    agentReport?: AgentReport;
   };
   lastHeartbeat: number;
 }
@@ -87,6 +89,8 @@ export interface Claim {
   agentVerdict: Verdict;
   agentReport?: AgentReport;
   approvals: boolean[];
+  /** Living plan: the owner approved this claim himself while alive (counts as full approval). */
+  ownerApproved: boolean;
   status: ClaimStatus;
   createdAt: number;
   txSignature?: string;
@@ -191,6 +195,8 @@ export interface ActivityItem {
   text: string;
   amount?: bigint;
   txSignature?: string;
+  /** For *Reviewed events: the agent report hash, to join the off-chain report. */
+  reportHash?: HexHash;
 }
 
 export interface FxRate {

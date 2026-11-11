@@ -15,19 +15,17 @@ import { chainConfig } from "../chain/config";
 import * as ix from "../chain/instructions";
 import { ata, claimPda, estatePda, offerPda, hardshipPda } from "../chain/pda";
 import { base64ToBytes, bytesToBase64, ChainTxError, getConnection } from "../chain/tx";
-import { fetchAccountRaw, fetchActivity, fetchEstateRaw, findEstateOf } from "../chain/reads";
+import { fetchAccountRaw, fetchActivity, fetchEstateRaw, findEstateOf, invalidateProgramAccounts, scanAccounts } from "../chain/reads";
 import { assembleSnapshot } from "../chain/snapshot";
 import { key, num, type Raw } from "../chain/decoders";
-import { accountDiscriminator, getIdl } from "../chain/idl";
 import { getActiveSigner } from "../wallet/signer";
-import { defaultReceiptStore, newPaymentId, openReceipts, recheck, runPayment, waitForFinal, type ChainOps, type StoredPayment } from "../wallet/payments";
+import { defaultReceiptStore, newPaymentId, openReceipts, recheck, resumeOnReconnect, runPayment, waitForFinal, type ChainOps, type StoredPayment } from "../wallet/payments";
 import { readOnly } from "../wallet/wdk";
 import { loadWallets } from "../wallet/store";
 import { explorerTx, toBase } from "../format";
 import { hashJson, sha256Hex } from "../agent/hash";
 import { intervalSecs, willDraftSchema } from "../agent/schemas";
 import type { EstateMeta } from "../db";
-import bs58 from "bs58";
 
 // ---------- small helpers ----------
 const pk = (a: string) => new PublicKey(a);
@@ -35,7 +33,7 @@ const pk = (a: string) => new PublicKey(a);
 // ---------- pay-once pipeline (wallet/payments.ts) ----------
 const receipts = defaultReceiptStore();
 
-function chainOps(): ChainOps {
+export function chainOps(): ChainOps {
   const conn = getConnection();
   return {
     status: async (sig) => (await conn.getSignatureStatuses([sig], { searchTransactionHistory: true })).value[0],
@@ -63,6 +61,7 @@ async function send(ixs: TransactionInstruction[], meta: Pick<StoredPayment, "ki
   const r = first.status === "failed" ? first : await waitForFinal(receipts, chainOps(), id, 60_000, 800);
   if (!r || r.status === "failed") throw new ChainTxError(r?.signature ?? "", r?.error ?? "Transaction failed.");
   if (!r.signature) throw new Error("Transaction was not signed.");
+  forget("activity:"); forget("estates:"); invalidateProgramAccounts();
   return { signature: r.signature, explorerUrl: explorerTx(r.signature) };
 }
 
@@ -108,8 +107,25 @@ async function mustFetch(type: string, address: Base58): Promise<Raw> {
 
 const DEMO_WAIT = Number(process.env.NEXT_PUBLIC_DEMO_WAITING_SECS ?? "");
 
+/**
+ * Short-lived memo for reads that rarely change. The public devnet RPC rate-limits hard (HTTP 429), and the
+ * dashboard refreshes in the background, so repeating every program-account scan on each refresh would starve
+ * the reads that matter. Failed lookups are not cached.
+ */
+const memo = new Map<string, { at: number; value: Promise<unknown> }>();
+function cached<T>(key: string, ttlMs: number, load: () => Promise<T>): Promise<T> {
+  const hit = memo.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.value as Promise<T>;
+  const value = load();
+  memo.set(key, { at: Date.now(), value });
+  value.catch(() => memo.delete(key));
+  return value;
+}
+/** Call after a write so the next read sees it. */
+const forget = (prefix: string) => { for (const k of memo.keys()) if (k.startsWith(prefix)) memo.delete(k); };
+
 async function getMeta(estate: Base58): Promise<EstateMeta | null> {
-  return api<EstateMeta | null>(`/api/estate-meta?estate=${estate}`).catch(() => null);
+  return cached(`meta:${estate}`, 60_000, () => api<EstateMeta | null>(`/api/estate-meta?estate=${estate}`)).catch(() => null);
 }
 
 function chunk<T>(xs: T[], n: number): T[][] {
@@ -118,49 +134,59 @@ function chunk<T>(xs: T[], n: number): T[][] {
   return out;
 }
 
+/** Estates this wallet owns, inherits from or verifies (owner lookup is a PDA read; the rest are program scans). */
+async function listEstatesUncached(wallet: Base58) {
+  const out: { estate: Base58; role: string; ownerName: string }[] = [];
+  const me = pk(wallet);
+  const own = await findEstateOf(wallet);
+  if (own) out.push({ estate: own, role: "owner", ownerName: (await getMeta(own))?.ownerName ?? "You" });
+  // Beneficiary PDAs: [disc][estate 32][wallet 32]
+  const bens = await scanAccounts("Beneficiary", [{ offset: 40, key: me }]).catch(() => []);
+  // Estate: [disc][owner][agent][usdt_mint][verifiers 3×32] → verifier i at 104 + 32i
+  const verifierHits = await Promise.all([0, 1, 2].map((i) => scanAccounts("Estate", [{ offset: 104 + 32 * i, key: me }]).catch(() => [])));
+  for (const b of bens) {
+    const estate = new PublicKey(b.data.subarray(8, 40)).toBase58();
+    out.push({ estate, role: "beneficiary", ownerName: (await getMeta(estate))?.ownerName ?? "Family estate" });
+  }
+  for (const v of verifierHits.flat()) {
+    const estate = v.pubkey.toBase58();
+    out.push({ estate, role: "verifier", ownerName: (await getMeta(estate))?.ownerName ?? "Family estate" });
+  }
+  return out;
+}
+
 // ---------- the service ----------
+let resumed = false;
+
 export function createChainService(): HeirloomService {
+  // Once per page: re-check payments left pending by an earlier visit, now and whenever the browser reconnects.
+  if (!resumed && typeof window !== "undefined") { resumed = true; resumeOnReconnect(receipts, chainOps()); }
   return {
     mode: "chain",
 
     async getEstate(estate): Promise<EstateSnapshot> {
       const meta = await getMeta(estate);
-      const raw = await fetchEstateRaw(estate, meta ?? {});
-      const hashes = [...new Set(Object.values(raw.reportHashes))];
-      const [activity, reports] = await Promise.all([
-        fetchActivity(estate).catch(() => []),
-        hashes.length ? api<Record<string, AgentReport>>(`/api/reports?hashes=${hashes.join(",")}`).catch(() => ({})) : Promise.resolve({}),
+      // Names are off-chain. Without Supabase the server keeps them in memory only, so after a restart fall back to
+      // the owner's wallet label when that wallet is on this device.
+      const localOwner = meta ? undefined : loadWallets().find((w) => estatePda(chainCtx().programId, w.address).toBase58() === estate)?.label;
+      const [raw, activity] = await Promise.all([
+        fetchEstateRaw(estate, meta ?? (localOwner ? { ownerName: localOwner } : {})),
+        cached(`activity:${estate}`, 20_000, () => fetchActivity(estate)).catch(() => []),
       ]);
-      return assembleSnapshot(raw, activity, reports);
+      // The death review's report hash lives in the latest DeathReviewed event (the Estate account keeps only the cert hash).
+      const deathHash = raw.estate.death.certHash ? activity.find((a) => a.kind === "DeathReviewed")?.reportHash : undefined;
+      const hashes = [...new Set([...Object.values(raw.reportHashes), ...(deathHash ? [deathHash] : [])])];
+      const reports = hashes.length
+        ? await api<Record<string, AgentReport>>(`/api/reports?hashes=${hashes.join(",")}`).catch(() => ({} as Record<string, AgentReport>))
+        : {};
+      const snap = assembleSnapshot(raw, activity, reports);
+      const deathReport = deathHash ? reports[deathHash] : undefined;
+      return deathReport ? { ...snap, estate: { ...snap.estate, death: { ...snap.estate.death, agentReport: deathReport } } } : snap;
     },
 
-    async listEstatesFor(wallet) {
-      const out: { estate: Base58; role: string; ownerName: string }[] = [];
-      const conn = getConnection();
-      const programId = pk(getIdl().address);
-      const own = await findEstateOf(wallet);
-      if (own) out.push({ estate: own, role: "owner", ownerName: (await getMeta(own))?.ownerName ?? "You" });
-      // Beneficiary PDAs: [disc][estate 32][wallet 32]
-      const bens = await conn.getProgramAccounts(programId, { filters: [
-        { memcmp: { offset: 0, bytes: bs58.encode(accountDiscriminator("Beneficiary")) } },
-        { memcmp: { offset: 40, bytes: wallet } },
-      ] }).catch(() => []);
-      // Estate: [disc][owner][agent][usdt_mint][verifiers 3×32] → verifier i at 104 + 32i
-      const verifierHits = await Promise.all([0, 1, 2].map((i) => conn.getProgramAccounts(programId, { filters: [
-        { memcmp: { offset: 0, bytes: bs58.encode(accountDiscriminator("Estate")) } },
-        { memcmp: { offset: 104 + 32 * i, bytes: wallet } },
-      ] }).catch(() => [])));
-      for (const b of bens) {
-        const estate = new PublicKey(b.account.data.subarray(8, 40)).toBase58();
-        out.push({ estate, role: "beneficiary", ownerName: (await getMeta(estate))?.ownerName ?? "Family estate" });
-      }
-      for (const v of verifierHits.flat()) {
-        const estate = v.pubkey.toBase58();
-        out.push({ estate, role: "verifier", ownerName: (await getMeta(estate))?.ownerName ?? "Family estate" });
-      }
-      return out;
+    listEstatesFor(wallet) {
+      return cached(`estates:${wallet}`, 60_000, () => listEstatesUncached(wallet));
     },
-
     getFx: () => api<FxRate>("/api/fx"),
 
     willChat: (history: WillChatMessage[]) => post<{ reply: string; draft: WillDraft | null }>("/api/will-chat", { history }),
