@@ -1,33 +1,46 @@
-# Heirloom: demo video script (2:55, hard limit 3:00)
+# Heirloom: demo video script (2:58, hard limit 3:00)
 
-> Follows plan.md §11. Record at 1920×1080, browser zoom 110–125% so text is readable, and a clean
-> browser profile (no bookmarks or other tabs). Seed the demo first (dad, 3 children, 3 verifiers, car,
-> 2 buyers). Voice-over is recorded separately and laid over the screen capture. Speed up waits (2×–8×)
-> and show a small "sped up" label so nobody thinks we hid anything.
+> Updated 2026-11-11 for the final click-path (living plans, the Tether payment flow, Send to family, voice).
+> Record at 1920×1080 (or a 390×844 phone frame centred on a branded background), browser zoom 110–125%, a clean
+> browser profile. Voice-over recorded separately. Speed up waits (2×–8×) and show a small **"sped up"** label.
 >
-> **Tether must be visible in every section:** the "USD₮" label next to every amount, the "Tether WDK"
-> wallet badge on each role, and at least three Solana Explorer views of real USD₮ (SPL) transfers.
+> **Three things the judges must see** (Tether brief):
+> 1. **One payment from review to receipt**, with *Pending* turning into *Confirmed* (0:25–0:48).
+> 2. **The contract blocking a rule break** (1:05–1:15, and again in the car sale).
+> 3. **WDK + USD₮ proof on Solana Explorer** (0:44 and 2:44–2:56).
+>
+> **Label everything simulated on screen**: mock-mode receipts ("Simulated"), the ZAR settlement ("Simulated"),
+> sped-up timers, the 60-second waiting period ("demo: 60 s, real: weeks"), sample documents ("SAMPLE").
+>
+> **Which mode to record in.** Record the **funding payment and the P2P send in chain mode** (`NEXT_PUBLIC_DATA_MODE=chain`,
+> devnet), so their Explorer links are real. If the rest of the story is recorded in mock mode for reliability, the
+> "Simulated" badge must be visible in those shots, and the final proof shot uses the real devnet links (program,
+> estate, WDK USD₮ transfer). Never show a mock receipt as if it were on-chain.
 
 | Time | Shot (what's on screen) | Voice-over | On-screen caption |
 |---|---|---|---|
-| 0:00–0:12 | Title card: Heirloom logo; "Programmable estate trust · USD₮ on Solana · Tether WDK" | "When a South African parent dies, the estate can freeze for years. Two in three adults have no will. The money for school fees exists, but it can't reach the school." | "66% of South Africans have no will (Sanlam, 2025)" |
-| 0:12–0:20 | Landing page → "Get started" → **WDK creates the owner's wallet** (seed shown blurred, address visible) | "Heirloom fixes that. Dad opens the app, and Tether's Wallet Development Kit creates his self-custodial wallet on his device. We never hold his keys." | "Self-custodial wallet: Tether WDK (`@tetherto/wdk-wallet-solana`)" |
-| 0:20–0:45 | **Will-writer chat.** Dad types: "Pay my children's university fees up to R80,000 a year each, until 2032, and sell my car for no less than 9,000 USD₮ unless one of them is in real need." The agent replies with the rules card: beneficiaries, caps in USD₮ with the rand equivalent, car floor 9,000 USD₮, hardship floor, 3 verifiers | "He writes his wishes in plain language. The AI agent turns them into strict rules: caps per claim and per child, a floor price for the car, a hardship floor, and three verifiers, including his executor. Every amount is USD₮, with the rand value from a live South African exchange rate." | "AI writes the rules. The Solana program enforces them." |
-| 0:45–0:55 | Dad clicks **Sign with WDK** → toast "Rules hash stored on-chain" → Explorer tab shows the transaction | "He signs with his WDK wallet. The rules' hash is stored on Solana, so they can't change after his death." | "Rules hash on-chain; personal data stays off-chain (POPIA)" |
-| 0:55–1:08 | **Fund the vault**: deposit 25,000 USD₮ → vault balance updates → Explorer shows the USD₮ SPL transfer into the program-owned vault. **Register car**: the title NFT moves into the estate | "He funds the vault with USD₮. The vault belongs to the program, not to Heirloom, and only accepts the official USD₮ mint. He registers the car's digital title too." | "USD₮ vault controlled by the Solana program" |
-| 1:08–1:35 | Switch role (WDK wallet badge: "Child 1"). **Upload death certificate** → agent report: fields extracted, no red flags. **Verifier inbox**: Verifier 1 (executor) and Verifier 2 attest. Countdown "Waiting period" (sped up) with an "I'm alive: veto" button visible on the owner's side → status **Unlocked** | "Later, his daughter uploads the death certificate. The agent checks it, but the agent can't unlock anything. Two of the three verifiers, including the executor, must attest. Then a waiting period runs, and the owner could veto at any time if this were fraud. Only then does the vault unlock." | "AI check + 2-of-3 verifiers + waiting period + owner veto" · "sped up" |
-| 1:35–1:58 | **Tuition claim**: Child 1 uploads a university fee statement → agent: OK → verifier approves → **paid to the university's wallet** → Explorer shows USD₮ to the institution. Rand equivalent shown | "Child one uploads her fee statement. The agent reads it, a verifier approves, and the program pays the university directly in USD₮, never the child. In production, a licensed off-ramp turns this into a rand payment over PayShap." | "Paid to the institution, not the child" |
-| 1:58–2:10 | **Overclaim**: Child 2 asks for more than the cap → transaction fails → error "Exceeds per-claim cap" from the program | "Child two tries to claim more than Dad allowed. The AI isn't what stops it: the smart contract rejects it." | "Rejected on-chain: exceeds cap" |
-| 2:10–2:32 | **Car sale**: listing page (agent's suggested asking price); Buyer A offers 8,500 USD₮, Buyer B offers 9,400 USD₮ (both from WDK wallets, USD₮ escrowed) → the agent's own **WDK wallet** accepts B → one transaction: USD₮ to the estate, title NFT to Buyer B → Explorer | "Buyers make offers in USD₮ from their own WDK wallets. The agent, which has its own WDK wallet with limited powers, accepts the best offer above the floor. Money and title swap in a single transaction." | "Agent wallet (Tether WDK) · atomic USD₮ ↔ title swap" |
-| 2:32–2:45 | **Hardship replay** (fast): a 7,000 USD₮ offer is blocked ("below floor") → Child 3 uploads a SAPS-commissioned affidavit → agent report + 2 verifiers approve → sale goes through at 7,000 but a 5,000 offer stays blocked ("below hardship floor") | "If a child is in real need, a sworn affidavit and two verifiers can allow a lower price, but never below the hardship floor Dad set." | "Hardship: affidavit + 2-of-3, floor still enforced" |
-| 2:45–2:55 | Estate dashboard: every USD₮ movement listed with Explorer links; "Where Tether is used" panel. End card: "Heirloom. Your wishes, enforced." + live URL + GitHub | "Every dollar here moved as USD₮ and was signed by a Tether WDK wallet. Heirloom: your wishes, enforced. Your children, provided for." | URL · repo · "Devnet demo · not audited" |
+| 0:00–0:10 | Title card: Heirloom; "A living estate plan in USD₮ · Solana · Tether WDK" | "When a South African parent dies, the estate can freeze for a year or more. The money for school fees exists, but it can't reach the school." | "66% of South Africans have no will (Sanlam, 2025)" |
+| 0:10–0:25 | Landing → **Try the demo** → **Start as Thabo** (WDK wallet badge). **Plan builder**: tap a suggested reply; the agent drafts rules; flip one rule's **Now / After** toggle; **Sign and lock** | "Thabo writes his plan with an AI agent, in plain words. Each rule can start now, while he's alive, or after he's gone. He signs it with his Tether WDK wallet." | "AI drafts the rules. The Solana program enforces them." |
+| 0:25–0:48 | **Fund vault 24,000 USD₮**. Hold on the **review sheet**: recipient (estate vault), amount in USD₮ **and rand**, network "Solana devnet", fee and who pays it, verified-token badge → **Approve** → "Signing with your Tether wallet (WDK)" → **Pending** → **Confirmed** → tap the receipt → Explorer opens on the transaction | "Every payment follows the same steps. Check the address, network and token. Check the balance and the fee. Review, then approve. WDK signs on his phone; the payment shows as pending until Solana confirms it. Here's the receipt on Explorer." | "Review → approve → WDK signs → pending → confirmed" |
+| 0:48–0:58 | **Scheduled payments** → Lerato's book allowance → **Pay now** (85 USD₮ to the bookstore) → confirmed | "The plan is already working. Lerato's monthly book allowance pays itself, straight to the bookstore, never as cash." | "Living plan: scheduled payment, 85 USD₮ (≈ R1,500)" · "demo interval: 60 s" |
+| 0:58–1:05 | **Car**: AI valuation card → **Add car** (floor 9,000, hardship floor 7,000) | "He adds his car, with a floor price the estate may never sell below." | "Car floor: 9,000 USD₮" |
+| 1:05–1:15 | Switch persona → **Lerato**. **Claim 5,000 USD₮** tuition to UCT → **Blocked by the contract: ExceedsPerClaimCap** card, with the next step | "Lerato asks for more than her father allowed. The AI didn't stop this. The smart contract did." | "Rejected on-chain: exceeds per-claim cap (4,000)" |
+| 1:15–1:30 | Claim **3,200** + fee statement (SAMPLE) → **agent report** (fields, no red flags) → switch to **Thabo** → **Approve and pay** → review → approve → confirmed → ZAR settlement card with **"Simulated"** badge | "With the right amount, the agent checks her fee statement, Dad approves, and the program pays UCT directly. In production a licensed partner turns it into a rand payment." | "Paid to the institution, not the child" · "ZAR settlement: Simulated" |
+| 1:30–1:47 | Demo controls → **Simulate a passing** → death certificate (SAMPLE) → agent check → **2 verifiers confirm** (executor + 1) → waiting period countdown with the owner's **veto** button (sped up) → **Unlocked** | "When Thabo passes, nothing unlocks on one document. The agent checks the certificate, two of three verifiers must confirm, and a waiting period lets the owner veto any fraud. Then the same plan just keeps running." | "AI check + 2-of-3 verifiers + waiting period + owner veto" · "sped up · demo: 60 s" |
+| 1:47–2:08 | **List car** → a low rival offer → agent tries it → **Blocked: BelowFloor** → **Pieter offers 9,400 USD₮** (escrowed from his WDK wallet) → the agent settles → **Sold** + handover pack | "Buyers escrow USD₮ from their own WDK wallets. A low offer is blocked by the contract. Pieter's 9,400 clears the floor, and the agent's own WDK wallet settles it: money and title swap in one transaction." | "Agent wallet (Tether WDK) · atomic USD₮ ↔ title swap" |
+| 2:08–2:22 | **Hardship replay** (fast): offer below floor → **BelowFloor** → a child uploads a SAPS affidavit (SAMPLE) → agent report → **2 verifiers approve** → settles above the 7,000 hardship floor | "If a child is in real need, a sworn affidavit and two verifiers can allow a lower price, but never below the hardship floor Dad set." | "Hardship: affidavit + 2-of-3 · floor still enforced" · "sped up" |
+| 2:22–2:36 | **Send to family**: pick a saved recipient → amount → review (fee, network, verified USD₮) → approve → **Pending**; toggle the network off → offline bar "re-checking" → back online → **Confirmed**, no second payment | "Heirloom is also a family wallet. Sending money home works the same way. If the connection drops, the app re-checks the same payment when it's back. Nobody pays twice." | "P2P USD₮ · pay-once on reconnect" |
+| 2:36–2:44 | **Ask Heirloom** chat: "How much can Lerato still claim?" → ClaimsGuide answer; tap **Call** (2–3 s of the voice reply) | "And anyone in the family can just ask, by text or by voice." | "Gemini orchestrator + 6 specialists · ElevenLabs voice" |
+| 2:44–2:56 | **Proof drawer** → program id, estate, USD₮ mint → Explorer: the program, then a **WDK-signed USD₮ transfer** on devnet | "Every dollar here moved as USD₮, signed by a Tether WDK wallet, under rules a Solana program enforces. You can check every one." | "Solana devnet · test USD₮ mint · not audited" |
+| 2:56–2:58 | End card: "Heirloom. Your wishes, enforced." + live URL + GitHub | "Heirloom: your wishes, enforced." | URL · repo |
 
 ## Recording checklist
-- [ ] Demo seeded; all wallets funded with test USD₮ and devnet SOL (or gasless WDK)
-- [ ] Waiting period set to 2 minutes; speed it up in the edit
-- [ ] Explorer tabs pre-opened on the devnet cluster
-- [ ] Rand rate visible (live feed) in at least two shots
-- [ ] No real personal data in documents (use sample certificates marked "SAMPLE")
+- [ ] Decide the mode per shot (see the note at the top); chain-mode shots seeded and funded (`scripts/seed-demo.ts`)
+- [ ] `NEXT_PUBLIC_DEMO_WAITING_SECS=60` and `NEXT_PUBLIC_DEMO_INTERVAL_SECS=60`; speed up waits in the edit with a "sped up" label
+- [ ] Explorer tabs pre-opened on devnet: program, demo estate, a WDK USD₮ transfer, the funding tx from this recording
+- [ ] Rand amounts visible (live VALR rate) in at least two shots
+- [ ] "Simulated" badges visible on the ZAR settlement and on any mock-mode receipt
+- [ ] Sample documents marked "SAMPLE"; no real personal data
+- [ ] For the offline beat: DevTools → Network → Offline (or airplane mode on the phone), then back online
 - [ ] Captions burned in (judges often watch muted)
-- [ ] Optional: a 5-second insert of one **real mainnet USD₮ transfer** from a WDK wallet (plan.md §3.2b), labelled "mainnet"
-- [ ] Final length checked: **≤ 3:00**
+- [ ] Final length checked: **≤ 3:00**; uploaded as public/unlisted with link access for anyone

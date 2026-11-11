@@ -3,6 +3,11 @@
 > Owner: business/market lead. Written 2026-11-11 for the W3Node Node Engine Hackathon (Tether track).
 > Every number has a source link. Items marked **[assumption]** are our own estimates, and items marked
 > **[unverified]** could not be confirmed from a primary source. Don't present either as fact on stage.
+>
+> **Updated 2026-11-11 (later):** Heirloom is now a **living plan**: rules can start while the owner is alive and
+> scheduled payments run every month, then the same plan continues after death (§4a, §6). Every USD₮ movement
+> follows Tether's review → approve → sign → pending → confirmed flow, and the app includes a P2P "Send to family"
+> wallet (§4b). Partners named here are targets we will approach, not partners.
 
 ## 1. The problem, in numbers
 
@@ -86,8 +91,51 @@ Replace it with a real interviewee's words, with their consent, once validation 
 | The rand loses value over a 10-year plan | The vault holds USD₮; amounts are shown in rand at a live SA exchange rate | Diaspora parents already think in USD |
 | The will is paper, but the wishes are complicated | An AI agent turns plain-language wishes into strict rules; the paper will names the executor and points to the Heirloom estate | Respects the Wills Act (a signed paper will is still needed) |
 
+| Nothing happens until death, so nobody opens the app | **Living plans**: rules can start now; scheduled payments (book allowance, residence rent, school fees) run every month within caps | The parent sees the plan working while alive, and the family already knows the app when it matters |
+| Family support across borders is informal and expensive | **Send to family**: P2P USD₮ between WDK wallets, with fee and network shown before approval and pay-once recovery on bad connections | Diaspora parents and working children already send money home every month |
+
 **What Heirloom is not:** it doesn't replace a will, an executor or the Master. It is a programmable
 **estate-instruction and trust-administration layer** that sits next to them.
+
+## 4a. Living plans: why the plan starts today
+
+The first version only did anything after death. That has two problems: a parent pays for years and sees nothing
+happen, and the family meets the app for the first time while grieving. Living plans fix both.
+
+| | While the owner is alive (estate Active) | After death (estate Unlocked) |
+|---|---|---|
+| **Rules** | A rule marked **Now** (`starts_now`) already works | All rules work; **Now** rules simply continue |
+| **Claims** (e.g. tuition to UCT) | Beneficiary claims → AI checks the document → **the owner approves** → paid to the institution | Same claim → AI check → **2 of 3 verifiers** approve → paid |
+| **Scheduled payments** (e.g. 85 USD₮ a month for books, termly fees to UCT) | Paid automatically when due, to the fixed payee, within the caps | Keep paying on the same schedule, no paperwork |
+| **Limits** | Per-claim cap, lifetime cap, end date, payee type: enforced by the Solana program | Same limits |
+
+**What this means for the business**
+- **A monthly reason to pay R99.** The subscription now pays for something the family uses every month: allowances,
+  fees and family sends that run on rules, with receipts in rand. It is no longer "insurance you never see".
+- **Habit before crisis.** Children and verifiers already have wallets and know the screens when the parent dies,
+  so the first payout after death is a non-event instead of an onboarding problem.
+- **Proof the rules work.** Every month the parent sees a payment go to the right place and an over-cap request
+  refused. That builds the trust the after-death promise depends on.
+- **Higher lifetime value [assumption]:** families who use scheduled payments are less likely to cancel than families
+  who only stored a plan. Measure in the pilot: monthly active families and churn.
+
+## 4b. The Tether P2P angle: family money, not only inheritance
+
+South African families already move money to each other constantly: a parent to a student, a working child to a
+parent in the Eastern Cape, a parent in Dubai or London to children at school at home. Heirloom's wallet does that
+too, with the same safety as an estate payout.
+
+- **Send to family:** pick a saved family member, see their address, the network, the USD₮ token check, the fee and
+  the amount in rand, approve, and watch it go from *pending* to *confirmed*. This is the payment flow Tether asked
+  the track to build around.
+- **Bad signal is normal.** The payment is signed once and its signature saved on the phone before it is sent. If
+  the connection drops, the app re-checks that exact payment when it's back. Nobody pays twice.
+- **Diaspora parents** fund the vault in USD₮ from abroad and send ad-hoc support the same way. The rand value is
+  shown at a live South African exchange rate. **[Remittance cost comparisons need a cited source before going on a
+  slide.]**
+- **From P2P to plan:** a recurring family send ("R1,500 a month for books") can be turned into a scheduled rule with
+  a cap and an end date, which keeps working if the sender dies. That is the bridge from a wallet people use weekly
+  to the estate plan they pay for monthly.
 
 ## 5. Competitors and differentiation
 
@@ -112,7 +160,7 @@ through partners.**
 
 | Stream | Price | Who pays | Notes |
 |---|---|---|---|
-| **Heirloom Family (B2C)** | **R99/month or R990/year** while the parent is alive. Writing the rules with the agent is free | Parent | Covers AI reviews, verifier tools, the vault and the dashboard |
+| **Heirloom Family (B2C)** | **R99/month or R990/year** while the plan is running. Writing the rules with the agent is free | Parent | Covers living-plan scheduled payments, AI reviews, verifier tools, the vault, Send to family and the dashboard. Used monthly, not only at death (§4a) |
 | **Disbursement fee** | **1% of each payout**, capped at R2,500 per beneficiary per year | Taken from the vault at payout | Compare: executor tariff 3.5% + VAT on the gross estate |
 | **Asset sale fee** | **1.5% of the car's sale price** (min R1,500) | From the sale proceeds | Below typical dealer trade-in discounts **[assumption]** |
 | **B2B2C white-label** | **R15–R25 per member per month** as an add-on to a funeral policy or burial society plan ("education continuation cover"), or R5–R10 per policy as a rider for existing insurers | Funeral insurer, burial society, bank, fiduciary | The partner owns the customer and the KYC; Heirloom runs the vault and the rules |
@@ -144,7 +192,7 @@ disbursement fees.
 | 2. Months 2–6 | **Crypto exchange partner (Luno or VALR)**: "Plan where your crypto goes" in-app | 500 families | 7.8m users already hold stablecoins; FSCA-licensed; Luno Settlements can pay rand out |
 | 3. Months 3–9 | **Estate attorneys and fiduciaries** (start with 10 small firms; then Capital Legacy or Sanlam Trust) | 200 families via 10 firms | The executor is already verifier #1; firms get a faster, auditable process and a new fee line |
 | 4. Months 6–12 | **Burial societies and stokvels** via NASASA, plus one funeral insurer pilot | 300 families + a white-label pilot | More than 11 million South Africans belong to stokvels ([EWN, NASASA](https://www.ewn.co.za/more-than-11-million-south-africans-are-members-of-stokvels-nasasa)); trust-based, group decisions already match our verifier quorum |
-| Ongoing | **Diaspora**: SA expat communities in the UK, UAE and Australia; school and university alumni groups | Long tail | They already pay fees in USD |
+| Ongoing | **Diaspora**: SA expat communities in the UK, UAE and Australia; school and university alumni groups | Long tail | They already pay fees in USD and send family support every month; Send to family is the entry point, the living plan is the upgrade (§4b) |
 
 **Top 3 partners to name in the pitch:** **Luno** (users + rand settlement), **NASASA** (stokvels and
 burial societies), and **an executor/fiduciary firm such as Capital Legacy**. These are **targets, not
@@ -162,7 +210,7 @@ signed partners.** Say "we will approach", never "we partner with".
 | **DHA / ID verification** | P2 | Deceased-status check through a licensed verification bureau (Home Affairs updates 3–5 weeks after the death, [WinDeed](https://www.windeed.co.za/?p=5015)) |
 | **SAPS affidavits** | In the demo | Hardship affidavits are commissioned free at SAPS stations; the AI checks the jurat, commissioner details, stamp and date; people approve |
 | **eNaTIS** | Handover pack | The NFT is a "digital title" only. After the sale the app generates the NCO notification data and the executor's tasks (letter of executorship needed, [gov.za](https://www.gov.za/services/services-residents/driving/register-motor-vehicle/register-vehicle-deceased-person-or)) |
-| **Tether WDK** | In the demo | Self-custodial wallets for every role, including the agent; gasless module so families don't need SOL |
+| **Tether WDK** | In the demo | Self-custodial wallets for every role, including the agent; balances and fee quotes before every send; every USD₮ movement signed by WDK. Sponsored (gasless) fees so families don't need SOL: roadmap |
 
 ## 9. Regulation and compliance path
 
@@ -195,7 +243,7 @@ signed partners.** Say "we will approach", never "we partner with".
 
 | When | Milestone |
 |---|---|
-| Nov 2026 | Hackathon MVP on devnet: will writer, vault, death quorum, tuition payouts, car sale with floor and hardship. 10+ validation interviews |
+| Nov 2026 | Hackathon MVP on devnet: plan builder, USD₮ vault, living plans + scheduled payments, death quorum, tuition payouts, car sale with floor and hardship, Send to family (P2P), Tether payment flow with pay-once recovery, Gemini agents + voice. 10+ validation interviews |
 | Dec 2026 – Feb 2027 | Legal opinion (trust structure, FSCA position); privacy policy and POPIA set-up; security review of the program; choose an off-ramp partner (Luno Settlements or Stables) |
 | Mar – May 2027 | **Pilot: 20 families, 5 executors, 3 institutions**; rand payouts to universities via PayShap/EFT; university fee-statement templates |
 | Jun – Aug 2027 | External audit; mainnet with real USD₮ and small caps; ID-bureau deceased check; executor/fiduciary dashboard |
