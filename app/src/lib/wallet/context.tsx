@@ -148,6 +148,12 @@ export function WalletProvider({ children, requestPin = defaultRequestPin }: { c
     return wdkPartialSign(acc.account, base64Tx);
   }, [isMock, unlock]);
 
+  const signMessageAs = useCallback(async (address: Base58, message: string): Promise<string> => {
+    if (isMock) return "demo";
+    const acc = await unlock(address);
+    return acc.account.sign(message);
+  }, [isMock, unlock]);
+
   const signAndSend = useCallback(async (base64Tx: string) => {
     if (!activeAddr) throw new Error("No wallet is active. Create or choose a wallet first.");
     return signAndSendAs(activeAddr, base64Tx);
@@ -160,8 +166,9 @@ export function WalletProvider({ children, requestPin = defaultRequestPin }: { c
       signAndSend: (tx) => signAndSendAs(activeAddr, tx),
       signOnly: (tx) => signOnlyAs(activeAddr, tx),
       signPartial: (tx) => signPartialAs(activeAddr, tx),
+      signMessage: (m) => signMessageAs(activeAddr, m),
     } : null);
-  }, [activeAddr, signAndSendAs, signOnlyAs, signPartialAs]);
+  }, [activeAddr, signAndSendAs, signOnlyAs, signPartialAs, signMessageAs]);
 
   const session = sessions.find((s) => s.address === activeAddr) ?? null;
   const api = useMemo<WalletApi>(() => ({

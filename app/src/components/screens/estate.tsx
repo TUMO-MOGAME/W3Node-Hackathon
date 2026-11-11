@@ -18,6 +18,7 @@ import { clock } from "./family";
 import { fmt, timeAgo, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
 import { InstallBanner } from "@/components/shell/install";
+import { LegacyEntry } from "@/components/legacy/legacy-entry";
 
 type Copy = ScreensCopy["estate"];
 export const statusTone: Record<EstateStatus, Tone> = { Active: "accent", DeathPending: "warn", Unlocked: "ok", Frozen: "danger" };
@@ -41,6 +42,7 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
     <div className="grid gap-5 *:min-w-0 lg:grid-cols-[1.35fr_1fr] lg:items-start">
       <div className="grid gap-5 *:min-w-0">
         <InstallBanner copy={common.install} />
+        <LegacyEntry />
 
         {/* Vault hero */}
         <section aria-labelledby="estate-title" className="brand-panel relative overflow-hidden rounded-xl p-5 sm:p-6">

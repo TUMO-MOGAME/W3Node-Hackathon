@@ -15,6 +15,7 @@ import { FilePicker, Quorum } from "@/components/ui/client";
 import { ReportCard, Reviewing } from "@/components/agent/report-card";
 import { fmt, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
+import { LegacyEntry, MilestoneMoment } from "@/components/legacy/legacy-entry";
 
 type Copy = ScreensCopy["family"];
 type StepState = "done" | "now" | "next";
@@ -113,6 +114,7 @@ function Timeline({ copy, snap, role }: { copy: Copy; snap: EstateSnapshot; role
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeader eyebrow={copy.eyebrow} title={copy.title} body={copy.body} />
+      <div className="mb-5 grid gap-3 empty:hidden"><MilestoneMoment /><LegacyEntry /></div>
 
       {role === "owner" && reported && !unlocked && (
         <Notice tone="danger" icon={<TriangleAlert className="size-6" aria-hidden="true" />} title={copy.veto.title} className="mb-5">

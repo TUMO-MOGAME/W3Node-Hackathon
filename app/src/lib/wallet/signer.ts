@@ -11,6 +11,8 @@ export interface ActiveSigner {
   signOnly(base64Tx: string): Promise<{ signature: string; wireBase64: string }>;
   /** Partial signature for a tx whose fee payer is Heirloom's fee sponsor. */
   signPartial?(base64Tx: string): Promise<{ signature: string; wireBase64: string }>;
+  /** Signs a UTF-8 message with WDK (ed25519, hex). Used to authorise /api/legacy/* requests. */
+  signMessage(message: string): Promise<string>;
 }
 
 let active: ActiveSigner | null = null;

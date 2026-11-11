@@ -16,6 +16,7 @@ import { Blocked } from "@/components/shell/blocked";
 import { usePay } from "@/components/pay/payment";
 import { fmt, useCopy } from "@/components/shell/copy";
 import { Gate } from "@/components/shell/gate";
+import { MilestoneMoment } from "@/components/legacy/legacy-entry";
 import { categoryIcon } from "./estate";
 
 type Copy = ScreensCopy["claims"];
@@ -53,6 +54,7 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
         action={canClaim && !wizard ? <Button onClick={() => setWizard({})}><Plus className="size-5" aria-hidden="true" />{copy.newCta}</Button> : undefined}
       />
 
+      <div className="mb-5 empty:hidden"><MilestoneMoment /></div>
       {role === "owner" && (
         <section aria-labelledby="owner-approvals" className="mb-6">
           <h2 id="owner-approvals" className="text-h3">{copy.owner.title}</h2>

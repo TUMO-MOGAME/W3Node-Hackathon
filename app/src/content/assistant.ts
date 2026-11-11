@@ -20,6 +20,7 @@ export const assistant = {
     CarBroker: "Car broker",
     EstateGuide: "Estate guide",
     Compliance: "Compliance",
+    LegacyCompanion: "Legacy voice",
   },
   specialistHint: "Answered by",
   chat: {

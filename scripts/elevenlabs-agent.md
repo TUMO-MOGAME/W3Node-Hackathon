@@ -120,3 +120,50 @@ ELEVENLABS_AGENT_ID=agent_... # server only
 ELEVENLABS_TOOL_SECRET=...    # long random string, same value as the webhook header secret
 ```
 Without these the voice hook reports `status: "unavailable"` and the UI falls back to text chat.
+
+## 6. Legacy Voice (the parent's cloned voice)
+
+Legacy Voice lets the estate owner record their own voice while alive; after unlock, each child can choose to hear
+guidance from the owner's Legacy Book in that voice. The server does all ElevenLabs calls with `ELEVENLABS_API_KEY`
+(`app/src/lib/legacy/server/elevenlabs.ts`). **Nothing needs to be created in the dashboard for it**; the app makes:
+
+| What | Endpoint | When |
+|---|---|---|
+| Instant Voice Clone | `POST /v1/voices/add` (multipart `name`, `files[]`, `remove_background_noise`, `description`, `labels`) → `{ voice_id, requires_verification }` | owner taps "Create my voice" (≥ 3 samples + recorded consent line) |
+| Text to speech | `POST /v1/text-to-speech/{voice_id}?output_format=mp3_44100_128` (`eleven_multilingual_v2`) | a milestone message or a companion reply is played; cached in the private `legacy-audio` bucket |
+| Private legacy agent | `POST /v1/convai/agents/create`, `PATCH /v1/convai/agents/{id}` (prompt refreshed per call for the verified child + live estate status), `DELETE /v1/convai/agents/{id}` | first live call; deleted with the voice |
+| Signed URL | `GET /v1/convai/conversation/get-signed-url?agent_id=…` | each live call (`POST /api/voice/session { mode: "legacy" }`) |
+| Delete voice | `DELETE /v1/voices/{voice_id}` | owner taps "Delete my voice" (also deletes the agent, recordings and cached audio) |
+
+**Why a private agent per estate and not client overrides.** The SDK's `overrides` (`tts.voiceId`, `agent.prompt`,
+`agent.firstMessage`) are sent *by the browser* in `conversation_initiation_client_data`, so the parent's `voice_id`
+and the persona prompt would be visible to, and editable by, the client. Instead each estate gets its own agent with
+`conversation_config.tts.voice_id`, `conversation_config.agent.prompt.prompt` (the LegacyCompanion persona built from the
+Legacy Book) and `conversation_config.agent.first_message` (the disclosure line, "This is Heirloom, speaking in your
+dad's voice…") set server-side, `platform_settings.auth.enable_auth = true`, **no tools**, and no client overrides.
+So **no override toggles need enabling** in Security. (If you ever switch to one shared agent with overrides instead,
+you would have to enable `agent.prompt.prompt`, `agent.first_message` and `tts.voice_id` under the agent's
+**Security → Overrides**, and accept that the voice id reaches the browser; we chose not to.)
+
+**Dashboard / account settings to check**
+- The API key needs the permissions *Voices: write* (clone/delete), *Text to speech*, and *Conversational AI / Agents: write*.
+- Instant Voice Cloning needs a paid plan (Starter or above). ElevenLabs' terms require that you have the speaker's
+  consent; Heirloom records the owner reading the consent line and keeps it (hash + private file) as evidence.
+- `requires_verification`: if ElevenLabs flags a new voice as needing verification, the app shows "verify this voice
+  in the ElevenLabs dashboard" and refuses to speak until it is cleared (Voices → the voice → Verify).
+- Optional multi-voice: set `ELEVENLABS_HEIRLOOM_VOICE_ID` to a default library voice. The agent is then created with
+  `tts.supported_voices: [{ label: "Heirloom", voice_id }]`, and the persona prompt tells it to wrap safety messages,
+  refusals and disclosures in `<Heirloom>…</Heirloom>` so they are spoken in Heirloom's own voice, never the parent's.
+  If your plan rejects it (422), the app retries without it and the agent says "This is Heirloom" in the parent's voice.
+- Add the deployment domain to the allowlist of the created agents if you enable domain restrictions (the agents are
+  named `Heirloom legacy <hash>`).
+
+**Env**
+```
+ELEVENLABS_API_KEY=...             # already used by the main agent
+ELEVENLABS_HEIRLOOM_VOICE_ID=...   # optional, see multi-voice above
+LEGACY_SPEAK_SECRET=...            # HMAC for speak tokens (or ELEVENLABS_TOOL_SECRET); needed on multi-instance hosts
+LEGACY_DEMO_WRITES=1               # DEMO ONLY: mock-mode deploy uses the real routes without wallet signatures
+```
+Without `ELEVENLABS_API_KEY` the whole flow still works with a **simulated** voice (browser speech), labelled
+"Simulated voice: the real voice needs ElevenLabs". Run `supabase/migrations/0002_legacy.sql` for persistent storage.

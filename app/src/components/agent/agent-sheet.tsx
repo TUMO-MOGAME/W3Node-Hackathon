@@ -11,6 +11,7 @@ import type { HeirloomVoice } from "@/lib/voice/types";
 import { Sheet } from "@/components/ui/client";
 import { Badge, Button, Notice } from "@/components/ui/primitives";
 import { useCopy } from "@/components/shell/copy";
+import { LegacySheetLink } from "@/components/legacy/legacy-entry";
 import { ActionButtons, Bubble, Chips, Composer, SpecialistChip, Thinking } from "./chat-parts";
 
 /** "Talk to Heirloom": one sheet, two ways to talk. Chat (text) and Call (voice). */
@@ -186,6 +187,7 @@ function CallView({ voice, onStart, onChat }: { voice: HeirloomVoice & { simulat
         <div className="flex w-full flex-col gap-2">
           <Button onClick={onStart} block><Phone className="size-5" aria-hidden="true" />{v.start}</Button>
           <Button variant="ghost" onClick={onChat} block>{v.preferChat}</Button>
+          <LegacySheetLink />
         </div>
       </div>
     );

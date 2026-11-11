@@ -206,6 +206,7 @@ Anchor 1.2.2 · [`programs/heirloom/`](programs/heirloom/) · full spec in [`doc
 | Pay-once payment pipeline, reconnect re-check | **Real** (unit-tested in `payments.test.ts`) |
 | AI agent (Gemini orchestrator + 6 specialists) | **Real** with `GEMINI_API_KEY`; without it, clearly labelled canned answers |
 | Voice call (ElevenLabs) | **Real** with ElevenLabs keys; otherwise a labelled "Simulated call preview" |
+| Legacy voice (parent's cloned voice, ElevenLabs IVC + TTS + private agent) | **Real** with `ELEVENLABS_API_KEY` in chain mode (or a demo deploy with `LEGACY_DEMO_WRITES=1`); otherwise the browser's voice stands in, labelled "Simulated voice" |
 | USD₮ → ZAR rate | **Real**, live VALR public ticker (fallback rate labelled) |
 | Rand settlement to the university (PayShap/EFT) | **Simulated** and labelled ([`lib/offramp.ts`](app/src/lib/offramp.ts)). Next step: a licensed partner |
 | Institutions (UCT, residence, school, bookstore) | **Demo wallets** we control, not the real institutions |
@@ -257,6 +258,7 @@ All names are in [`app/.env.example`](app/.env.example). Only `NEXT_PUBLIC_*` re
 | `AGENT_SEED_PHRASE`, `SOLANA_RPC_URL` | chain, server | the agent's WDK wallet; keep secret |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | AI | without a key: labelled canned answers |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET` | voice | setup in [`scripts/elevenlabs-agent.md`](scripts/elevenlabs-agent.md) |
+| `ELEVENLABS_HEIRLOOM_VOICE_ID`, `ELEVENLABS_TTS_MODEL`, `LEGACY_SPEAK_SECRET`, `LEGACY_DEMO_WRITES` | legacy voice | §6 of [`scripts/elevenlabs-agent.md`](scripts/elevenlabs-agent.md); `LEGACY_DEMO_WRITES` is demo-only |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | storage | without them: in-memory store; schema in [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) |
 | `SCHEDULER_SECRET`, `CRON_SECRET` | scheduled payments | protects `POST /api/scheduler/tick` |
 | `FX_FALLBACK_USDT_ZAR` | FX | used only if VALR is unreachable |
@@ -291,6 +293,13 @@ bash scripts/build-program.sh test # 25 LiteSVM program tests (Linux / WSL, Anch
   shared secrets; Supabase tables have RLS on with no public policies; evidence bucket is private.
 - **Prompt injection:** uploaded documents are passed to the model as data, and the system prompt tells it to ignore
   instructions inside them. A manipulated verdict still can't break a cap or a quorum.
+- **Legacy voice:** a parent's cloned voice is a fraud tool if misused, so: only the living owner can create it (recorded
+  consent line + unticked box, estate must be Active); every `/api/legacy/*` request is signed by the WDK wallet
+  (ed25519 over action, estate, time and body hash; 5-minute window, single use) and checked against the on-chain owner /
+  beneficiaries; the ElevenLabs `voice_id` and agent id stay server-side (live calls use a private per-estate agent, so no
+  client overrides); the voice only speaks owner-written milestones or companion replies carrying a server HMAC token,
+  never arbitrary text; it has no tools and refuses money requests; distress steps out of character with SADAG helplines.
+  See [`app/src/lib/legacy/`](app/src/lib/legacy/) and [`supabase/migrations/0002_legacy.sql`](supabase/migrations/0002_legacy.sql).
 - **Known limits:** devnet only; not audited; in-memory rate limits (per instance); no seed-recovery flow yet.
 - **Secrets:** `.env*`, keypairs and demo wallet seeds are gitignored. Report issues privately to the maintainer.
 
