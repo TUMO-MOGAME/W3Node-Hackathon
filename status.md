@@ -40,6 +40,12 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
+## Merged into main (2026-11-11 afternoon); live redeploy 402d07b
+- QA ✅ · Gasless + Cape Town + /api/health ✅ · QVAC ✅ · isiZulu/Sesotho/Afrikaans ✅ · Harvest Moon redesign ✅ (landing styling ported into the localised `LandingBody`). 172 tests, eslint clean, build OK
+- Live https://heirloom-one-iota.vercel.app (mock mode); `/api/health` reports programDeployed=true
+- Waiting: Legacy Voice (`feature/legacy-voice`)
+- Decision pending (Tumo): public site in mock mode vs chain mode
+
 ## Wave 2 (started 2026-11-11 midday): merge these branches when done
 | Agent | Where | Branch |
 |---|---|---|
