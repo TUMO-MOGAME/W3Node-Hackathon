@@ -148,7 +148,7 @@ export const zu: Bundle = {
       inbox: "Imiyalezo",
       proof: "Ubufakazi",
       skip: "Yeqa uye kokuqukethwe",
-      home: "Heirloom, iya efeni",
+      home: "Heirloom, iya ekhaya",
     },
     roles: {
       owner: "Umnikazi wefa",

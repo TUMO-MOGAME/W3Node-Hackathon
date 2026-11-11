@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { Check, Download, Plus, RotateCcw } from "lucide-react";
@@ -14,23 +13,14 @@ import { Button } from "@/components/ui/primitives";
 import { Avatar } from "./app-shell";
 import { fmt, useCopy } from "./copy";
 import { useInstall } from "./install";
+import { setTheme, useTheme } from "./theme";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 
 const ORDER: Role[] = ["owner", "beneficiary", "verifier", "buyer", "agent"];
 const STAGES: DemoStage[] = ["fresh", "funded", "unlocked", "listed", "lowOffers"];
 const SHORTCUTS: DemoShortcut[] = ["simulatePassing", "skipWait", "makeDue"];
-type Theme = "system" | "light" | "dark";
 
 /** The persona switcher: pick who you are acting as, plus demo controls and appearance. */
-
-/** Applies a theme choice to the page and remembers it on this device. */
-function writeTheme(t: "light" | "dark" | "system") {
-  const root = document.documentElement;
-  if (t === "system") delete root.dataset.theme;
-  else root.dataset.theme = t;
-  try { window.localStorage.setItem("heirloom.theme", t); } catch { /* ignore */ }
-}
-
 export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { common } = useCopy();
   const c = common.persona;
@@ -38,21 +28,7 @@ export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => 
   const { isMock, resetDemo, demoShortcut, notify, session, snap, service } = useEstate();
   const mock = isMockService(service) ? service : null;
   const install = useInstall();
-  const [theme, setTheme] = useState<Theme>("system");
-
-  useEffect(() => {
-    try {
-      const t = window.localStorage.getItem("heirloom.theme");
-      // Read localStorage after mount so the server-rendered markup matches.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (t === "light" || t === "dark") setTheme(t);
-    } catch { /* ignore */ }
-  }, []);
-
-  const applyTheme = (t: Theme) => {
-    setTheme(t);
-    writeTheme(t);
-  };
+  const { theme } = useTheme();
 
   const pick = (address: string, name: string) => {
     wallet.switchTo(address);
@@ -142,7 +118,7 @@ export function PersonaSheet({ open, onClose }: { open: boolean; onClose: () => 
           <div className="flex rounded-full border border-line-strong bg-surface p-1">
             {(["system", "light", "dark"] as const).map((t) => (
               <label key={t} className={clsx("flex min-h-10 flex-1 cursor-pointer items-center justify-center rounded-full text-small font-semibold has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-[var(--focus)]", theme === t ? "bg-ink text-bg" : "text-ink-2")}>
-                <input type="radio" name="theme" value={t} checked={theme === t} onChange={() => applyTheme(t)} className="sr-only" />
+                <input type="radio" name="theme" value={t} checked={theme === t} onChange={() => setTheme(t)} className="sr-only" />
                 {t === "system" ? c.themeSystem : t === "light" ? c.themeLight : c.themeDark}
               </label>
             ))}

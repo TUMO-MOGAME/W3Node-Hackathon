@@ -1,47 +1,34 @@
 "use client";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { MotionConfig } from "motion/react";
-import { CarFront, ChevronDown, FileCheck2, HandCoins, House, Inbox, Landmark, MessageCircle, Milestone, Phone, ScrollText, Users, type LucideIcon } from "lucide-react";
+import { FileCheck2, HandCoins, House, Inbox, Menu, MessageCircle, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import type { CommonCopy } from "@/content/common";
 import type { AssistantCopy } from "@/content/assistant";
 import type { PayCopy } from "@/content/pay";
 import { ConnectionBars, PaymentProvider } from "@/components/pay/payment";
-import type { Role } from "@/lib/types";
 import { EstateProvider, useEstate } from "@/lib/hooks/estate";
 import { LogoMark } from "@/components/ui/primitives";
 import { Toaster } from "@/components/ui/client";
 import { AgentSheet } from "@/components/agent/agent-sheet";
 import { AgentActionBridge } from "@/components/agent/chat-parts";
+import { ChatProvider, useAttention } from "@/components/chat/chat-context";
+import { Avatar } from "./avatar";
 import { CopyProvider, fmt, useCopy } from "./copy";
 import { PinGate } from "./pin-gate";
 import { PersonaSheet } from "./persona-sheet";
 import { ProofDrawer } from "./proof-drawer";
 import { DemoGuide } from "./demo-guide";
+import { Sidebar } from "./sidebar";
+import { applyTheme, useTheme } from "./theme";
 import { LanguageSwitcher } from "@/components/site/language-switcher";
 import { useLocalized } from "@/lib/i18n/client";
 
-type NavKey = "estate" | "will" | "vault" | "car" | "people" | "family" | "claims" | "inbox";
-const NAV: Record<NavKey, { href: string; icon: LucideIcon }> = {
-  estate: { href: "/estate", icon: House },
-  will: { href: "/will", icon: ScrollText },
-  vault: { href: "/vault", icon: Landmark },
-  car: { href: "/car", icon: CarFront },
-  people: { href: "/people", icon: Users },
-  family: { href: "/family", icon: Milestone },
-  claims: { href: "/claims", icon: HandCoins },
-  inbox: { href: "/inbox", icon: Inbox },
-};
-const TABS: Record<Role | "none", NavKey[]> = {
-  owner: ["estate", "will", "vault", "claims", "car"],
-  beneficiary: ["estate", "family", "claims", "car"],
-  verifier: ["estate", "inbox", "family", "car"],
-  buyer: ["car", "estate"],
-  agent: ["estate", "car"],
-  none: ["estate"],
-};
+export { Avatar } from "./avatar";
+
+const COLLAPSE_KEY = "heirloom.sidebar";
 
 export function AppShell({ common: commonEn, assistant: assistantEn, pay: payEn, siteName, children }: { common: CommonCopy; assistant: AssistantCopy; pay: PayCopy; siteName: string; children: ReactNode }) {
   // English is passed from the server; the visitor's language (if any) is laid over it in the browser.
@@ -53,7 +40,7 @@ export function AppShell({ common: commonEn, assistant: assistantEn, pay: payEn,
       <MotionConfig reducedMotion="user">
         <PinGate>
           <EstateProvider errors={common.errors}>
-            <PaymentProvider><Chrome>{children}</Chrome></PaymentProvider>
+            <PaymentProvider><ChatProvider><Chrome>{children}</Chrome></ChatProvider></PaymentProvider>
           </EstateProvider>
         </PinGate>
       </MotionConfig>
@@ -61,118 +48,180 @@ export function AppShell({ common: commonEn, assistant: assistantEn, pay: payEn,
   );
 }
 
+const roundBtn = "relative grid size-11 shrink-0 place-items-center rounded-full border border-line-strong bg-surface text-ink transition-colors hover:bg-surface-2";
+
+function CountDot({ n }: { n: number }) {
+  if (n <= 0) return null;
+  return <span aria-hidden="true" className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-ink px-1 text-[0.7rem] font-bold leading-5 text-bg ring-2 ring-bg">{n}</span>;
+}
+
+/**
+ * The frame every in-app page shares. Signed in: a sidebar (panel or icon rail on desktop, drawer on phones and tablets),
+ * a slim top bar, and the page. The chat home (/chat) fills the main area; other pages sit in a centred column.
+ * Onboarding and signed-out visitors get the top bar only.
+ */
 function Chrome({ children }: { children: ReactNode }) {
   const { common, assistant, siteName } = useCopy();
-  const { session, role, snap, isMock, openAgent, setProofOpen } = useEstate();
+  const s = assistant.shell;
+  const { session, role, snap, isMock, setProofOpen } = useEstate();
+  const { nudges } = useAttention();
   const pathname = usePathname();
+  const { theme } = useTheme();
   const [personaOpen, setPersonaOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawer = useRef<HTMLDialogElement>(null);
   const onboarding = pathname.startsWith("/start");
-  const tabs = TABS[role ?? "none"];
+  const framed = !onboarding && !!session;
+  const isChat = pathname === "/chat";
   const inboxCount = role === "verifier" && snap ? pendingFor(snap, session?.address ?? "") : 0;
   const ownerCount = role === "owner" && snap ? ownerPending(snap) : 0;
 
-  // Apply a saved appearance choice (system is the default and needs no attribute).
-  useEffect(() => {
-    try {
-      const t = window.localStorage.getItem("heirloom.theme");
-      if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
-    } catch { /* ignore */ }
-  }, []);
+  // Apply the saved appearance choice (system is the default and needs no attribute).
+  useEffect(() => { applyTheme(theme); }, [theme]);
 
-  const navLink = (key: NavKey, layout: "tab" | "top") => {
-    const { href, icon: Icon } = NAV[key];
-    const active = pathname === href || pathname.startsWith(`${href}/`);
-    const badge = key === "inbox" ? inboxCount : key === "claims" ? ownerCount : 0;
-    return (
-      <Link
-        key={key} href={href} aria-current={active ? "page" : undefined}
-        className={clsx(
-          "relative transition-colors",
-          layout === "tab"
-            ? "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[0.7rem] font-semibold"
-            : "inline-flex min-h-11 items-center gap-2 rounded-full px-3.5 text-small font-semibold",
-          active ? (layout === "tab" ? "text-ink" : "bg-ink text-bg") : "text-ink-2 hover:text-ink",
-        )}
-      >
-        <span className={clsx("relative grid place-items-center", layout === "tab" && "h-7 w-14 rounded-full", layout === "tab" && "transition-colors duration-200", layout === "tab" && active && "bg-ink text-bg")}>
-          <Icon className="size-5" aria-hidden="true" />
-          {badge > 0 && <span className="absolute -right-0.5 -top-1 grid min-w-4.5 place-items-center rounded-full bg-ink px-1 text-[0.65rem] font-bold leading-[1.15rem] text-bg ring-2 ring-bg">{badge}<span className="sr-only"> </span></span>}
-        </span>
-        <span className="truncate">{common.nav[key]}</span>
-      </Link>
-    );
+  // The collapse choice is remembered on this device; read after mount so the server markup matches.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    try { setCollapsed(window.localStorage.getItem(COLLAPSE_KEY) === "collapsed"); } catch { /* ignore */ }
+  }, []);
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    try { window.localStorage.setItem(COLLAPSE_KEY, next ? "collapsed" : "open"); } catch { /* ignore */ }
   };
 
+  // Phone drawer: a native modal dialog, so focus is trapped, Esc closes it and the page behind is inert.
+  useEffect(() => {
+    const d = drawer.current;
+    if (!d) return;
+    if (drawerOpen && !d.open) d.showModal();
+    if (!drawerOpen && d.open) d.close();
+  }, [drawerOpen]);
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  useEffect(() => {
+    // The drawer is a phone pattern: close it if the window grows into the desktop layout.
+    const mq = window.matchMedia("(min-width: 1280px)");
+    const on = () => { if (mq.matches) setDrawerOpen(false); };
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  const badges = { inbox: inboxCount, claims: ownerCount };
+  const openPersona = () => setPersonaOpen(true);
+  const personaLabel = session ? fmt(common.persona.switchLabel, { name: session.label.replace(/\s*\(.*\)$/, ""), role: common.roles[session.role] }) : "";
+  // --tabbar-h is the height of whatever is pinned to the bottom of the screen (the chat composer), so toasts clear it.
+  const vars = { "--sidebar-w": collapsed ? "5.25rem" : "18.25rem", "--tabbar-h": framed && isChat ? "11.5rem" : "0rem" } as CSSProperties;
+
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="min-h-dvh" style={vars}>
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[90] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2.5 focus:text-accent-ink">{common.nav.skip}</a>
 
-      <header className="pt-safe sticky top-0 z-40 border-b border-ink bg-bg">
-        <div className="mx-auto flex h-[var(--header-h)] w-full max-w-6xl items-center gap-2 px-4">
-          <Link href={session ? "/estate" : "/"} aria-label={common.nav.home} className="flex shrink-0 items-center gap-2 rounded-full pr-1">
-            <LogoMark className="size-9" />
-            <span className="hidden font-display text-[1.375rem] leading-none sm:inline">{siteName}</span>
-          </Link>
+      {framed && (
+        <>
+          {/* Wide screens: the full panel, collapsible to an icon rail. */}
+          <aside aria-label={s.sidebarLabel} className="fixed inset-y-0 left-0 z-30 hidden w-[var(--sidebar-w)] py-3 pl-3 xl:block">
+            <div className="h-full overflow-hidden rounded-xl border border-line-strong bg-surface">
+              <Sidebar rail={collapsed} badges={badges} onPersona={openPersona} />
+            </div>
+          </aside>
+          {/* Small laptops and tablets: always the rail, so pages keep their width; the menu button opens the full list. */}
+          <aside aria-label={s.sidebarLabel} className="fixed inset-y-0 left-0 z-30 hidden w-[5.25rem] py-3 pl-3 lg:block xl:hidden">
+            <div className="h-full overflow-hidden rounded-xl border border-line-strong bg-surface">
+              <Sidebar rail badges={badges} onPersona={openPersona} />
+            </div>
+          </aside>
+        </>
+      )}
 
-          {!onboarding && session && (
-            <nav aria-label={common.nav.label} className="ml-4 hidden items-center gap-1 md:flex">
-              {tabs.map((k) => navLink(k, "top"))}
-            </nav>
-          )}
-
-          <div className="ml-auto flex min-w-0 items-center gap-1.5">
-            {(onboarding || !session) && <LanguageSwitcher />}
-            {isMock && (
-              <button type="button" onClick={() => setPersonaOpen(true)} title={common.demo.badgeHint} aria-label={common.demo.open} className="hidden min-h-11 shrink-0 items-center rounded-full px-1 min-[440px]:inline-flex">
-                <span className="rounded-full border border-dashed border-ink px-2.5 py-1 text-[0.75rem] font-semibold text-ink">{common.demo.badge}</span>
-              </button>
-            )}
-            {!onboarding && session && (
+      <div className={clsx("flex min-h-dvh min-w-0 flex-col", framed && "lg:pl-[5.25rem] xl:pl-[var(--sidebar-w)]")}>
+        <header className={clsx("pt-safe sticky top-0 z-40 border-ink bg-bg", framed ? "border-b lg:border-b-0" : "border-b")}>
+          <div className={clsx("flex h-[var(--header-h)] w-full items-center gap-2", framed ? "px-3 lg:px-4" : "mx-auto max-w-6xl px-4")}>
+            {framed ? (
               <>
-                <button type="button" onClick={() => openAgent("chat")} className="hidden min-h-11 shrink-0 items-center gap-2 rounded-full border border-ink bg-surface px-4 text-small font-semibold text-ink hover:bg-surface-2 md:inline-flex">
-                  <Phone className="size-4" aria-hidden="true" />{assistant.sheet.headerLabel}
+                <button type="button" onClick={() => setDrawerOpen(true)} aria-label={s.openMenu} aria-haspopup="dialog" aria-expanded={drawerOpen} className={clsx(roundBtn, "xl:hidden")}>
+                  <Menu className="size-5" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={() => setProofOpen(true)} aria-label={common.proof.openLabel} className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 text-small font-semibold text-ink-2 hover:bg-surface-2 hover:text-ink">
-                  <FileCheck2 className="size-5" aria-hidden="true" /><span className="hidden sm:inline">{common.proof.open}</span>
+                <Link href="/chat" aria-label={common.nav.home} className="flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 rounded-full lg:hidden">
+                  <LogoMark className="size-9" />
+                  <span className="hidden font-display text-[1.375rem] leading-none min-[400px]:inline">{siteName}</span>
+                </Link>
+                <button type="button" onClick={toggleCollapsed} aria-label={collapsed ? s.expand : s.collapse} aria-expanded={!collapsed} title={collapsed ? s.expand : s.collapse} className={clsx(roundBtn, "hidden xl:grid")}>
+                  {collapsed ? <PanelLeftOpen className="size-5" aria-hidden="true" /> : <PanelLeftClose className="size-5" aria-hidden="true" />}
                 </button>
               </>
+            ) : (
+              <Link href={session ? "/chat" : "/"} aria-label={common.nav.home} className="flex shrink-0 items-center gap-2 rounded-full pr-1">
+                <LogoMark className="size-9" />
+                <span className="hidden font-display text-[1.375rem] leading-none sm:inline">{siteName}</span>
+              </Link>
             )}
-            {session && (
-              <button
-                type="button" onClick={() => setPersonaOpen(true)}
-                aria-label={fmt(common.persona.switchLabel, { name: session.label.replace(/\s*\(.*\)$/, ""), role: common.roles[session.role] })}
-                className="flex min-h-11 min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface py-1 pl-1 pr-2.5 hover:bg-surface-2 md:shrink-0"
-              >
-                <Avatar name={session.label} role={session.role} />
-                <span className="flex min-w-0 flex-col items-start leading-tight">
-                  <span className="max-w-[7.5rem] truncate whitespace-nowrap text-[0.7rem] font-semibold uppercase tracking-wider text-ink-2 sm:max-w-[11rem]">{common.roles[session.role]}</span>
-                  <span className="max-w-[7.5rem] truncate text-small font-semibold sm:max-w-[11rem]">{session.label.replace(/\s*\(.*\)$/, "")}</span>
-                </span>
-                <ChevronDown className="size-4 shrink-0 text-ink-2" aria-hidden="true" />
-              </button>
-            )}
+
+            <div className="ml-auto flex min-w-0 items-center gap-2">
+              {!framed && <LanguageSwitcher />}
+              {!framed && isMock && (
+                <button type="button" onClick={openPersona} title={common.demo.badgeHint} aria-label={common.demo.open} className="hidden min-h-11 shrink-0 items-center rounded-full px-1 min-[440px]:inline-flex">
+                  <span className="rounded-full border border-dashed border-ink px-2.5 py-1 text-[0.75rem] font-semibold text-ink">{common.demo.badge}</span>
+                </button>
+              )}
+              {framed && (
+                <>
+                  <Link href="/chat" aria-current={isChat ? "page" : undefined} aria-label={nudges.length ? fmt(s.top.homeCount, { n: nudges.length }) : s.top.home} title={s.top.home} className={clsx(roundBtn, isChat && "border-ink")}>
+                    <House className="size-5" aria-hidden="true" /><CountDot n={nudges.length} />
+                  </Link>
+                  <button type="button" onClick={() => setProofOpen(true)} aria-label={common.proof.openLabel} title={common.proof.open} className={clsx(roundBtn, "hidden min-[400px]:grid")}>
+                    <FileCheck2 className="size-5" aria-hidden="true" />
+                  </button>
+                  {role === "verifier" && (
+                    <Link href="/inbox" aria-label={inboxCount ? fmt(s.top.inboxCount, { n: inboxCount }) : s.top.inbox} title={s.top.inbox} className={roundBtn}>
+                      <Inbox className="size-5" aria-hidden="true" /><CountDot n={inboxCount} />
+                    </Link>
+                  )}
+                  {role === "owner" && ownerCount > 0 && (
+                    <Link href="/claims" aria-label={fmt(s.top.claimsCount, { n: ownerCount })} title={s.top.claims} className={roundBtn}>
+                      <HandCoins className="size-5" aria-hidden="true" /><CountDot n={ownerCount} />
+                    </Link>
+                  )}
+                </>
+              )}
+              {session && (
+                <button type="button" onClick={openPersona} aria-label={personaLabel} title={personaLabel} className="grid size-11 shrink-0 place-items-center rounded-full hover:bg-surface-2">
+                  <Avatar name={session.label} role={session.role} />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-        <ConnectionBars />
-        {!onboarding && isMock && session && <DemoGuide />}
-      </header>
+          <ConnectionBars />
+          {framed && isMock && <div className="lg:px-4 lg:pb-1"><div className="overflow-hidden lg:rounded-xl"><DemoGuide /></div></div>}
+        </header>
 
-      <main id="main" tabIndex={-1} className={clsx("mx-auto w-full max-w-6xl flex-1 px-4 pt-5 outline-none", onboarding || !session ? "pb-10" : "pb-[calc(var(--tabbar-h)+var(--safe-b)+5.5rem)] md:pb-16")}>
-        {children}
-      </main>
+        <main
+          id="main" tabIndex={-1}
+          className={clsx("min-w-0 flex-1 outline-none", framed && isChat ? "flex flex-col" : clsx("mx-auto w-full max-w-6xl px-4 pt-5", framed ? "pb-28 lg:pb-16" : "pb-10"))}
+        >
+          {children}
+        </main>
+      </div>
 
-      {!onboarding && session && (
+      {framed && (
         <>
-          {pathname !== "/will" && <button
-            type="button" onClick={() => openAgent("chat")}
-            className="fixed bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.875rem)] right-4 z-40 inline-flex h-14 items-center gap-2 rounded-full bg-ink pl-4 pr-5 font-semibold text-bg shadow-raised ring-2 ring-bg transition-transform active:scale-95 md:hidden"
+          {!isChat && pathname !== "/will" && (
+            <Link
+              href="/chat"
+              className="fixed bottom-[calc(var(--safe-b)+0.875rem)] right-4 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-ink pl-4 pr-5 font-semibold text-bg shadow-raised ring-2 ring-bg transition-transform active:scale-95 lg:hidden"
+            >
+              <MessageCircle className="size-6" aria-hidden="true" />
+              <span className="text-small">{assistant.sheet.fabLabel}</span>
+            </Link>
+          )}
+          <dialog
+            ref={drawer} className="drawer" aria-label={s.sidebarLabel}
+            onClose={closeDrawer}
+            onCancel={(e) => { e.preventDefault(); closeDrawer(); }}
+            onClick={(e) => { if (e.target === drawer.current) closeDrawer(); }}
           >
-            <MessageCircle className="size-6" aria-hidden="true" />
-            <span className="text-small">{assistant.sheet.fabLabel}</span>
-          </button>}
-          <nav aria-label={common.nav.label} className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-ink bg-surface md:hidden">
-            <div className="mx-auto flex h-[var(--tabbar-h)] max-w-lg items-stretch px-1">{tabs.map((k) => navLink(k, "tab"))}</div>
-          </nav>
+            {drawerOpen && <Sidebar badges={badges} onPersona={openPersona} onNavigate={closeDrawer} onClose={closeDrawer} />}
+          </dialog>
         </>
       )}
 
@@ -182,24 +231,6 @@ function Chrome({ children }: { children: ReactNode }) {
       <AgentActionBridge />
       <Toaster dismissLabel={common.toast.dismiss} />
     </div>
-  );
-}
-
-const roleTint: Record<Role, string> = {
-  // Monochrome: roles differ by fill and outline, never by colour.
-  owner: "bg-ink text-bg",
-  beneficiary: "border-2 border-ink bg-surface text-ink",
-  verifier: "border border-line-strong bg-surface-2 text-ink",
-  buyer: "border border-line-strong bg-surface text-ink-2",
-  agent: "rounded-md! bg-ink text-bg",
-};
-
-export function Avatar({ name, role, className }: { name: string; role: Role; className?: string }) {
-  const clean = name.replace(/^(Adv\.|Ms\.|Mr\.|Mrs\.|Dr\.|Uncle|Aunt|Pastor)\s+/i, "");
-  return (
-    <span aria-hidden="true" className={clsx("grid size-9 shrink-0 place-items-center rounded-full text-small font-bold", roleTint[role], className)}>
-      {clean[0]?.toUpperCase() ?? "?"}
-    </span>
   );
 }
 

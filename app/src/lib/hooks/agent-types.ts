@@ -22,7 +22,7 @@ export interface AssistantMessage {
 }
 
 /** The agent may use its own route names; map them onto the app's routes. */
-const ROUTES: Record<string, string> = { "/owner": "/estate", "/verifier": "/inbox", "/buyer": "/car", "/audit": "/estate?proof=1", "/dashboard": "/estate", "/plan": "/will", "/timeline": "/family", "/home": "/estate" };
+const ROUTES: Record<string, string> = { "/owner": "/estate", "/verifier": "/inbox", "/buyer": "/car", "/audit": "/estate?proof=1", "/dashboard": "/estate", "/plan": "/will", "/timeline": "/family", "/home": "/chat", "/chat": "/chat", "/assistant": "/chat", "/ask": "/chat" };
 export function mapAgentPath(path: string): string {
   const clean = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
   return ROUTES[clean] ?? path;

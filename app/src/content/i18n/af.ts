@@ -148,7 +148,7 @@ export const af: Bundle = {
       inbox: "Inkassie",
       proof: "Bewys",
       skip: "Gaan na die inhoud",
-      home: "Heirloom, gaan na die boedel",
+      home: "Heirloom, gaan na die tuisblad",
     },
     roles: {
       owner: "Boedeleienaar",

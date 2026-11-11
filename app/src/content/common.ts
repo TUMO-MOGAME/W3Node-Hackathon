@@ -13,7 +13,7 @@ export const common = {
     inbox: "Inbox",
     proof: "Proof",
     skip: "Skip to content",
-    home: "Heirloom, go to estate",
+    home: "Heirloom, go to the chat home",
   },
   roles: {
     owner: "Estate owner",

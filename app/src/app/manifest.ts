@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: site.shortName,
     description: site.description,
     lang: "en-ZA",
-    start_url: "/estate",
+    start_url: "/chat",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
@@ -23,6 +23,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
+      { name: "Ask Heirloom", url: "/chat" },
       { name: "Estate", url: "/estate" },
       { name: "Claims", url: "/claims" },
       { name: "Inbox", url: "/inbox" },

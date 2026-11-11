@@ -43,12 +43,12 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
   }, []);
 
   const owner = wallet.sessions.find((s) => s.role === "owner");
-  const home = (r: Role) => (r === "owner" ? (snap ? "/estate" : "/will") : r === "buyer" ? "/car" : "/estate");
+  const home = "/chat"; // everyone lands on the chat home; it points to the right next step
 
   const startDemo = () => {
     if (!owner) return;
     if (!snap) wallet.switchTo(owner.address);
-    router.push(snap ? "/estate" : "/will");
+    router.push("/chat");
   };
 
   const submitAbout = (e: FormEvent) => {
@@ -70,7 +70,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
       pinGate.preset(pin);
       if (importing) {
         await wallet.importSeed(name.trim(), role, phrase.trim().toLowerCase().replace(/\s+/g, " "));
-        router.push(home(role));
+        router.push(home);
       } else {
         const { seedPhrase } = await wallet.create(name.trim(), role);
         setSeed(seedPhrase.split(/\s+/));
@@ -222,7 +222,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
                 <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--accent)]" />
                 {copy.seed.confirm}
               </label>
-              <Button disabled={!saved} onClick={() => { setSeed(null); router.push(home(role)); }}>{copy.seed.done}<ArrowRight className="size-5" aria-hidden="true" /></Button>
+              <Button disabled={!saved} onClick={() => { setSeed(null); router.push(home); }}>{copy.seed.done}<ArrowRight className="size-5" aria-hidden="true" /></Button>
             </div>
           )}
         </motion.div>

@@ -148,7 +148,7 @@ export const st: Bundle = {
       inbox: "Inbox",
       proof: "Bopaki",
       skip: "Tlolela dikahare",
-      home: "Heirloom, ya lefeng",
+      home: "Heirloom, ya lapeng",
     },
     roles: {
       owner: "Mong wa lefa",

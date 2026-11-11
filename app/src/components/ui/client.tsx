@@ -55,7 +55,7 @@ export function Sheet({
 export function Toaster({ dismissLabel }: { dismissLabel: string }) {
   const { toasts, dismiss } = useEstate();
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.75rem)] z-[70] flex flex-col items-center gap-2 px-4 md:bottom-6" aria-live="polite" aria-atomic="false">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--tabbar-h)+var(--safe-b)+0.75rem)] z-[70] flex flex-col items-center gap-2 px-4" aria-live="polite" aria-atomic="false">
       <AnimatePresence>
         {toasts.map((t) => (
           <motion.div

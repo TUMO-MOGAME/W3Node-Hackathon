@@ -514,6 +514,36 @@ dialog.sheet::backdrop {
   dialog.sheet::before { display: none; }
 }
 
+/* Phone navigation drawer: the sidebar as a modal panel from the left edge. */
+dialog.drawer {
+  margin: 0;
+  padding: var(--safe-t) 0 var(--safe-b);
+  border: 0;
+  border-right: 1px solid var(--ink);
+  inset: 0 auto 0 0;
+  width: min(20rem, 88vw);
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+}
+dialog.drawer[open] {
+  display: flex;
+  flex-direction: column;
+  animation: drawer-in var(--dur-base) var(--ease-out) both;
+}
+dialog.drawer::backdrop {
+  background: var(--scrim);
+  animation: fade var(--dur-base) ease-out both;
+}
+@keyframes drawer-in {
+  from { transform: translateX(-24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
 .pb-safe { padding-bottom: var(--safe-b); }
 .pt-safe { padding-top: var(--safe-t); }
 

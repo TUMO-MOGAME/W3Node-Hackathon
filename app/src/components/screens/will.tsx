@@ -336,7 +336,7 @@ function Review({ copy, draft, onBack, onSign, signing }: { copy: Copy; draft: W
         </ul>
       </section>
 
-      <div className="sticky bottom-[calc(var(--tabbar-h)+var(--safe-b))] -mx-4 mt-6 border-t border-ink bg-bg px-4 py-3 md:bottom-0">
+      <div className="sticky bottom-[var(--safe-b)] -mx-4 mt-6 border-t border-ink bg-bg px-4 py-3 lg:bottom-0">
         <Button block onClick={onSign} loading={signing} className="min-h-13!">
           <Lock className="size-5" aria-hidden="true" />{signing ? r.signing : r.sign}
         </Button>
