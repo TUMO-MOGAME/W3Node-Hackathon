@@ -77,7 +77,7 @@
 | 2026-11-11 | Toolchain: rustc 1.99.1, solana-cli 4.3.2, anchor 1.2.2 (avm); no Surfpool (LiteSVM tests instead) | Installed by Tumo + lead |
 
 ## Open questions for Tumo
-- Solo or team? (needed for BuilderBase)
+- ~~Solo or team?~~ **Solo** (confirmed 2026-11-11)
 - Working name "Heirloom": keep it?
 - GitHub account/repo name for the public repo
 

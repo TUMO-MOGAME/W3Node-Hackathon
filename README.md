@@ -285,7 +285,7 @@ bash scripts/build-program.sh test # 25 LiteSVM program tests (Linux / WSL, Anch
 - **Prompt injection:** uploaded documents are passed to the model as data, and the system prompt tells it to ignore
   instructions inside them. A manipulated verdict still can't break a cap or a quorum.
 - **Known limits:** devnet only; not audited; in-memory rate limits (per instance); no seed-recovery flow yet.
-- **Secrets:** `.env*`, keypairs and demo wallet seeds are gitignored. Report issues privately to the team.
+- **Secrets:** `.env*`, keypairs and demo wallet seeds are gitignored. Report issues privately to the maintainer.
 
 ## Roadmap
 
@@ -301,10 +301,11 @@ Business case: [`docs/business.md`](docs/business.md).
 
 ## Team
 
+Solo project.
+
 | Name | Role |
 |---|---|
-| Tumo Mogame | Founder, full-stack, Solana program |
-| <!-- TEAM_MEMBER --> | <!-- role --> |
+| Tumo Mogame | Founder: product, design, full-stack, Solana program |
 
 ## Pre-existing code disclosure
 

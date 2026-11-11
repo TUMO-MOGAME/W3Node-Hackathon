@@ -66,8 +66,7 @@ Heirloom is mobile money for families, built on USD₮ and Tether WDK. Every rol
 
 ### Team
 ```
-Tumo Mogame (founder, full-stack, Solana program)
-<!-- other team members, or "Solo" -->
+Solo: Tumo Mogame (founder: product, design, full-stack, Solana program)
 ```
 
 ### Pre-existing code
