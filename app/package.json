@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "icons": "node scripts/build-icons.mjs",
+    "prebuild": "npm run icons",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -14,6 +16,7 @@
   "dependencies": {
     "@anchor-lang/core": "^1.2.2",
     "@elevenlabs/react": "^1.22.0",
+    "@flaticon/flaticon-uicons": "^3.3.1",
     "@google/genai": "^3.1.0",
     "@solana/kit": "^4.0.0",
     "@solana/spl-token": "^0.4.15",
@@ -38,6 +41,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "subset-font": "^2.9.0",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^5",
