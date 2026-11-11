@@ -23,7 +23,7 @@ export const maxDuration = 90;
 export const POST = handler(async (req) => {
   rateLimit(req, "review", 8);
   if (Number(req.headers.get("content-length") ?? 0) > MAX_UPLOAD_BYTES + 64_000) throw new HttpError(413, "The file is larger than 10 MB.");
-  const form = await req.formData();
+  const form = await req.formData().catch(() => { throw new HttpError(400, "Expected a form upload with the document as `file`."); });
   const file = form.get("file");
   if (!(file instanceof File)) throw new HttpError(400, "Attach the document as `file`.");
   const fields = reviewFields.parse({
