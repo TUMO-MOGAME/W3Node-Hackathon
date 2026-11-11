@@ -40,7 +40,13 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
-## CURRENT (2026-11-11 evening): main f4c701e, live
+## CURRENT (2026-11-11 night): main 6e369ee, live
+- **Chat-first shell**: left sidebar (grouped nav, saved chats per persona, utilities, persona card; collapses to a rail; mobile drawer), home `/chat` with nudge cards + pinned composer (dictate, call, review a document, send money). Data layer in `app/src/lib/chat/*`
+- **Icons: Flaticon UIcons, regular rounded** via `app/src/components/ui/icons.tsx`; subset font 10.7 KB built by `npm run icons` (runs in prebuild). The free licence requires the credit line "Uicons by Flaticon" (footer + README Credits): keep it
+- Checks: 230 tests, tsc/eslint clean, mono guard OK, build OK. Live verified
+- Open: two contrast issues on `/estate` flagged by axe (`.ml-2`, `.text-display`); nudge copy English only
+
+## Earlier (2026-11-11 evening): main f4c701e
 - **Design is now pure black and white** (Tumo's call, replaces Harvest Moon). No hue, no gradients; `node app/scripts/contrast.mjs` guards this (fails on any hue or gradient). Status shown by icons, words and line styles
 - **Legacy Voice merged**: `/legacy` (parent consent + voice samples + Legacy Book; child opt-in, messages, chat, live call). ElevenLabs IVC + a private per-estate agent; wallet-signed requests; no money authority; SADAG escape. Needs a paid ElevenLabs plan (Starter+) for real cloning
 - Checks: 199/199 tests, tsc + eslint clean, build 44 pages, mono guard passes
