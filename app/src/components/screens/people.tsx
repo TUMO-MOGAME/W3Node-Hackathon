@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { Bot, Building2, Plus, ShieldCheck, UsersRound } from "lucide-react";
+import { Bot, Building2, Plus, ShieldCheck, UsersRound } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

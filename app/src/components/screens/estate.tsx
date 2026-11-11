@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, BookOpen, CalendarClock, CarFront, CircleDot, FileCheck2, GraduationCap, HeartPulse, Hourglass, House, Landmark, Milestone, Plus, Send, Stethoscope, UsersRound, Zap, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarClock, CarFront, CircleDot, FileCheck2, GraduationCap, HeartPulse, Hourglass, House, Landmark, Milestone, Plus, Send, Stethoscope, UsersRound, Zap, type LucideIcon } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

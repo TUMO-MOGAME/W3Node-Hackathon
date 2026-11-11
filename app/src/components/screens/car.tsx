@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, CarFront, FileText, Gavel, HandHeart, Loader2, Lock, ShieldCheck, Sparkles, Store } from "lucide-react";
+import { ArrowRight, CarFront, FileText, Gavel, HandHeart, Loader2, Lock, ShieldCheck, Sparkles, Store } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

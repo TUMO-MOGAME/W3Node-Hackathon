@@ -1,7 +1,7 @@
 "use client";
 import { useId } from "react";
 import clsx from "clsx";
-import { Languages } from "lucide-react";
+import { Languages } from "@/components/ui/icons";
 import { setLocale, useLocale, useTranslations } from "@/lib/i18n/client";
 import { isLocale, LANGUAGE_LABEL, LOCALE_NAMES, LOCALE_TAGS, LOCALES } from "@/lib/i18n/locales";
 

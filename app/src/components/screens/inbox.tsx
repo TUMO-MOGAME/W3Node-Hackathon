@@ -1,7 +1,7 @@
 "use client";
 import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Banknote, Check, FileHeart, HandHeart, Inbox as InboxIcon, Undo2 } from "lucide-react";
+import { Banknote, Check, FileHeart, HandHeart, Inbox as InboxIcon, Undo2 } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

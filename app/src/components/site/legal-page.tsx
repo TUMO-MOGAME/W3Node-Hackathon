@@ -1,4 +1,4 @@
-import { Scale } from "lucide-react";
+import { Scale } from "@/components/ui/icons";
 import type { LegalSection } from "@/content/legal";
 import type { SiteCopy } from "@/content/site";
 import { Notice } from "@/components/ui/primitives";

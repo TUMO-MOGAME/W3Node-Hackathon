@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
 import clsx from "clsx";
-import { ArrowRight, Check, CircleAlert, Delete, Sparkles, UserRoundPlus, Wallet } from "lucide-react";
+import { ArrowRight, Check, CircleAlert, Delete, Sparkles, UserRoundPlus, Wallet } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { SavedRecipient } from "@/lib/types";

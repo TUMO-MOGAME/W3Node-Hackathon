@@ -2,7 +2,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Check, CircleAlert, FileCheck2, FileUp, Info, X } from "lucide-react";
+import { Check, CircleAlert, FileCheck2, FileUp, Info, X } from "@/components/ui/icons";
 import { useEstate } from "@/lib/hooks/estate";
 
 /* ---------- Sheet: bottom sheet on phones, side panel on desktop (native <dialog>) ---------- */

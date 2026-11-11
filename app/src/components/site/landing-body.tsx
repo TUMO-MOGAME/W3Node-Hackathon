@@ -1,5 +1,5 @@
 "use client";
-import { ArrowDown, ArrowRight, Car, FileLock2, GraduationCap, HandHeart, HeartPulse, KeyRound, Landmark, MessageSquareHeart, PenLine, ShieldCheck, UsersRound } from "lucide-react";
+import { ArrowDown, ArrowRight, Car, FileLock2, GraduationCap, HandHeart, HeartPulse, KeyRound, Landmark, MessageSquareHeart, PenLine, ShieldCheck, UsersRound } from "@/components/ui/icons";
 import type { CSSProperties } from "react";
 import type { LandingCopy } from "@/content/landing";
 import { Badge, ButtonLink, Eyebrow } from "@/components/ui/primitives";

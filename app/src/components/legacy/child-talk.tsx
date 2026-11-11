@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { HeartHandshake, Lock, Phone, PhoneOff, Power } from "lucide-react";
+import { HeartHandshake, Lock, Phone, PhoneOff, Power } from "@/components/ui/icons";
 import type { LegacyCopy, LegacySafetyCopy } from "@/content/legacy";
 import type { EstateSnapshot } from "@/lib/service";
 import { useEstate } from "@/lib/hooks/estate";

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { MotionConfig } from "motion/react";
-import { FileCheck2, HandCoins, House, Inbox, Menu, MessageCircle, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { FileCheck2, HandCoins, House, Inbox, Menu, MessageCircle, PanelLeftClose, PanelLeftOpen } from "@/components/ui/icons";
 import type { CommonCopy } from "@/content/common";
 import type { AssistantCopy } from "@/content/assistant";
 import type { PayCopy } from "@/content/pay";

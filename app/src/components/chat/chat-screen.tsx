@@ -5,7 +5,7 @@
  */
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { FileText, ShieldCheck } from "lucide-react";
+import { FileText, ShieldCheck } from "@/components/ui/icons";
 import type { ChatThreadMessage } from "@/lib/chat/types";
 import { Gate } from "@/components/shell/gate";
 import { fmt, useCopy } from "@/components/shell/copy";

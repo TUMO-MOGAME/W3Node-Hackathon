@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, Compass, Repeat } from "lucide-react";
+import { ArrowRight, Compass, Repeat } from "@/components/ui/icons";
 import type { EstateSnapshot } from "@/lib/service";
 import type { WalletSession } from "@/lib/types";
 import { useWallet } from "@/lib/hooks/wallet-source";

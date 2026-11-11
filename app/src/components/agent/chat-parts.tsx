@@ -3,7 +3,7 @@ import { useCallback, useEffect, useId, useRef, useState, type FormEvent, type R
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowUp, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUp, Sparkles } from "@/components/ui/icons";
 import type { AssistantCopy } from "@/content/assistant";
 import type { SpecialistName } from "@/lib/voice/types";
 import { mapAgentPath, type AgentAction } from "@/lib/hooks/agent-types";

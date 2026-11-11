@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { motion, useReducedMotion } from "motion/react";
-import { BellRing, ChevronLeft, ChevronRight, Clock, Info, Pause, Play, X } from "lucide-react";
+import { BellRing, ChevronLeft, ChevronRight, Clock, Info, Pause, Play, X } from "@/components/ui/icons";
 import type { Nudge } from "@/lib/chat/types";
 import { useEstate } from "@/lib/hooks/estate";
 import { usePay } from "@/components/pay/payment";

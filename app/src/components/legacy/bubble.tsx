@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import clsx from "clsx";
-import { BookHeart } from "lucide-react";
+import { BookHeart } from "@/components/ui/icons";
 import type { LegacyCopy } from "@/content/legacy";
 import { LogoMark } from "@/components/ui/primitives";
 

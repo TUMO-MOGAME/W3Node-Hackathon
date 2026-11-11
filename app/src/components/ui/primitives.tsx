@@ -1,7 +1,7 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { Children, isValidElement, type ComponentProps, type ReactNode } from "react";
-import { Check, CircleDashed, ExternalLink, Loader2, TriangleAlert } from "lucide-react";
+import { Check, CircleDashed, ExternalLink, Loader2, TriangleAlert } from "@/components/ui/icons";
 import { explorerTx, formatUsdt, formatZar, shortAddress } from "@/lib/format";
 
 /* ---------- Logo ---------- */

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { Download, X } from "lucide-react";
+import { Download, X } from "@/components/ui/icons";
 import { Button } from "@/components/ui/primitives";
 
 interface BeforeInstallPromptEvent extends Event {

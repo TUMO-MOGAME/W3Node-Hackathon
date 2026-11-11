@@ -332,10 +332,16 @@ open-source libraries listed below under their own licences.
 |---|---|
 | Wallets | `@tetherto/wdk-wallet-solana` (Tether WDK) |
 | Solana | `anchor-lang` 1.2.2 (Rust), `@anchor-lang/core`, `@solana/web3.js`, `@solana/spl-token`, `@solana/kit`, LiteSVM (tests) |
-| App | Next.js 16, React 19, Tailwind CSS 4, `motion`, `lucide-react`, `clsx`, `zod` |
+| App | Next.js 16, React 19, Tailwind CSS 4, `motion`, `@flaticon/flaticon-uicons`, `clsx`, `zod` |
 | AI and voice | `@google/genai` (Gemini), `@elevenlabs/react` |
 | Data | `@supabase/supabase-js` |
-| Tooling | TypeScript, Vitest, `tsx`, ESLint |
+| Tooling | TypeScript, Vitest, `tsx`, ESLint, `subset-font` |
+
+## Credits
+
+- Icons: [Uicons by Flaticon](https://www.flaticon.com/uicons) (Regular weight, Rounded style), used under the Flaticon free
+  licence with attribution. The app ships only the glyphs it uses: `npm run icons` (also run before every build) subsets
+  the font to about 11 KB.
 
 ## Licence
 

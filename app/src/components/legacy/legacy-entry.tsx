@@ -7,7 +7,7 @@
  *  - LegacySheetLink: "Talk with Dad instead" in the agent sheet
  * Copy comes from the small `legacyEntry` object only.
  */
-import { HeartHandshake, Mic } from "lucide-react";
+import { HeartHandshake, Mic } from "@/components/ui/icons";
 import { legacyEntry as copy } from "@/content/legacy";
 import { useEstate } from "@/lib/hooks/estate";
 import { findMoment } from "@/lib/legacy/companion";

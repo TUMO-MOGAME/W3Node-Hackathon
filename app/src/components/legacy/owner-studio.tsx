@@ -1,7 +1,7 @@
 "use client";
 import { useId, useMemo, useState, type FormEvent } from "react";
 import clsx from "clsx";
-import { Check, Mic, Plus, RotateCcw, Square, Trash2, Volume2 } from "lucide-react";
+import { Check, Mic, Plus, RotateCcw, Square, Trash2, Volume2 } from "@/components/ui/icons";
 import type { LegacyCopy } from "@/content/legacy";
 import type { EstateSnapshot } from "@/lib/service";
 import { useEstate } from "@/lib/hooks/estate";

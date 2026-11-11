@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import clsx from "clsx";
-import { Check, Download, Plus, RotateCcw } from "lucide-react";
+import { Check, Download, Plus, RotateCcw } from "@/components/ui/icons";
 import type { Role } from "@/lib/types";
 import { isMockService, type DemoStage } from "@/lib/service/mock";
 import type { DemoShortcut } from "@/lib/hooks/estate";

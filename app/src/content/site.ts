@@ -47,6 +47,8 @@ export const site = {
     program: "Program on Solana devnet",
     programId: process.env.NEXT_PUBLIC_HEIRLOOM_PROGRAM_ID ?? "b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY",
     rights: "Heirloom. Hackathon prototype, W3Node Cape Town 2026.",
+    // Flaticon free licence: attribution required wherever the icons appear.
+    iconCredit: { label: "Icons: Uicons by Flaticon", linkText: "flaticon.com/uicons", href: "https://www.flaticon.com/uicons" },
   },
   notFound: {
     eyebrow: "Page not found",

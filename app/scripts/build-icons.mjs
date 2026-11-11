@@ -137,15 +137,16 @@ async function main() {
   }
 }
 
-/* The glyph scales to the box with container units, and inherits currentColor. */
+/* The glyph scales to the box with container units and inherits currentColor. UIcons draw edge to
+   edge while lucide keeps a 2px margin in 24, so the glyph takes 20/24 of the box to keep sizes. */
 .ui-icon > .fi {
   display: block;
-  font-size: 100cqmin;
+  font-size: 83.333cqmin;
   line-height: 1;
   font-style: normal;
 }
 @supports not (container-type: size) {
-  .ui-icon > .fi { font-size: 1em; }
+  .ui-icon > .fi { font-size: 0.83333em; }
 }
 .fi::before {
   display: block;

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
 import { motion } from "motion/react";
-import { ShieldX } from "lucide-react";
+import { ShieldX } from "@/components/ui/icons";
 import { useCopy } from "./copy";
 
 /** Shown when the estate's on-chain rules refuse an action. Makes the refusal visible and explains it. */

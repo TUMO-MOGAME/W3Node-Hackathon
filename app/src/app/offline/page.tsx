@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { WifiOff } from "lucide-react";
+import { WifiOff } from "@/components/ui/icons";
 import { site } from "@/content/site";
 import { Logo } from "@/components/ui/primitives";
 

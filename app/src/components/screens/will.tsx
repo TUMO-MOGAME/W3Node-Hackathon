@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, CalendarClock, CarFront, Check, Clock, GraduationCap, Hourglass, Lock, PenLine, Phone, ShieldCheck, Sparkles, UsersRound, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, CalendarClock, CarFront, Check, Clock, GraduationCap, Hourglass, Lock, PenLine, Phone, ShieldCheck, Sparkles, UsersRound, Zap } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocale, useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot, TxResult } from "@/lib/service";

@@ -2,7 +2,7 @@
 import { useState, type FormEvent } from "react";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowDownToLine, ArrowUpFromLine, HeartPulse, Landmark, Lock, ShieldCheck, Wallet } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, HeartPulse, Landmark, Lock, ShieldCheck, Wallet } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

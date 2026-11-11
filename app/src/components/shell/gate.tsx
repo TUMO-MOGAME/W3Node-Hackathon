@@ -1,6 +1,6 @@
 "use client";
 import type { ReactNode } from "react";
-import { CloudOff, ScrollText, UserRound, UsersRound } from "lucide-react";
+import { CloudOff, ScrollText, UserRound, UsersRound } from "@/components/ui/icons";
 import type { EstateSnapshot } from "@/lib/service";
 import type { Role, WalletSession } from "@/lib/types";
 import { useWallet } from "@/lib/hooks/wallet-source";

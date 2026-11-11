@@ -4,8 +4,8 @@
  * - Pages are network-first so estate data is never stale; offline falls back to the offline page.
  * - NEVER caches API routes, RPC calls, cross-origin requests, or anything that is not a GET.
  */
-const VERSION = "heirloom-v3";
-const SHELL = ["/offline", "/icons/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png"];
+const VERSION = "heirloom-v4";
+const SHELL = ["/offline", "/icons/icon.svg", "/icons/icon-192.png", "/icons/icon-512.png", "/fonts/uicons-rr-subset.woff2"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -34,6 +34,17 @@ self.addEventListener("fetch", (event) => {
         if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
         return res;
       })),
+    );
+    return;
+  }
+
+  // The icon font keeps its name across rebuilds, so network first (fresh glyphs), cache for offline.
+  if (url.pathname.startsWith("/fonts/")) {
+    event.respondWith(
+      fetch(req).then((res) => {
+        if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
+        return res;
+      }).catch(() => caches.match(req).then((hit) => hit || Response.error())),
     );
     return;
   }

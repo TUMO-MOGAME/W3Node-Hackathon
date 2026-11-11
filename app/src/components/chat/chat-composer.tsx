@@ -6,7 +6,7 @@
  */
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type ChangeEvent, type FormEvent } from "react";
 import clsx from "clsx";
-import { ArrowUp, FileText, Mic, Paperclip, Phone, Send, Square, X } from "lucide-react";
+import { ArrowUp, FileText, Mic, Paperclip, Phone, Send, Square, X } from "@/components/ui/icons";
 import type { ChatAttachment } from "@/lib/chat/types";
 import { useEstate } from "@/lib/hooks/estate";
 import { fmt, useCopy } from "@/components/shell/copy";

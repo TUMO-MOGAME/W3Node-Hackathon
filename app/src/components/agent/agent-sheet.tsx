@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { motion, useReducedMotion } from "motion/react";
-import { MessageCircle, Mic, MicOff, Phone, PhoneOff, RotateCcw, ShieldCheck } from "lucide-react";
+import { MessageCircle, Mic, MicOff, Phone, PhoneOff, RotateCcw, ShieldCheck } from "@/components/ui/icons";
 import { useEstate } from "@/lib/hooks/estate";
 import { useAssistant } from "@/lib/hooks/use-assistant";
 import { useHeirloomVoice } from "@/lib/hooks/voice-source";

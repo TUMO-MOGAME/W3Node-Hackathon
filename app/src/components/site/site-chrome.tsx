@@ -70,7 +70,10 @@ export function SiteFooter({ site: english }: { site: SiteCopy }) {
         </div>
       </div>
       <div className="pb-safe border-t border-line">
-        <p className="mx-auto w-full max-w-6xl px-4 py-4 text-small text-ink-2">© 2026 {f.rights}</p>
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap justify-between gap-x-6 gap-y-1 px-4 py-4 text-small text-ink-2">
+          <p>© 2026 {f.rights}</p>
+          <p>{f.iconCredit.label} (<a href={f.iconCredit.href} target="_blank" rel="noreferrer noopener" className="text-ink underline underline-offset-4">{f.iconCredit.linkText}</a>)</p>
+        </div>
       </div>
     </footer>
   );

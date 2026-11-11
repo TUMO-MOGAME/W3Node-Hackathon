@@ -1,6 +1,6 @@
 "use client";
 import clsx from "clsx";
-import { HeartHandshake, Pause, Phone, Play, ShieldCheck } from "lucide-react";
+import { HeartHandshake, Pause, Phone, Play, ShieldCheck } from "@/components/ui/icons";
 import type { LegacySafetyCopy } from "@/content/legacy";
 import { fmt } from "@/components/shell/copy";
 

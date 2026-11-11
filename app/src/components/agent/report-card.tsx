@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { Check, Loader2, ScanSearch, TriangleAlert } from "lucide-react";
+import { Check, Loader2, ScanSearch, TriangleAlert } from "@/components/ui/icons";
 import type { AgentReport } from "@/lib/types";
 import { shortAddress } from "@/lib/format";
 import { Badge, DefList } from "@/components/ui/primitives";

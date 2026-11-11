@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import clsx from "clsx";
 import { motion } from "motion/react";
-import { ArrowRight, Check, FileHeart, HeartPulse, LockOpen, TriangleAlert } from "lucide-react";
+import { ArrowRight, Check, FileHeart, HeartPulse, LockOpen, TriangleAlert } from "@/components/ui/icons";
 import type { ScreensCopy } from "@/content/screens";
 import { useLocalized } from "@/lib/i18n/client";
 import type { EstateSnapshot } from "@/lib/service";

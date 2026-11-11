@@ -11,7 +11,7 @@ import clsx from "clsx";
 import {
   CarFront, Check, ChevronDown, ChevronsUpDown, Ellipsis, FileCheck2, FlaskConical, HandCoins, House, Inbox, Landmark, LifeBuoy,
   MessageCircle, MessageSquare, Mic, Milestone, Moon, Pencil, Phone, Plus, ScrollText, Send, Trash2, Users, X, type LucideIcon,
-} from "lucide-react";
+} from "@/components/ui/icons";
 import type { Role } from "@/lib/types";
 import type { ChatThread } from "@/lib/chat/types";
 import { shortAddress } from "@/lib/format";

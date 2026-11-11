@@ -42,7 +42,9 @@
  *               Sparkles sparkles, Zap bolt, Moon moon, Sun sun, CloudOff cloud-disabled,
  *               WifiOff wifi-slash, Search search, Settings settings, Menu menu-burger,
  *               PanelLeft sidebar, LogOut sign-out-alt, ChevronRight angle-small-right,
- *               ChevronLeft angle-small-left, ChevronUp angle-small-up, Mail envelope
+ *               ChevronLeft angle-small-left, ChevronUp angle-small-up, Mail envelope,
+ *               BellRing bell-ring, Paperclip paperclip-vertical,
+ *               PanelLeftOpen / PanelLeftClose sidebar (the button label carries the state)
  */
 import type { CSSProperties, HTMLAttributes, ReactElement } from "react";
 import clsx from "clsx";
@@ -152,6 +154,10 @@ export const GLYPHS = {
   WifiOff: "wifi-slash",
   X: "cross-small",
   Zap: "bolt",
+  BellRing: "bell-ring",
+  PanelLeftClose: "sidebar",
+  PanelLeftOpen: "sidebar",
+  Paperclip: "paperclip-vertical",
 } as const;
 
 export type IconName = keyof typeof GLYPHS;
@@ -297,3 +303,7 @@ export const Wallet = make("Wallet");
 export const WifiOff = make("WifiOff");
 export const X = make("X");
 export const Zap = make("Zap");
+export const BellRing = make("BellRing");
+export const PanelLeftClose = make("PanelLeftClose");
+export const PanelLeftOpen = make("PanelLeftOpen");
+export const Paperclip = make("Paperclip");

@@ -1,5 +1,5 @@
 "use client";
-import { CloudOff } from "lucide-react";
+import { CloudOff } from "@/components/ui/icons";
 import type { LegacyCopy, LegacySafetyCopy } from "@/content/legacy";
 import type { EstateSnapshot } from "@/lib/service";
 import { Button, EmptyState, LoadingCards, PageHeader } from "@/components/ui/primitives";
