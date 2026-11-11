@@ -40,6 +40,13 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
+## Fee sponsorship + hosting: DONE on branch worktree-agent-abc0ddce1a52b0691 (2026-11-11)
+- Families need no SOL: the agent's WDK wallet is fee payer. Client builds tx (fee payer = sponsor), user's WDK wallet partially signs, `POST /api/sponsor` validates (`lib/sponsor/policy.ts`, 39 tests), simulates, co-signs; the pay-once pipeline stores the bytes, then broadcasts. Falls back to user-paid if the sponsor is down/refuses
+- Tether's `@tetherto/wdk-wallet-solana-gasless` needs a Kora paymaster server (user pays fees in a token); not deployable on Vercel by Friday, so we sponsor ourselves
+- Devnet proof: Lerato → Sipho 1 USD₮, Lerato's SOL unchanged: `5NfaB421n92RHKJgcEiczMbDadP9zNo9yDZwgbXVFZyVZBxgYvQtWMdTt7GZWjt4GYpYZAx1pP97xJUY7HULkqVn` (`scripts/sponsor-devnet.ts`)
+- `GET /api/health`; `app/vercel.json`: functions in `cpt1` (Cape Town), Vercel Cron daily 06:00 UTC on `/api/scheduler/tick` (Hobby minimum: once per day; set `CRON_SECRET`)
+- Agent/sponsor wallet has only ~0.3 SOL on devnet: top it up before the demo
+
 ## In progress (parallel agents, started 2026-11-11)
 | Agent | Owns | Output |
 |---|---|---|
