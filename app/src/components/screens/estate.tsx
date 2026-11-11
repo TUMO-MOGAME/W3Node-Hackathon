@@ -58,7 +58,8 @@ function Dashboard({ copy, snap, session, role }: { copy: Copy; snap: EstateSnap
               </span>
             </div>
             <p className="mt-5 flex items-center gap-2 text-small font-medium opacity-90"><Landmark className="size-4" aria-hidden="true" />{copy.vault}</p>
-            <motion.p key={e.vaultBalance.toString()} initial={{ opacity: 0.4, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="font-display text-display leading-none tabular-nums">
+            {/* A new balance slides in without fading: a half-faded figure fails contrast while it animates. */}
+            <motion.p key={e.vaultBalance.toString()} initial={{ y: 6 }} animate={{ y: 0 }} transition={{ duration: 0.4 }} className="font-display text-display leading-none tabular-nums">
               {formatUsdt(e.vaultBalance).replace(" USD₮", "")}<span className="ml-2 text-h3">USD₮</span>
             </motion.p>
             <p className="mt-1.5 min-h-6 text-lead opacity-95 tabular-nums">{rate ? `≈ ${formatZar(e.vaultBalance, rate)}` : ""}</p>

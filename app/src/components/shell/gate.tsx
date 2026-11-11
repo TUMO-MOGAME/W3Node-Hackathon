@@ -25,12 +25,12 @@ export function Gate({ roles, allowEmpty = false, children }: GateProps) {
 
   if (!wallet.ready) return <LoadingCards label={g.walletLoading} />;
   if (!session) {
-    return <EmptyState icon={<UserRound className="size-6" aria-hidden="true" />} title={g.noWalletTitle} body={g.noWalletBody} action={<ButtonLink href="/start">{g.noWalletCta}</ButtonLink>} />;
+    return <EmptyState level={1} icon={<UserRound className="size-6" aria-hidden="true" />} title={g.noWalletTitle} body={g.noWalletBody} action={<ButtonLink href="/start">{g.noWalletCta}</ButtonLink>} />;
   }
   if (roles && !roles.includes(session.role)) {
     const other = wallet.sessions.find((s) => roles.includes(s.role));
     return (
-      <EmptyState
+      <EmptyState level={1}
         icon={<UsersRound className="size-6" aria-hidden="true" />}
         title={fmt(g.wrongRoleTitle, { roles: roles.map((r) => common.persona.groups[r].toLowerCase()).join(", ") })}
         body={fmt(g.wrongRoleBody, { name: session.label, role: common.roles[session.role].toLowerCase() })}
@@ -46,7 +46,7 @@ export function Gate({ roles, allowEmpty = false, children }: GateProps) {
   if (phase === "loading") return <LoadingCards label={g.loading} />;
   if (phase === "error") {
     return (
-      <EmptyState
+      <EmptyState level={1}
         icon={<CloudOff className="size-6" aria-hidden="true" />} title={g.errorTitle} body={g.errorBody}
         action={<Button onClick={() => void refresh()}>{g.retry}</Button>}
       />
@@ -55,7 +55,7 @@ export function Gate({ roles, allowEmpty = false, children }: GateProps) {
   if (!snap && !allowEmpty) {
     const owner = session.role === "owner";
     return (
-      <EmptyState
+      <EmptyState level={1}
         icon={<ScrollText className="size-6" aria-hidden="true" />} title={g.noEstateTitle}
         body={owner ? g.noEstateOwner : fmt(g.noEstateOther, { name: session.label.replace(/\s*\(.*\)$/, "") })}
         action={owner ? <ButtonLink href="/will">{g.noEstateCta}</ButtonLink> : undefined}

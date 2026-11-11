@@ -237,11 +237,13 @@ export function LoadingCards({ label }: { label: string }) {
   );
 }
 
-export function EmptyState({ icon, title, body, action }: { icon?: ReactNode; title: string; body?: string; action?: ReactNode }) {
+/** `level` 1 when the empty state is the whole page (the shared Gate), so the page still has a main heading. */
+export function EmptyState({ icon, title, body, action, level = 2 }: { icon?: ReactNode; title: string; body?: string; action?: ReactNode; level?: 1 | 2 }) {
+  const H = level === 1 ? "h1" : "h2";
   return (
     <div className="flex flex-col items-center rounded-lg border border-dashed border-line-strong bg-surface px-5 py-10 text-center">
       {icon && <div className="mb-4 grid size-14 place-items-center rounded-full bg-ink text-bg">{icon}</div>}
-      <h2 className="text-h3">{title}</h2>
+      <H className="text-h3">{title}</H>
       {body && <p className="mt-2 max-w-md text-ink-2">{body}</p>}
       {action && <div className="mt-5 flex flex-wrap justify-center gap-3">{action}</div>}
     </div>
