@@ -70,11 +70,23 @@ export async function generate(opts: CallOptions): Promise<GenerateContentRespon
   throw new AgentError("upstream", `The AI agent is unavailable right now (${msg.slice(0, 160)}).`);
 }
 
+// Keywords Gemini rejects with 400 INVALID_ARGUMENT in responseJsonSchema (seen on gemini-4-argon, Nov 2026).
+// They are dropped from what we send; zod still enforces them on every reply in generateJson.
+const UNSUPPORTED_KEYWORDS = new Set(["maxItems"]);
+
+function stripUnsupported(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(stripUnsupported);
+  if (node && typeof node === "object") {
+    return Object.fromEntries(Object.entries(node).filter(([k]) => !UNSUPPORTED_KEYWORDS.has(k)).map(([k, v]) => [k, stripUnsupported(v)]));
+  }
+  return node;
+}
+
 /** JSON Schema for Gemini's responseJsonSchema from a zod schema. */
 export function jsonSchemaOf(schema: z.ZodType): Record<string, unknown> {
   const s = z.toJSONSchema(schema, { target: "draft-7" }) as Record<string, unknown>;
   delete s.$schema;
-  return s;
+  return stripUnsupported(s) as Record<string, unknown>;
 }
 
 /** Structured output call validated with zod. Retries once with the validation error if the shape is off. */
