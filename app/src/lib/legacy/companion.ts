@@ -49,5 +49,6 @@ export function bookReply(book: LegacyBook, child: LegacyChild | null, text: str
   return { reply: `${noWordsLine(book)}. Please talk to the family about it.`, voice: "parent", source: "book" };
 }
 
-function lowerFirst(s: string) { return s ? s[0].toLowerCase() + s.slice(1) : s; }
+// Keeps the pronoun "I" (and "I'm", "I'll") capitalised: "Lerato, I am so proud…", never "i am".
+function lowerFirst(s: string) { return s && !/^I\b/.test(s) ? s[0].toLowerCase() + s.slice(1) : s; }
 function hash(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }

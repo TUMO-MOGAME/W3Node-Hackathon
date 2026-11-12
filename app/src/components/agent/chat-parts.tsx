@@ -61,9 +61,9 @@ export function Bubble({
 
 export function Thinking({ label }: { label: string }) {
   return (
-    <li className="flex items-center gap-2.5" role="status">
+    <li className="flex items-center gap-2.5">
       <LogoMark className="size-7 shrink-0" />
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-4 py-3">
+      <span role="status" className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-4 py-3">
         {[0, 1, 2].map((i) => (
           <span key={i} className="size-2 animate-pulse-soft rounded-full bg-ink" style={{ animationDelay: `${i * 180}ms` }} aria-hidden="true" />
         ))}
