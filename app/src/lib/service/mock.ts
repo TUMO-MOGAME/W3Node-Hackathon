@@ -148,6 +148,15 @@ const usd = (b: bigint) => `${fromBase(b).toLocaleString("en-ZA", { maximumFract
 
 /* ---------- the service ---------- */
 
+/** The car's minimum price from the owner's words: the latest USD₮ amount wins ("change it to 9,500 USDT"), else a large rand amount. */
+export function floorFromText(text: string, fallback = 9000): number {
+  const num = (x: string) => Number(x.replace(/[\s,]/g, ""));
+  const usdt = [...text.matchAll(/(\d[\d\s,.]*)\s*(?:usd₮|usdt)/gi)].map((m) => num(m[1])).filter((n) => n > 0);
+  if (usdt.length) return usdt[usdt.length - 1];
+  const zar = [...text.matchAll(/R\s?(\d[\d\s,]*)/g)].map((m) => num(m[1])).filter((z) => z > 20000);
+  return zar.length ? Math.round(zar[zar.length - 1] / DEMO_FX / 50) * 50 : fallback;
+}
+
 export function createMockService(): MockService {
   let s: State = blank();
   let actor: MockActor | null = null;
@@ -624,14 +633,7 @@ export function createMockService(): MockService {
   function draftFor(history: WillChatMessage[]): { stage: number; draft: WillDraft } {
     const userText = history.filter((m) => m.role === "user").map((m) => m.text).join(" ");
     const stage = history.filter((m) => m.role === "user").length;
-    const usdtMatch = userText.match(/(\d[\d\s,.]*)\s*(?:usd₮|usdt)/i);
-    const zarMatch = userText.match(/R\s?(\d[\d\s,]*)/);
-    let floor = 9000;
-    if (usdtMatch) floor = Number(usdtMatch[1].replace(/[\s,]/g, "")) || floor;
-    else if (zarMatch) {
-      const z = Number(zarMatch[1].replace(/[\s,]/g, ""));
-      if (z > 20000) floor = Math.round(z / DEMO_FX / 50) * 50;
-    }
+    const floor = floorFromText(userText);
     const ownerName = actor?.label ?? "Thabo Mokoena";
     const draft: WillDraft = {
       ownerName,
@@ -746,12 +748,13 @@ export function createMockService(): MockService {
       const warnings: string[] = [];
       if (dest === from) warnings.push("This is your own wallet. Sending to yourself only costs the fee.");
       if (!known) warnings.push("You have not sent to this address before. Check it carefully: transfers cannot be reversed.");
-      if (!(dest in s.balances)) warnings.push("The recipient has no USD₮ account yet. It will be created with this payment (a small extra SOL fee).");
+      if (!(dest in s.balances)) warnings.push("The recipient has no USD₮ account yet: it will be created, and Heirloom covers the cost.");
       const review: PaymentReview = {
         id: `pay_${rand(16, B58)}`, kind: "p2p", from, to: dest, toLabel: toLabel || name(dest), amount,
         token: { symbol: "USD₮", mint: est().usdtMint, verified: true },
         network: { name: "Solana devnet", cluster: "devnet" },
-        fee: { lamports: 5000, sol: 0.000005, payer: from, sponsored: false },
+        // Like chain mode with the sponsor on: Heirloom's sponsor wallet pays the network fee, so families need no SOL.
+        fee: { lamports: 10000, sol: 0.00001, payer: AGENT, sponsored: true },
         balances: { usdt: balance, sol: 0.5, sufficient: balance >= amount },
         warnings, simulated: true,
       };
