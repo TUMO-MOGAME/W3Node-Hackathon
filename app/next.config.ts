@@ -47,6 +47,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // No "N" badge over the logo in local demo recordings (build errors still show the overlay).
+  devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,

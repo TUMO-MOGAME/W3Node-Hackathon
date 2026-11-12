@@ -532,7 +532,7 @@ export const screens = {
     approvals: "{got} of {need} trusted people approved",
     approved: "Approved. The car may now sell at or above {floor}, and the money goes to {name}.",
     rejected: "This request was declined.",
-    again: "Submit a new request",
+    once: "Each family member can ask once for this car, so this request cannot be sent again. The car keeps its normal minimum price.",
     onlyFamily: "Only a family member named in the will can ask for a hardship exception.",
     empty: "No hardship requests.",
     viewCar: "View the car",

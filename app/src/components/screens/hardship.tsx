@@ -49,7 +49,9 @@ function HardshipView({ copy, snap, session, role }: { copy: Copy; snap: EstateS
   };
 
   const cannot = !car ? copy.noCar : car.status === "Sold" ? copy.sold : e.status !== "Unlocked" ? copy.locked : null;
-  const showForm = isFamily && !cannot && !open && !rejected;
+  // The contract allows one request per family member per car, so a declined request cannot be sent again.
+  const declined = isFamily && list.some((h) => h.status === "Rejected");
+  const showForm = isFamily && !cannot && list.length === 0 && !rejected;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -98,6 +100,7 @@ function HardshipView({ copy, snap, session, role }: { copy: Copy; snap: EstateS
               );
             })}
           </ul>
+          {declined && !open && <p className="mt-3 text-small text-ink-2">{copy.once}</p>}
           <ButtonLink href="/car" variant="secondary" small className="mt-3">{copy.viewCar}<ArrowRight className="size-4" aria-hidden="true" /></ButtonLink>
         </section>
       )}
@@ -105,10 +108,12 @@ function HardshipView({ copy, snap, session, role }: { copy: Copy; snap: EstateS
 
       {busy === "hardship" && <Reviewing />}
 
-      {rejected && busy !== "hardship" && (
+      {/* Shown until the refreshed list carries the declined request and its report. */}
+      {rejected && busy !== "hardship" && !declined && (
         <Card>
           <Notice tone="danger" icon={<TriangleAlert className="size-5" aria-hidden="true" />}><p role="alert" className="text-body font-medium">{copy.rejected}</p></Notice>
-          <Button variant="secondary" className="mt-3" onClick={() => { setRejected(null); setFile(null); }}>{copy.again}</Button>
+          <div className="mt-3"><ReportCard report={rejected} compact /></div>
+          <p className="mt-3 text-small text-ink-2">{copy.once}</p>
         </Card>
       )}
 

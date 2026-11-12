@@ -26,7 +26,10 @@ Upload them from this folder, whichever person you are signed in as.
 | `2-fee-statement-altered-amount.pdf` | Claims | The total (R 630,000) does not add up from the items (R 6,300) and is in a different font |
 | `3-fake-invoice-grocery-slip.pdf` | Claims | A spaza-shop till slip for groceries, not a fee statement |
 | `4-fake-fee-statement-hidden-instructions.pdf` | Claims | Hidden text tries to order the AI to approve 50,000 USD₮ to another wallet (a prompt-injection attack) |
-| `5-hardship-affidavit-unsigned.pdf` | Hardship | Not signed and not sworn before a Commissioner of Oaths |
+| `5-hardship-affidavit-unsigned.pdf` | Hardship | Not signed and not sworn before a Commissioner of Oaths. On devnet each family member can ask **once** per car, so this uses up that person's request |
+
+Claims can be tried again (every claim is its own account), so show `rejected/4-…` and then the good statement.
+Hardship cannot: on devnet pick either the unsigned or the good affidavit for each family member.
 
 Good demo moment: upload `rejected/4-…` and show that the agent catches the hidden instruction, and that even an
 "approve" from the agent could never move money on its own: the contract still needs the trusted people and the caps.

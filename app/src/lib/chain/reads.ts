@@ -124,12 +124,41 @@ export async function findEstateOf(owner: Base58, conn = getConnection()): Promi
   return info ? pda.toBase58() : null;
 }
 
-/** Recent program events that touched the estate (newest first). */
-export async function fetchActivity(estate: Base58, limit = 40, conn = getConnection()): Promise<ActivityItem[]> {
+// Confirmed transactions never change, so each is fetched once and remembered.
+const txMemo = new Map<string, NonNullable<Awaited<ReturnType<Connection["getTransaction"]>>>>();
+const filling = new Map<string, Promise<void>>();
+
+/**
+ * Fetches the transactions not yet remembered, newest first, two at a time. Not one big batch: public devnet answers
+ * a 40-call batch with per-item "Too many requests" errors, which used to empty the whole feed. Single calls retry on
+ * 429 (tx.ts); one that still fails is tried again on the next refresh.
+ */
+function fill(key: string, signatures: string[], conn: Connection): Promise<void> {
+  const running = filling.get(key);
+  if (running) return running;
+  const job = (async () => {
+    const missing = signatures.filter((s) => !txMemo.has(s));
+    for (let i = 0; i < missing.length; i += 2) {
+      await Promise.all(missing.slice(i, i + 2).map(async (sig) => {
+        const tx = await conn.getTransaction(sig, { maxSupportedTransactionVersion: 0, commitment: "confirmed" }).catch(() => null);
+        if (tx) txMemo.set(sig, tx);
+      }));
+    }
+  })().finally(() => filling.delete(key));
+  filling.set(key, job);
+  return job;
+}
+
+/**
+ * Recent program events that touched the estate (newest first). Waits at most `budgetMs` for transactions not yet
+ * remembered, so a busy RPC never holds up the page; the rest keep loading and appear on the next refresh.
+ */
+export async function fetchActivity(estate: Base58, limit = 40, conn = getConnection(), budgetMs = 5_000): Promise<ActivityItem[]> {
   const sigs = await conn.getSignaturesForAddress(new PublicKey(estate), { limit }, "confirmed");
   const ok = sigs.filter((s) => !s.err);
   if (ok.length === 0) return [];
-  const txs = await conn.getTransactions(ok.map((s) => s.signature), { maxSupportedTransactionVersion: 0, commitment: "confirmed" });
+  await Promise.race([fill(estate, ok.map((s) => s.signature), conn), new Promise((r) => setTimeout(r, budgetMs))]);
+  const txs = ok.map((s) => txMemo.get(s.signature) ?? null);
   const parser = new EventParser(programId(), getCoder());
   const items: ActivityItem[] = [];
   txs.forEach((tx, i) => {

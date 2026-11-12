@@ -3,7 +3,7 @@
 > Read this first in any new session. The design is in [plan.md](plan.md); the on-chain contract is in [docs/program-spec.md](docs/program-spec.md).
 > Update this file at the end of every work session.
 
-**Last updated:** 2026-11-12 (evening: devnet demo history, payment tests, test guide)
+**Last updated:** 2026-11-13 (00:30: full devnet demo run by Claude with screenshots and Explorer proofs)
 **Phase:** Audit done, demo-ready in mock mode. Remaining: Tumo's decisions (below), video, submit.
 **Hackathon:** W3Node Node Engine, **Tether track** (confirmed). **Submit on BuilderBase by Fri 13 Nov 2026, 23:59 SAST** (public repo + README + video ≤ 3 min). Judging Sat 14 Nov: 5-min pitch + 3-min Q&A. Rubric in plan.md §0.
 
@@ -57,6 +57,21 @@
 - Demo documents rebuilt: `docs/demo-documents/accepted/` (5, all approved by the real reviewer on devnet) and
   `rejected/` (5, all rejected: wrong person, altered total, till slip, prompt injection, unsigned affidavit). On test
   networks the reviewer is told not to count the "Heirloom demo specimen" footer (`SPECIMEN_NOTE`, never on mainnet)
+
+## FULL DEMO RUN ON DEVNET (2026-11-13, ~00:30 SAST)
+- Tumo ran B (passing → unlock), the first 1,000 claim and the car listing; Claude ran the rest in a headless
+  browser with the 5 demo wallets: trick claim (prompt injection) rejected 99%, genuine claim approved 98% → Ndlovu
+  approved → UCT paid; unsigned hardship affidavit rejected; Pieter 9,500 into escrow; agent settled the sale
+  (AcceptOffer); Pay now (ExecuteScheduled); Lerato → Sipho 1 USD₮. Vault now 27,145; car Sold.
+- **docs/demo-screenshots/**: a picture of every step plus an Explorer screenshot of each transaction (README indexes
+  them with links). All fees paid by the sponsor except one FinalizeUnlock (fallback to the user; by design).
+- Fixed on the way: Recent activity was always empty on devnet (a 40-call getTransactions batch got per-item 429s →
+  now remembered per signature, fetched two at a time, page waits ≤ 5 s); the payment review said "paid by you"
+  for program actions that Heirloom actually sponsors (now "paid by Heirloom"); hardship: the contract allows ONE
+  request per family member per car, so a declined request can no longer be "re-submitted" in the UI and the mock
+  follows the contract (test added, 252 tests); Next dev badge hidden for recordings.
+- Decision: kept the contract rule (one hardship per person per car); docs now say so (devnet guide + demo documents).
+- Left for Tumo: record the voice call, the video, submit on BuilderBase by 13 Nov 23:59.
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs

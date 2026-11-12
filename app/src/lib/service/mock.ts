@@ -532,7 +532,8 @@ export function createMockService(): MockService {
     need(est().status === "Unlocked", "BadStatus", "Hardship requests open once the estate is unlocked.");
     const a = s.snap.assets.find((x) => x.address === assetAddr) ?? fail("BadStatus", "That asset does not exist.");
     need(a.status !== "Sold", "BadStatus", "The car has already been sold.");
-    need(!s.snap.hardships.some((h) => h.beneficiary === me() && h.status === "Open"), "BadStatus", "You already have an open hardship request.");
+    // Like the contract: one request per family member per car (the account is created once and never reused).
+    need(!s.snap.hardships.some((h) => h.beneficiary === me() && h.asset === assetAddr), "BadStatus", "You have already asked once for this car.");
     const ok = report.verdict === "approve";
     const h: Hardship = {
       address: fakeAddr(), asset: a.address, beneficiary: me(), evidenceHash, agentVerdict: ok ? "Approved" : "Rejected",

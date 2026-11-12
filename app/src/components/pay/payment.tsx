@@ -11,6 +11,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { BadgeCheck, Check, CircleAlert, Loader2, RefreshCw, ShieldAlert, WifiOff } from "@/components/ui/icons";
 import type { HeirloomService } from "@/lib/service";
 import type { PaymentReview } from "@/lib/types";
+import type { SponsorStatus } from "@/lib/wallet/payments";
 import { formatUsdt, formatZar, shortAddress } from "@/lib/format";
 import { useEstate } from "@/lib/hooks/estate";
 import { Sheet } from "@/components/ui/client";
@@ -79,6 +80,15 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   const resolver = useRef<((r: PayResult) => void) | null>(null);
   const activeId = useRef<string | null>(null);
   const rate = fx?.usdtZar ?? null;
+  // On a real network Heirloom's fee wallet pays the network fee of every program action it can sponsor
+  // (chain.ts send); the review says so instead of "paid by you".
+  const [sponsor, setSponsor] = useState<SponsorStatus | null>(null);
+  useEffect(() => {
+    if (isMock) return;
+    let alive = true;
+    fetch("/api/sponsor").then((r) => (r.ok ? r.json() : null)).then((v: SponsorStatus | null) => { if (alive) setSponsor(v); }).catch(() => {});
+    return () => { alive = false; };
+  }, [isMock]);
 
   // Hydrate from localStorage after mount (not during render, so SSR markup matches).
   // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -140,14 +150,16 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
       id: `local_${Math.random().toString(36).slice(2)}`, kind: r.kind, from: source === "vault" ? snap?.estate.address ?? "" : session?.address ?? "", to: r.to, toLabel: r.toLabel, amount: r.amount,
       token: { symbol: "USD₮", mint: snap?.estate.usdtMint ?? "", verified: true },
       network: { name: `Solana ${cluster}`, cluster },
-      fee: { lamports: 5000, sol: 0.000005, payer: session?.address ?? "", sponsored: false },
+      fee: sponsor?.available && sponsor.feePayer
+        ? { lamports: 10_000, sol: 0.00001, payer: sponsor.feePayer, sponsored: true }
+        : { lamports: 5000, sol: 0.000005, payer: session?.address ?? "", sponsored: false },
       balances: { usdt: available, sol: session?.solBalance ?? 0, sufficient: available >= r.amount },
       warnings: r.warnings ?? [], simulated: isMock,
     };
     resolver.current = resolve;
     activeId.current = built.id;
     setReview(built); setReq(r); setPhase("review"); setError(null); setSignature(undefined);
-  }), [snap, session, walletUsdt, isMock]);
+  }), [snap, session, walletUsdt, isMock, sponsor]);
 
   const finish = (result: PayResult) => { resolver.current?.(result); resolver.current = null; };
   const close = () => {

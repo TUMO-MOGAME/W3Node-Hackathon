@@ -75,7 +75,13 @@ After this, the estate stays unlocked. Section A's living-plan steps then stop a
 | C5 | Pieter | **Car** | **Make an offer** of **9,500** → **Put offer in escrow** | Offer in escrow; Receipt (test USD₮; the minimum is 9,000) |
 | C6 | Pieter | **Car** | Type an offer of **8,000** (don't submit) | "Blocked: below the minimum". The contract never accepts a sale under the floor |
 | C7 | Adv. Ndlovu | **Car** | **Ask the agent to settle** | The agent ranks the offers and accepts the best one; the car's title goes to Pieter and 9,500 to the vault; Receipt |
-| C8 | Optional: Lerato | **Hardship** | Upload `accepted/5-hardship-affidavit-lerato.pdf` (must be done **before** C7) | Two trusted people approve, then offers from 7,000 are allowed |
+| C8 | Optional: Lerato | **Hardship** | Upload `accepted/5-hardship-affidavit-lerato.pdf` (must be done **before** C7) | Two trusted people approve, then offers from 7,000 are allowed. **Each family member can ask only once per car** (the contract creates one request account), so upload the unsigned `rejected/5-…` only if you want to show the rejection instead |
+
+## Where the demo estate stands now (13 Nov 2026)
+
+Sections A, B and C have been run on the demo estate; `docs/demo-screenshots/` has a picture of every step and its
+Explorer proof. The estate is **Unlocked**, the car is **Sold** and Lerato's one hardship request was declined.
+Still repeatable: A2 (Pay now, every 60 s), A4/A5 (Send to family), C1–C3 (more claims, small amounts) and A6 (the call).
 
 ## D. Check it really happened
 
