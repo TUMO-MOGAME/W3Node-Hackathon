@@ -59,7 +59,7 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-ink bg-surface-2">
           <p className="flex items-center gap-2 text-small font-semibold text-accent"><Landmark className="size-4" aria-hidden="true" />{copy.balance}</p>
-          <motion.div key={e.vaultBalance.toString()} initial={{ opacity: 0.4, y: 4 }} animate={{ opacity: 1, y: 0 }}><Money base={e.vaultBalance} rate={rate} size="lg" className="mt-1" /></motion.div>
+          <motion.div key={e.vaultBalance.toString()} initial={{ y: 4 }} animate={{ y: 0 }}><Money base={e.vaultBalance} rate={rate} size="lg" className="mt-1" /></motion.div>
         </Card>
         <Card>
           <p className="flex items-center gap-2 text-small font-semibold text-ink-2"><Wallet className="size-4" aria-hidden="true" />{copy.wallet}</p>
@@ -86,7 +86,8 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
               </button>
             ))}
           </div>
-          <form id="vault-panel" role="tabpanel" aria-labelledby={`vault-tab-${tab}`} onSubmit={submit} noValidate className="mt-4 flex flex-col gap-3">
+          <div id="vault-panel" role="tabpanel" aria-labelledby={`vault-tab-${tab}`}>
+          <form onSubmit={submit} noValidate className="mt-4 flex flex-col gap-3">
             <Field label={copy.amount} htmlFor="vault-amount" error={error} hint={valid && rate ? fmt(copy.amountHint, { zar: formatZar(toBase(n), rate) }) : copy.onlyUsdt}>
               <div className="relative">
                 <input
@@ -111,6 +112,7 @@ function Vault({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
               <p className="flex flex-wrap items-center gap-x-3 text-small text-ink-2">{copy.last}: <ExplorerLink signature={last} label={copy.receipt} srLabel={copy.receiptSr} /></p>
             )}
           </form>
+          </div>
         </Card>
       )}
 

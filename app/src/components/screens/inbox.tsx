@@ -75,9 +75,14 @@ function Inbox({ copy, snap, session }: { copy: Copy; snap: EstateSnapshot; sess
       act: async () => {
         // Approve, and if that completes the quorum, release the payment in the same breath.
         if (got + 1 >= e.claimThreshold) {
+          // "Try again" in the payment sheet re-runs execute: don't approve a second time (the program rejects that).
+          let approved = !!c.approvals[me];
           await pay({
             kind: "claim-payout", source: "vault", to: c.payee, toLabel: payee, amount: c.amount,
-            execute: async (s, est) => { await s.approveClaim(est, c.address); return s.executeClaim(est, c.address); },
+            execute: async (s, est) => {
+              if (!approved) { await s.approveClaim(est, c.address); approved = true; }
+              return s.executeClaim(est, c.address);
+            },
             successText: fmt(copy.claim.done, { payee }),
           });
         } else {

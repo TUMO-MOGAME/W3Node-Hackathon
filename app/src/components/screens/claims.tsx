@@ -352,12 +352,19 @@ function OwnerApproval({ claim, snap, copy }: { claim: Claim; snap: EstateSnapsh
       {claim.agentReport && <div className="mt-3"><ReportCard report={claim.agentReport} compact /></div>}
       <Button
         className="mt-3" block disabled={!!busy}
-        onClick={() => void pay({
-          kind: "claim-payout", source: "vault", to: claim.payee, toLabel: payee, amount: claim.amount,
+        onClick={() => {
           // Skip the approval if it already went through on an earlier attempt (the program rejects a second one).
-          execute: async (svc, est) => { if (!claim.ownerApproved) await svc.ownerApproveClaim(est, claim.address); return svc.executeClaim(est, claim.address); },
-          successText: fmt(copy.owner.done, { payee }),
-        })}
+          // Tracked here too, because "Try again" in the payment sheet re-runs this same function before the snapshot refreshes.
+          let approved = claim.ownerApproved;
+          void pay({
+            kind: "claim-payout", source: "vault", to: claim.payee, toLabel: payee, amount: claim.amount,
+            execute: async (svc, est) => {
+              if (!approved) { await svc.ownerApproveClaim(est, claim.address); approved = true; }
+              return svc.executeClaim(est, claim.address);
+            },
+            successText: fmt(copy.owner.done, { payee }),
+          });
+        }}
       >
         <Check className="size-5" aria-hidden="true" />{copy.owner.approve}
       </Button>
