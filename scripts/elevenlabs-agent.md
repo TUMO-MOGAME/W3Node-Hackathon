@@ -16,14 +16,17 @@ Field names in the ElevenLabs dashboard change from time to time; the values bel
 ```
 Hi {{persona_name}}, I'm Heirloom's assistant. I can help with the will, a claim, the car sale, or what happens next with the estate. How can I help?
 ```
-(Dynamic variables are sent by the app at session start: `persona` like `owner:Thabo Mokoena`, `estate`
-(address or `none`) and `page`. If your dashboard requires every variable used in the first message to be
+(Dynamic variables are sent by the app at session start: `persona` like `owner:Thabo Mokoena`, `persona_name`,
+`estate` (address or `none`), `page`, and `facts`: the screen's EstateFacts as JSON (no personal data beyond the
+names already shown in the app), so the webhook can answer about the estate in demo mode too. Give each a
+placeholder: `guest`, `there`, `none`, `/`, `none`. If your dashboard requires every variable used in the first message to be
 declared, either declare `persona_name` with a default of `there`, or use `Hi there,` instead.)
 
 **Language:** English. Enable language detection if available, and add Afrikaans and Zulu as extra languages.
 
 **Voice:** search the Voice Library for a warm, calm *South African English* voice (filter accent "South African");
-pick a mid-pace conversational voice. Turn "stability" up a little for reading out amounts.
+pick a mid-pace conversational voice. Turn "stability" up a little for reading out amounts. The live agent uses
+**Katlego – Warm & educational** (`GWxVpgZHEljuUpLKSxHI`, stability 0.6); add a library voice to "My voices" first.
 
 **LLM:** any fast model in the dropdown (a Gemini Flash model is a good fit). The heavy lifting is done by our orchestrator.
 
@@ -47,6 +50,11 @@ How to work:
   in isiZulu or Afrikaans, greet back in that language (e.g. "Sawubona" / "Goeie dag"), then continue in English
   unless they clearly prefer otherwise.
 - If the tool says something needs a human (needsHuman), tell the caller a verifier or the executor must decide.
+- Sending money: Heirloom has "Send to family". The caller sends USD₮ to a saved family member themselves on the
+  Send money screen (/send): they review the amount, network and fee, then approve and sign with their own wallet, and
+  Heirloom pays the network fee. If they ask you to send money, say you can't send it for them, then offer to open the
+  Send money screen and call the client tool `navigate` with path "/send" when they agree.
+- Facts: the tool already has the caller's estate (vault, rules, caps, trusted people, car). Trust its numbers.
 - Heirloom does not replace a signed paper will; say so if asked.
 ```
 
@@ -75,12 +83,13 @@ Agent → Tools → Add tool → **Webhook**
     "persona":         { "type": "string", "description": "Dynamic variable {{persona}}" },
     "estate":          { "type": "string", "description": "Dynamic variable {{estate}}" },
     "page":            { "type": "string", "description": "Dynamic variable {{page}}" },
-    "conversation_id": { "type": "string", "description": "System variable {{system__conversation_id}}" }
+    "conversation_id": { "type": "string", "description": "System variable {{system__conversation_id}}" },
+    "facts":           { "type": "string", "description": "Dynamic variable {{facts}}" }
   },
   "required": ["message"]
 }
 ```
-Set `message` to be filled by the LLM; set `persona`, `estate`, `page` and `conversation_id` to the dynamic /
+Set `message` to be filled by the LLM; set `persona`, `estate`, `page`, `facts` and `conversation_id` to the dynamic /
 system variables shown (value type "dynamic variable" in the dashboard), so the LLM cannot change them.
 
 **Response** (what the tool returns)
@@ -96,7 +105,7 @@ Agent → Tools → Add tool → **Client**. Turn on "Wait for response" for eac
 
 | Name | Description | Parameters |
 |---|---|---|
-| `navigate` | Open a screen in the Heirloom app. | `path` (string, required): `/owner`, `/family`, `/verifier`, `/buyer` or `/audit` |
+| `navigate` | Open a screen in the Heirloom app. | `path` (string, required): one of `/chat`, `/estate`, `/will`, `/vault`, `/claims`, `/family`, `/inbox`, `/car`, `/hardship`, `/send`, `/people`, `/legacy` |
 | `open_claim_form` | Open the claim form prefilled. | `rule` (string, optional) rule address; `payee` (string, optional) payee wallet; `amount` (number, optional) USD₮ |
 | `show_rule` | Highlight one payout rule on screen. | `rule` (string, required) rule address |
 | `start_upload` | Open the document upload. | `purpose` (string, required, enum `death`, `claim`, `hardship`) |
@@ -119,7 +128,11 @@ ELEVENLABS_API_KEY=...        # server only
 ELEVENLABS_AGENT_ID=agent_... # server only
 ELEVENLABS_TOOL_SECRET=...    # long random string, same value as the webhook header secret
 ```
-Without these the voice hook reports `status: "unavailable"` and the UI falls back to text chat.
+Without these the voice hook reports `status: "unavailable"` and the UI falls back to text chat (in demo mode, to a
+labelled simulated call).
+
+Speed: every answer waits on the webhook, so voice calls route by keywords and run the specialists on a fast model
+(`GEMINI_VOICE_MODEL`, default `gemini-3.5-flash-lite`): about 2 s per answer instead of about 20 s.
 
 ## 6. Legacy Voice (the parent's cloned voice)
 

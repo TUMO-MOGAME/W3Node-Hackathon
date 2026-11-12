@@ -264,7 +264,7 @@ All names are in [`app/.env.example`](app/.env.example). Only `NEXT_PUBLIC_*` re
 | `NEXT_PUBLIC_USDT_MINT` | chain | devnet test mint `8qp8uFHeJMgwQPWCYAKh9mpYw6FgU4iwu6psKiKViKK5` or your own |
 | `NEXT_PUBLIC_DEMO_WAITING_SECS`, `NEXT_PUBLIC_DEMO_INTERVAL_SECS` | demo | 60 s waiting period / payment interval |
 | `AGENT_SEED_PHRASE`, `SOLANA_RPC_URL` | chain, server | the agent's WDK wallet; keep secret |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | AI | without a key: labelled canned answers |
+| `GEMINI_API_KEY`, `GEMINI_MODEL`, `GEMINI_VOICE_MODEL` | AI | without a key: labelled canned answers; voice calls use a fast model (default `gemini-3.5-flash-lite`) |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET` | voice | setup in [`scripts/elevenlabs-agent.md`](scripts/elevenlabs-agent.md) |
 | `ELEVENLABS_HEIRLOOM_VOICE_ID`, `ELEVENLABS_TTS_MODEL`, `LEGACY_SPEAK_SECRET`, `LEGACY_DEMO_WRITES` | legacy voice | §6 of [`scripts/elevenlabs-agent.md`](scripts/elevenlabs-agent.md); `LEGACY_DEMO_WRITES` is demo-only |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | storage | without them: in-memory store; schema in [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) |
