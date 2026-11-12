@@ -12,5 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // A few tests import heavy modules (WDK, legacy routes) cold; 5 s was too tight on a busy laptop.
+    testTimeout: 20_000,
   },
 });
