@@ -57,10 +57,7 @@ Phone width (360px), pure black and white, light and dark:
 
 | Claims | Talk to Heirloom | Dark mode | Desktop |
 |---|---|---|---|
-| <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claims with caps"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Voice call with the agent"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/chat-1440-light.png" width="200" alt="Desktop: sidebar with grouped navigation and saved chats, chat home"> |
-
-*Screenshots were taken just before the icons moved to Flaticon UIcons, so a few icons look slightly different in the
-live app.*
+| <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claim over the per-claim cap, blocked by the contract with a plain-language reason"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Talk to Heirloom: voice call sheet"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/chat-1440-light.png" width="200" alt="Desktop: sidebar with grouped navigation and saved chats, chat home"> |
 
 ---
 
