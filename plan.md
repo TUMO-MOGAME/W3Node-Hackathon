@@ -316,3 +316,35 @@ IDL and a local Surfpool validator while the contract is still being finished.
 4. Child 1 uploads a university fee statement and gets paid to the university wallet. Child 2 tries to overclaim and is **rejected by the contract**.
 5. Buyers place offers; the agent accepts the best offer ≥ floor; USDT and the title swap in one transaction.
 6. Replay: a low offer is blocked, then a hardship affidavit plus 2 verifiers lets it through, but not below the hardship floor.
+
+## 11b. Pitch video (about 5 minutes), added 13 Nov 2026
+
+Two videos, never one edited into the other:
+- **`Heirloom-demo-final.mp4` (2:58)**: the BuilderBase submission video (§0: the guide says ≤ 3 min). Keep it as is.
+- **`Heirloom-pitch-5min.mp4` (~5:00)**: the longer cut for Saturday's 5-minute pitch slot and as the live-demo backup.
+  Built from the same recordings plus the living plan (Pay now, Send to family), Lerato's call with Heirloom, the
+  hardship refusal, Dad's recorded UCT message and more of Dad's call. (Check with the organisers which length they want
+  uploaded: if they confirm 5 minutes, submit this one.)
+
+Both are built by a script (`scratchpad/video/build.mjs`, `build2.mjs`): narration "John Texas" (ElevenLabs), Dad =
+"Andreas" (stock voice standing in for a consented clone), music = an original ElevenLabs Music instrumental (no
+copyrighted songs), the 7 Unsplash photos, the screenshots in `docs/demo-screenshots/`, browser chrome cropped off.
+
+### To record during the day (13 Nov), to make the pitch cut stronger
+
+Each new clip replaces or extends one chapter; send the file and say which item it is. Setup for every recording:
+browser full screen (F11) in a fresh profile (no other tabs, no autofill with your name), 1920×1080, the same theme
+(dark) throughout, headphones for calls, and never show `scripts/.demo-wallets.json` or a recovery phrase.
+
+| # | What to record (≈ length) | Where | Goes into chapter | Why judges care |
+|---|---|---|---|---|
+| R1 | **Thabo writes his plan by chatting**: type "Pay my children's university fees up to R70,000 a year, and sell my Corolla for no less than 9,000 USDT unless one of them is in real need." The rules appear; sign (40 s) | Public site, demo mode "Fresh start", as Thabo, **Plan** | Meet Thabo (replaces the still) | The AI turns plain words into rules the contract enforces |
+| R2 | **Thabo records his legacy voice and writes a few lines of his Legacy Book** (30 s, his real voice) | Public site, demo mode "Will signed", **Legacy voice** | Before the passing | Consent-first voice cloning; the voice speaks only his words |
+| R3 | **"I'm still here"**: a passing is reported while Thabo is alive; he taps "I'm still here" and it is cancelled (20 s) | Public site, demo mode "Passing reported", as Thabo, **Estate** | Right after the passing chapter | Protection against a false or fraudulent death report |
+| R4 | **Hardship that succeeds**: Sipho/Lerato submit the signed affidavit, two trusted people approve, an 8,000 offer is then accepted, never below 7,000 (40 s) | Public site, demo mode "Car listed, low offers" | The car chapter | Shows the floor bending only with proof and people |
+| R5 | **Over-cap claim refused by the contract**: submit 5,000 on a 4,000 rule and show the contract's refusal (15 s) | Public site, demo mode "Estate unlocked" | Claims chapter | "Even if the AI were fooled, the contract says no" |
+| R6 | **Languages**: switch to isiZulu, Sesotho and Afrikaans on the Estate screen (10 s) | Public site | Anywhere (fun beat) | Built for South African families |
+| R7 | **On a phone** (or Chrome device mode, 360 px): open the estate and make a claim (15 s) | Public site | Near the end | Works for families on the phone they already have |
+| R8 | Optional: **one small real USD₮ transfer on mainnet** with a WDK wallet (10 s) | WDK wallet on mainnet | Living plan chapter | Tether track: real USD₮, not only test tokens |
+
+When the clips are in, the pitch cut is rebuilt to stay within 5:00 (the narration lines are regenerated to match).
