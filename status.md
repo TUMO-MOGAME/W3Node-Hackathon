@@ -3,7 +3,7 @@
 > Read this first in any new session. The design is in [plan.md](plan.md); the on-chain contract is in [docs/program-spec.md](docs/program-spec.md).
 > Update this file at the end of every work session.
 
-**Last updated:** 2026-11-12 (early morning, after the pre-submission audit)
+**Last updated:** 2026-11-12 (evening: devnet demo history, payment tests, test guide)
 **Phase:** Audit done, demo-ready in mock mode. Remaining: Tumo's decisions (below), video, submit.
 **Hackathon:** W3Node Node Engine, **Tether track** (confirmed). **Submit on BuilderBase by Fri 13 Nov 2026, 23:59 SAST** (public repo + README + video ≤ 3 min). Judging Sat 14 Nov: 5-min pitch + 3-min Q&A. Rubric in plan.md §0.
 
@@ -39,6 +39,15 @@
 - Integrated: tsc clean, 90/90 tests, `next build` OK (36 routes)
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
+
+## DEVNET DEMO (2026-11-12 evening)
+- Decision (Tumo): public site stays mock; real transactions are shown from the laptop in chain mode (`scripts/demo-devnet.ps1`); demo data = a richer Mokoena family (not more estates)
+- Fee/agent wallet topped up 0.3 → 0.6 SOL from the deployer (RPC faucet closed; use faucet.solana.com). Deployer now ~0.79 SOL
+- Demo estate `JBds…G9E` (still Active) got real history (`scripts/demo-history.ts`): 2 scheduled residence payments, Naledi's school-fee claim of 350 (agent review → owner approve → paid), vault +500, dad → Lerato 50
+- Verified on devnet today: sponsored P2P (script + through the UI: Lerato → Sipho 1 USD₮, fee paid by Heirloom) and the full after-death story on a throwaway estate `9jn713…` (`scripts/rehearse-devnet.ts`: unlock, claim paid, car sold, vault 20 → 26). README tx links finalized
+- Demo documents `docs/demo-documents/{death,fees,affidavit}.pdf` (marked DEMO): agent preview verdicts needs_human / approve / needs_human; none rejected, so the flows proceed
+- Voice (b65afcd): ElevenLabs prompt forces the tool call when it says "checking"; tone tags + trailing punctuation stripped; clear "no plan signed yet" answer. Tumo's first spoken test as Lerato had no estate because the mock demo had no signed plan yet
+- Test path for Tumo: docs/devnet-test-guide.md
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs

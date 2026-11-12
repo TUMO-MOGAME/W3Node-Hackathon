@@ -39,6 +39,17 @@ Idempotent: existing accounts are skipped.
 Set `NEXT_PUBLIC_DATA_MODE=chain`, start the app, and import each persona's seed from `scripts/.demo-wallets.json`
 (Wallet → Import). Each seed is encrypted on the device with a PIN; nothing is sent to the server.
 
+## 4b. Laptop demo on devnet, history and rehearsal
+- `demo-devnet.ps1`: starts the app in chain mode on devnet (loads `.env.local` + `scripts/.env.devnet` into the
+  process; writes nothing). Full test path: [docs/devnet-test-guide.md](../docs/devnet-test-guide.md).
+- `demo-history.ts [--dry]`: adds real history to the demo estate while the dad is alive (due scheduled payments, a
+  reviewed and owner-approved school-fee claim, a vault top-up, pocket money to Lerato).
+- `rehearse-devnet.ts`: the whole passing → unlock → claim → car-sale story on a THROWAWAY estate with tiny amounts,
+  so the after-death flows are proven without touching the demo estate.
+
+Run the .ts scripts from `app/` with the devnet env loaded (Git Bash):
+`set -a; . ../scripts/.env.devnet; set +a; npx tsx --tsconfig ../scripts/tsconfig.json ../scripts/demo-history.ts`
+
 ## 5. Voice agent
 See [`elevenlabs-agent.md`](elevenlabs-agent.md) for the ElevenLabs dashboard configuration.
 
