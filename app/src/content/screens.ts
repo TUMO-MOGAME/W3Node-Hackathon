@@ -422,8 +422,14 @@ export const screens = {
     eyebrow: "Claims",
     title: "Fees and rent, paid to the institution",
     body: "Pick a rule, upload the statement and Heirloom pays the institution directly. Nothing is paid to you in cash.",
-    locked: { title: "Your rules start after the estate is unlocked", body: "Right now the estate is {status}. You can follow progress on the timeline.", cta: "Open the timeline" },
-    living: "Rules marked \"Now\" are live. While {owner} is here, he approves them himself.",
+    locked: {
+      title: "You can claim these after {owner}'s passing",
+      active: "{owner} is alive, so these rules are waiting. They open only after two trusted people confirm {owner}'s passing and the waiting period ends.",
+      pending: "{owner}'s passing has been confirmed. The waiting period is running, and your claims open when it ends.",
+      cta: "Open the timeline",
+    },
+    living: "Rules marked \"Live now\" work while {owner} is alive, and {owner} approves each claim. Rules marked \"After the passing\" open only once {owner}'s passing is confirmed.",
+    unlocked: "{owner}'s passing has been confirmed and the estate is unlocked. Every rule in the plan can now be claimed.",
     owner: {
       title: "Waiting for your approval",
       body: "Requests under the rules you marked \"Now\". The agent has read each statement. Approve, and the vault pays the institution directly.",
@@ -441,7 +447,7 @@ export const screens = {
       title: "New claim",
       steps: ["Rule", "Institution", "Amount", "Statement"],
       stepLabel: "Step {n} of 4: {name}",
-      rule: { legend: "Which rule is this for?", left: "{amount} left", perClaim: "up to {amount} per claim", now: "Live now", later: "After unlock", notYet: "Starts after the estate is unlocked" },
+      rule: { legend: "Which rule is this for?", left: "{amount} left", perClaim: "up to {amount} per claim", now: "Live now", later: "After the passing", notYet: "You can claim this only after {owner}'s passing is confirmed" },
       payee: { legend: "Who should be paid?", none: "No approved institution matches this rule. The owner chose the list when writing the will.", hint: "Only institutions the owner approved for this kind of rule are shown." },
       amount: {
         label: "Amount in USD₮",

@@ -579,7 +579,8 @@ export function createMockService(): MockService {
 
   /* ----- agent simulations ----- */
 
-  const suspicious = (f: File) => /fake|edit|tamper|alter|photoshop/i.test(f.name);
+  // The scripted reviewer rejects by file name (docs/demo-documents/rejected/* all match).
+  const suspicious = (f: File) => /fake|edit|tamper|alter|photoshop|wrong|unsigned|reject/i.test(f.name);
   async function hashFile(f: File): Promise<string> {
     try {
       const buf = await f.arrayBuffer();

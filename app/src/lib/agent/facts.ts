@@ -20,6 +20,8 @@ export const estateFactsSchema = z.object({
     address: z.string(), id: z.number(), beneficiary: z.string(), beneficiaryLabel: z.string(), category: z.string(),
     allowedPayeeKind: z.string(), maxPerClaimUsdt: z.number(), lifetimeCapUsdt: z.number(), spentUsdt: z.number(),
     remainingUsdt: z.number(), validUntil: z.number(),
+    /** Living plan: claimable while the owner is alive. False/absent = only after the passing (estate Unlocked). */
+    startsNow: z.boolean().optional(),
   })).max(30),
   claims: z.array(z.object({
     address: z.string(), rule: z.string(), amountUsdt: z.number(), status: z.string(), agentVerdict: z.string(),
@@ -53,7 +55,7 @@ export function toEstateFacts(s: EstateSnapshot): EstateFacts {
     rules: s.rules.map((r) => ({
       address: r.address, id: r.id, beneficiary: r.beneficiary, beneficiaryLabel: label(r.beneficiary), category: r.category,
       allowedPayeeKind: r.allowedPayeeKind, maxPerClaimUsdt: fromBase(r.maxPerClaim), lifetimeCapUsdt: fromBase(r.lifetimeCap),
-      spentUsdt: fromBase(r.spentTotal), remainingUsdt: fromBase(r.lifetimeCap - r.spentTotal), validUntil: r.validUntil,
+      spentUsdt: fromBase(r.spentTotal), remainingUsdt: fromBase(r.lifetimeCap - r.spentTotal), validUntil: r.validUntil, startsNow: r.startsNow,
     })),
     claims: s.claims.slice(0, 20).map((c) => ({
       address: c.address, rule: c.rule, amountUsdt: fromBase(c.amount), status: c.status, agentVerdict: c.agentVerdict,
@@ -76,7 +78,10 @@ export function checkClaim(facts: EstateFacts, ruleId: number, amountUsdt: numbe
   if (!rule) return { ok: false, problems: [`There is no rule #${ruleId}.`], maxAllowedUsdt: 0 };
   const problems: string[] = [];
   const maxAllowed = Math.max(0, Math.min(rule.maxPerClaimUsdt, rule.remainingUsdt));
-  if (facts.estate.status !== "Unlocked") problems.push(`The estate is ${facts.estate.status}; claims open only once it is Unlocked.`);
+  const owner = facts.estate.ownerName.split(" ")[0] || "the owner";
+  if (facts.estate.status === "DeathPending") problems.push(`${owner}'s passing has been confirmed and the waiting period is running. Claims open when it ends.`);
+  else if (facts.estate.status === "Active" && !rule.startsNow) problems.push(`This rule can only be claimed after ${owner}'s passing is confirmed. While ${owner} is alive, only rules marked "Live now" can be claimed.`);
+  else if (facts.estate.status !== "Unlocked" && facts.estate.status !== "Active") problems.push(`The estate is ${facts.estate.status}, so claims are paused.`);
   if (amountUsdt <= 0) problems.push("The amount must be more than zero.");
   if (amountUsdt > rule.maxPerClaimUsdt) problems.push(`The per-claim cap is ${rule.maxPerClaimUsdt} USD₮.`);
   if (amountUsdt > rule.remainingUsdt) problems.push(`Only ${rule.remainingUsdt} USD₮ is left under the lifetime cap.`);

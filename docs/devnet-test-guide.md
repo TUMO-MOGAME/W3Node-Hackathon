@@ -33,11 +33,13 @@ Open it: "Success" / "Finalized" means the transaction really happened on-chain.
    | Ms. Pillay | A trusted person | `pillay` |
    | Pieter | Buying a car from an estate | `pieter` |
 
-   Switch person at any time with the **person card at the bottom of the sidebar**.
+   Switch person at any time with the **person card at the bottom of the sidebar**. To add the next person, open
+   that card and choose **Add another wallet**: the form starts empty each time.
    Never share or screen-record that file: the seeds are devnet-only, but keep the habit.
-5. Sample documents to upload are in `docs\demo-documents\`: `death.pdf`, `fees.pdf` and `affidavit.pdf`.
-   They are marked as DEMO documents, so the AI agent will say "needs a person" for the certificate and affidavit
-   (an honest flag), but it never blocks them, and the trusted people decide.
+5. Documents to upload: `docs\demo-documents\accepted\` (they pass) and `docs\demo-documents\rejected\` (they fail on
+   purpose). Which file goes where: `docs\demo-documents\README.md`.
+   The accepted ones are approved by the AI agent; each rejected one is stopped with a clear reason
+   (wrong person, altered amount, wrong document, hidden instructions to the AI, unsigned affidavit).
 
 ## A. While Thabo is alive (can be repeated any time)
 
@@ -56,7 +58,7 @@ After this, the estate stays unlocked. Section A's living-plan steps then stop a
 
 | # | Who | Where | Do | You should see |
 |---|---|---|---|---|
-| B1 | Lerato | **Timeline** → **Report a passing** | Upload `death.pdf`, submit | "Report received"; the agent's report (needs a person, demo document); Receipt |
+| B1 | Lerato | **Timeline** → **Report a passing** | Upload `accepted/1-death-certificate-thabo-mokoena.pdf` (or first `rejected/1-…` to show a rejection), submit | "Report received"; the agent's report ("Looks genuine"); Receipt |
 | B2 | Adv. Ndlovu | **Inbox** | Read the report → **Confirm the passing** | "1 of 2 trusted people approved" |
 | B3 | Ms. Pillay | **Inbox** | **Confirm the passing** | "The waiting period is running" (60 seconds on this demo) |
 | B4 | Thabo (optional) | **Estate** | You'll see **I'm still here**. Don't press it unless you want to cancel the passing | |
@@ -66,14 +68,14 @@ After this, the estate stays unlocked. Section A's living-plan steps then stop a
 
 | # | Who | Where | Do | You should see |
 |---|---|---|---|---|
-| C1 | Lerato | **Claims** | Tuition rule → payee University of Cape Town → amount **5** → upload `fees.pdf` → **Submit claim** | "Claim submitted"; agent's report "Looks genuine"; Receipt |
+| C1 | Lerato | **Claims** | Tuition rule → payee University of Cape Town → amount **5** → upload `accepted/2-uct-fee-statement-lerato.pdf` (try `rejected/4-…` first to show the AI catching a trick) → **Submit claim** | "Claim submitted"; agent's report "Looks genuine"; Receipt |
 | C2 | Adv. Ndlovu | **Inbox** | **Approve and pay** | "Approved. The vault paid University of Cape Town directly"; Receipt; vault −5 |
 | C3 | Lerato | **Claims** | Type **5,000** on the same rule (don't submit) | A warning: over the per-claim cap of 4,000. The contract would refuse it too |
 | C4 | Adv. Ndlovu | **Car** | **Open the sale** | Car listed; "Offers in escrow" |
 | C5 | Pieter | **Car** | **Make an offer** of **9,500** → **Put offer in escrow** | Offer in escrow; Receipt (test USD₮; the minimum is 9,000) |
 | C6 | Pieter | **Car** | Type an offer of **8,000** (don't submit) | "Blocked: below the minimum". The contract never accepts a sale under the floor |
 | C7 | Adv. Ndlovu | **Car** | **Ask the agent to settle** | The agent ranks the offers and accepts the best one; the car's title goes to Pieter and 9,500 to the vault; Receipt |
-| C8 | Optional: Lerato | **Hardship** | Upload `affidavit.pdf` (must be done **before** C7) | Two trusted people approve, then offers from 7,000 are allowed |
+| C8 | Optional: Lerato | **Hardship** | Upload `accepted/5-hardship-affidavit-lerato.pdf` (must be done **before** C7) | Two trusted people approve, then offers from 7,000 are allowed |
 
 ## D. Check it really happened
 

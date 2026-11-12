@@ -27,7 +27,6 @@ export function ClaimsScreen({ copy: english }: { copy: Copy }) {
 }
 
 function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapshot; session: WalletSession; role: Role }) {
-  const { common } = useCopy();
   const { intent, setIntent } = useEstate();
   const e = snap.estate;
   const myRules = snap.rules.filter((r) => r.beneficiary === session.address && r.recurringAmount === BigInt(0));
@@ -65,9 +64,10 @@ function Claims({ copy, snap, session, role }: { copy: Copy; snap: EstateSnapsho
         </section>
       )}
       {canClaim && e.status === "Active" && <Notice icon={<Zap className="size-5" aria-hidden="true" />} className="mb-5"><p className="text-body">{fmt(copy.living, { owner: ownerName })}</p></Notice>}
+      {role === "beneficiary" && e.status === "Unlocked" && myRules.length > 0 && <Notice tone="ok" className="mb-5"><p className="text-body">{fmt(copy.unlocked, { owner: ownerName })}</p></Notice>}
       {role === "beneficiary" && !canClaim && myRules.length > 0 && (
-        <Notice tone="warn" icon={<Clock className="size-5" aria-hidden="true" />} title={copy.locked.title} className="mb-5">
-          <p>{fmt(copy.locked.body, { status: common.status.estate[e.status].toLowerCase() })}</p>
+        <Notice tone="warn" icon={<Clock className="size-5" aria-hidden="true" />} title={fmt(copy.locked.title, { owner: ownerName })} className="mb-5">
+          <p>{fmt(e.status === "DeathPending" ? copy.locked.pending : copy.locked.active, { owner: ownerName })}</p>
           <ButtonLink href="/family" small variant="secondary" className="mt-3">{copy.locked.cta}</ButtonLink>
         </Notice>
       )}
@@ -259,7 +259,7 @@ function Wizard({ copy, snap, session, preset, onClose }: { copy: Copy; snap: Es
                     <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-accent"><Icon className="size-5" aria-hidden="true" /></span>
                     <span className="min-w-0 flex-1">
                       <span className="flex flex-wrap items-center gap-2 font-semibold">{common.status.category[r.category]}<Badge tone={r.startsNow ? "gold" : "neutral"}>{r.startsNow ? w.rule.now : w.rule.later}</Badge></span>
-                      {!usable(r) && <span className="block text-small font-medium text-brass">{w.rule.notYet}</span>}
+                      {!usable(r) && <span className="block text-small font-medium text-brass">{fmt(w.rule.notYet, { owner: snap.estate.ownerName.split(" ")[0] })}</span>}
                       <span className="block text-small text-ink-2">{fmt(w.rule.left, { amount: formatUsdt(r.lifetimeCap - r.spentTotal, { decimals: 0 }) })} · {fmt(w.rule.perClaim, { amount: formatUsdt(r.maxPerClaim, { decimals: 0 }) })}</span>
                     </span>
                     {ruleAddr === r.address && <Check className="size-5 shrink-0 text-accent" aria-hidden="true" />}

@@ -48,6 +48,15 @@
 - Demo documents `docs/demo-documents/{death,fees,affidavit}.pdf` (marked DEMO): agent preview verdicts needs_human / approve / needs_human; none rejected, so the flows proceed
 - Voice (b65afcd): ElevenLabs prompt forces the tool call when it says "checking"; tone tags + trailing punctuation stripped; clear "no plan signed yet" answer. Tumo's first spoken test as Lerato had no estate because the mock demo had no signed plan yet
 - Test path for Tumo: docs/devnet-test-guide.md
+- Later the same evening (Tumo's testing): "Add another wallet" kept the previous person's form (name, ticked import
+  box, even the recovery phrase) because Next keeps visited routes alive → form now resets on show and after import.
+  Web3.js 429 retry logs (dev overlay "Issues") → quiet retry fetch in `getConnection`. Lerato etc. opened the
+  throwaway rehearsal estate → the demo estate is preferred (`lib/chain/demo-estate.ts`), and its display names are
+  preloaded when Supabase is off (laptop showed "Estate owner"). Claims: clear "You can claim this only after
+  Thabo's passing" / waiting-period / unlocked messages; AI claim pre-check knows living-plan rules (`startsNow`).
+- Demo documents rebuilt: `docs/demo-documents/accepted/` (5, all approved by the real reviewer on devnet) and
+  `rejected/` (5, all rejected: wrong person, altered total, till slip, prompt injection, unsigned affidavit). On test
+  networks the reviewer is told not to count the "Heirloom demo specimen" footer (`SPECIMEN_NOTE`, never on mainnet)
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs

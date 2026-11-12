@@ -36,10 +36,21 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Next keeps a visited route's state alive in the background, so coming back to /start ("Add another wallet")
+  // would show the previous person's name, the ticked import box and even their recovery phrase. Start clean.
+  const resetForm = () => {
+    setName(""); setRole("owner"); setImporting(false); setPhrase(""); setConsent(false);
+    setPin(""); setPin2(""); setError(null); setSeed(null); setSaved(false); setCopied(false);
+  };
+
   useEffect(() => {
-    // Read the URL after mount so the server-rendered markup matches.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (new URLSearchParams(window.location.search).get("new") === "1") setStep("about");
+    // Read the URL after mount (and each time the page is shown again) so the server-rendered markup matches.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    resetForm();
+    setStep(new URLSearchParams(window.location.search).get("new") === "1" ? "about" : "choose");
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // Clear the phrase from memory when the page is hidden or left.
+    return () => { setPhrase(""); setPin(""); setPin2(""); };
   }, []);
 
   const owner = wallet.sessions.find((s) => s.role === "owner");
@@ -70,6 +81,7 @@ export function StartScreen({ copy: english }: { copy: ScreensCopy["start"] }) {
       pinGate.preset(pin);
       if (importing) {
         await wallet.importSeed(name.trim(), role, phrase.trim().toLowerCase().replace(/\s+/g, " "));
+        resetForm();
         router.push(home);
       } else {
         const { seedPhrase } = await wallet.create(name.trim(), role);

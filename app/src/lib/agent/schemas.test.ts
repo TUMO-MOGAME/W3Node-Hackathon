@@ -76,6 +76,16 @@ describe("claim pre-check (mirrors submit_claim)", () => {
     expect(checkClaim(facts, 0, 100, "UCT", 2_100_000_000).problems.join()).toMatch(/expired/);
     expect(checkClaim({ ...facts, estate: { ...facts.estate, status: "Active" } }, 0, 100, "UCT", 1_800_000_000).ok).toBe(false);
   });
+  it("explains in plain words that an after-passing rule waits for the owner's passing", () => {
+    const alive = { ...facts, estate: { ...facts.estate, status: "Active", ownerName: "Thabo Mokoena" } };
+    expect(checkClaim(alive, 0, 100, "UCT", 1_800_000_000).problems.join()).toMatch(/only be claimed after Thabo's passing is confirmed/);
+    const pending = { ...alive, estate: { ...alive.estate, status: "DeathPending" } };
+    expect(checkClaim(pending, 0, 100, "UCT", 1_800_000_000).problems.join()).toMatch(/waiting period is running/);
+  });
+  it("lets a living-plan rule be claimed while the owner is alive", () => {
+    const living = { ...facts, estate: { ...facts.estate, status: "Active" }, rules: facts.rules.map((r) => ({ ...r, startsNow: true })) };
+    expect(checkClaim(living, 0, 100, "UCT", 1_800_000_000).ok).toBe(true);
+  });
 });
 
 describe("keyword router fallback", () => {

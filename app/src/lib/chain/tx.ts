@@ -7,9 +7,22 @@ import { Connection, PublicKey, Transaction, type TransactionInstruction } from 
 import { chainConfig } from "./config";
 import { explorerTx } from "../format";
 
+/**
+ * The free devnet RPC throttles bursts with HTTP 429. web3.js retries those itself but logs every retry with
+ * console.error ("Server responded with 429 . Retrying after 500ms delay..."), which the Next dev overlay shows as
+ * an error. We retry quietly with the same backoff instead, and only hand back the 429 if it persists.
+ */
+export async function quietRetryFetch(input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1], waits = [500, 1000, 2000, 4000, 8000]): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(input, init);
+    if (res.status !== 429 || attempt >= waits.length) return res;
+    await new Promise((r) => setTimeout(r, waits[attempt]));
+  }
+}
+
 let conn: Connection | null = null;
 export function getConnection(): Connection {
-  if (!conn) conn = new Connection(chainConfig.rpcUrl, "confirmed");
+  if (!conn) conn = new Connection(chainConfig.rpcUrl, { commitment: "confirmed", disableRetryOnRateLimit: true, fetch: quietRetryFetch });
   return conn;
 }
 

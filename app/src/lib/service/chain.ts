@@ -15,6 +15,7 @@ import { chainCtx } from "../chain/client";
 import { chainConfig } from "../chain/config";
 import * as ix from "../chain/instructions";
 import { ata, claimPda, estatePda, offerPda, hardshipPda } from "../chain/pda";
+import { demoEstateFirst } from "../chain/demo-estate";
 import { base64ToBytes, bytesToBase64, ChainTxError, getConnection } from "../chain/tx";
 import { fetchAccountRaw, fetchActivity, fetchEstateRaw, findEstateOf, invalidateProgramAccounts, scanAccounts } from "../chain/reads";
 import { assembleSnapshot } from "../chain/snapshot";
@@ -196,7 +197,7 @@ async function listEstatesUncached(wallet: Base58) {
     const estate = v.pubkey.toBase58();
     out.push({ estate, role: "verifier", ownerName: (await getMeta(estate))?.ownerName ?? "Family estate" });
   }
-  return out;
+  return demoEstateFirst(out);
 }
 
 // ---------- the service ----------
