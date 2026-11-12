@@ -40,7 +40,8 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
-## AUDIT (2026-11-12, 02:00 SAST): main c4ac36f, live (mock mode)
+## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
+- Follow-up (Tumo): Plan page "stuck" scrolling fixed: the chat and plan cards used `overscroll-contain`, which blocked the page from scrolling once the mouse was over a card at its end. Removed; deployed
 - **All green:** tsc, eslint, **239/239 Vitest**, contrast guard, `next build`; **25/25 LiteSVM** program tests in WSL; devnet sponsored transfer re-run OK (`53NmLwMN…`, Lerato's SOL unchanged; malicious tx refused); README devnet tx links all finalized
 - **Lighthouse (live):** desktop perf 96–100 on `/`, `/chat`, `/will`; a11y 100 everywhere; CLS 0. Mobile: `/` 88–92, app pages `/chat` `/will` ~65 (React/Next hydration of the shell; open item)
 - **Fixed (16):** Plan page: retry sent message twice, review chip opened incomplete plan, Now/After choice moved to the wrong rule, page jumped on toggle, review opened scrolled down, locked view called every schedule "monthly", "Change the minimum" chip ignored; mock sends didn't show sponsored fee; payout "Try again" re-approved; CLS 0.16 → 0 on `/chat` `/will`; favicon 404; `truncate` broken by unlayered `text-wrap`; gated pages had no h1; `/estate` + `/vault` contrast (fade-in); axe roles on chat log / vault tabpanel / thinking indicator / demo badge / nav names; shell + chat home untranslated in zu/st/af; `/api/review` 500 → 400; legacy companion wrote "i am"; build script hard-coded Tumo's path (+ `.gitattributes` keeps LF)
