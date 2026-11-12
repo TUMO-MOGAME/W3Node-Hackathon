@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { VoiceConversation } from "@elevenlabs/react";
 import type { HeirloomVoice, SpecialistName, VoiceContext, VoiceStatus, VoiceTranscriptLine } from "./types";
 import { dispatchAgentAction, uiActionSchema, type UiAction } from "../agent/actions";
+import { stripVoiceTags } from "./tags";
 
 const SPECIALISTS: SpecialistName[] = ["Orchestrator", "WillWriter", "DocumentReviewer", "ClaimsGuide", "CarBroker", "EstateGuide", "Compliance", "LegacyCompanion"];
 
@@ -110,8 +111,10 @@ export function useHeirloomVoice(): HeirloomVoice {
         onError: (message: string) => { setError(message); setStatus("error"); },
         onModeChange: ({ mode }) => setSpeaking(mode === "speaking"),
         onMessage: ({ message, role }) => {
-          if (!message) return;
-          setTranscript((t) => [...t, { role, text: message, ts: Date.now(), specialist: role === "agent" ? specialist.current : undefined }]);
+          // The expressive voice model adds tone tags such as "[happy]"; they shape the voice, not the words on screen.
+          const text = role === "agent" ? stripVoiceTags(message ?? "") : message;
+          if (!text) return;
+          setTranscript((t) => [...t, { role, text, ts: Date.now(), specialist: role === "agent" ? specialist.current : undefined }]);
         },
         onAgentToolResponse: (p) => {
           if (!("full_tool_result" in p) || !p.full_tool_result) return;
