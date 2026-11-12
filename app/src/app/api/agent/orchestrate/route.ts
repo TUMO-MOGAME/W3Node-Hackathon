@@ -15,7 +15,12 @@ const body = z.object({
   text: z.string().min(1).max(4000).optional(),
   history: z.array(chatMessageSchema).max(30).optional(),
   context: z.object({ persona: z.string().max(80).optional(), role: z.string().max(20).optional(), estate: addr.optional(), page: z.string().max(120).optional() }).optional(),
-  facts: estateFactsSchema.optional(),
+  // Object from the browser chat; JSON string (or "none") from the ElevenLabs webhook's {{facts}} dynamic variable.
+  facts: z.preprocess((v) => {
+    if (typeof v !== "string") return v;
+    if (v === "none" || v === "") return undefined;
+    try { return JSON.parse(v); } catch { return undefined; }
+  }, estateFactsSchema.optional()),
   specialist: z.enum(ROUTABLE).optional(),
   sessionId: z.string().max(80).optional(),
   // ElevenLabs webhook shape (see scripts/elevenlabs-agent.md)
@@ -54,8 +59,11 @@ export const POST = handler(async (req) => {
   const estateAddr = b.context?.estate ?? (b.estate && addr.safeParse(b.estate).success ? b.estate : undefined);
   const role = b.context?.role ?? persona?.split(":")[0];
 
-  let facts: EstateFacts | null = b.facts ?? null;
+  // Text chat: use the facts the screen sent. Voice: in chain mode read the chain first (the caller's {{facts}} were
+  // captured when the call started); otherwise, and in mock mode, the facts from the call's dynamic variable.
+  let facts: EstateFacts | null = channel === "text" ? b.facts ?? null : null;
   if (!facts && estateAddr && isChainMode()) facts = await loadSnapshot(estateAddr).then(toEstateFacts).catch(() => null);
+  facts ??= b.facts ?? null;
 
   const result = await orchestrate({ history, facts, context: { persona, role, page: b.context?.page ?? b.page, channel, locale: b.locale } }, b.specialist);
 

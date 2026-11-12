@@ -26,6 +26,9 @@ export interface VoiceContext {
   persona: string; // e.g. "owner:Thabo Mokoena"
   estate?: string; // estate address
   page?: string;   // current route, lets the agent say "on this screen…"
+  /** JSON of EstateFacts for the screen's estate (no personal data). Sent as a dynamic variable so the agent's
+   *  webhook can answer about the estate in mock mode too; in chain mode the server prefers reading the chain. */
+  facts?: string;
   /**
    * Legacy mode: a signed URL the app already obtained from POST /api/voice/session { mode: "legacy" } (wallet-signed).
    * The session then talks to the estate's private legacy agent (parent's cloned voice, persona prompt and disclosure

@@ -13,6 +13,7 @@ import { Badge, Button, Notice } from "@/components/ui/primitives";
 import { useCopy } from "@/components/shell/copy";
 import { LegacySheetLink } from "@/components/legacy/legacy-entry";
 import { ActionButtons, Bubble, Chips, Composer, SpecialistChip, Thinking } from "./chat-parts";
+import { toEstateFacts } from "@/lib/agent/facts";
 
 /** "Talk to Heirloom": one sheet, two ways to talk. Chat (text) and Call (voice). */
 export function AgentSheet() {
@@ -33,6 +34,7 @@ export function AgentSheet() {
       persona: session ? `${session.role}:${session.label}` : "guest",
       estate: snap?.estate.address,
       page: pathname,
+      facts: snap ? JSON.stringify(toEstateFacts(snap)) : undefined,
     });
   }, [voice, session, snap, pathname]);
 

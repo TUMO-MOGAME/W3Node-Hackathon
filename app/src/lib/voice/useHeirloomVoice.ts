@@ -102,7 +102,7 @@ export function useHeirloomVoice(): HeirloomVoice {
         signedUrl,
         // The legacy agent gets nothing from the client: no tools (no navigation, no claims), no variables.
         ...(legacy ? {} : {
-          dynamicVariables: { persona: ctx.persona, persona_name: ctx.persona.split(":")[1]?.split(" ")[0] || "there", estate: ctx.estate ?? "none", page: ctx.page ?? "/" },
+          dynamicVariables: { persona: ctx.persona, persona_name: ctx.persona.split(":")[1]?.split(" ")[0] || "there", estate: ctx.estate ?? "none", page: ctx.page ?? "/", facts: ctx.facts ?? "none" },
           clientTools: clientTools(emit),
         }),
         onConnect: () => { setStatus("connected"); startMeter(); },
