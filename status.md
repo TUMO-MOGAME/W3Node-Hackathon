@@ -71,7 +71,10 @@
   request per family member per car, so a declined request can no longer be "re-submitted" in the UI and the mock
   follows the contract (test added, 252 tests); Next dev badge hidden for recordings.
 - Decision: kept the contract rule (one hardship per person per car); docs now say so (devnet guide + demo documents).
-- Left for Tumo: record the voice call, the video, submit on BuilderBase by 13 Nov 23:59.
+- Legacy voice on the devnet laptop (5f50d23): the demo estate gets Thabo's demo Legacy Book + a stand-in stock
+  ElevenLabs voice ("Andreas", SA English; Thabo is fictional, so nothing is cloned). Dad now knows each child's rule
+  progress (estateFacts). Verified: opt-in, messages, chat (exact UCT/residence numbers, money refusal), live call connects.
+- Left for Tumo: record the voice calls (Thabo on the public site in demo mode; Lerato + Talk with Dad on the laptop), the video, submit on BuilderBase by 13 Nov 23:59.
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs
