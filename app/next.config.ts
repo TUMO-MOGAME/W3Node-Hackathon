@@ -1,3 +1,4 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -52,6 +53,9 @@ const nextConfig: NextConfig = {
   // WDK's server-side agent wallet loads the sodium-native addon; keep these out of the server bundle.
   serverExternalPackages: ["@tetherto/wdk-wallet-solana", "@tetherto/wdk-wallet", "sodium-universal", "sodium-native"],
   turbopack: {
+    // Pin the project root to app/ so the resolveAlias paths below resolve the same in every build
+    // (Vercel's Git builds otherwise picked the repo root and the browser shims for fs / sodium were not found).
+    root: path.resolve(__dirname),
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
