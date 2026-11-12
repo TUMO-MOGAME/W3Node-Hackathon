@@ -35,7 +35,7 @@
 
 ## UI: DONE. Integrated build green. LIVE (2026-11-11)
 - **Live: https://heirloom-one-iota.vercel.app** (Vercel project `heirloom`, account tumo-mogame; currently **mock mode**, from commit 60d53ae)
-- Deploy method: snapshot worktree `.deploy/` (gitignored) → `cd .deploy/app; npx vercel deploy --prod --yes`. Refresh it with `git -C .deploy checkout --detach <commit>`
+- Deploy method (since 2026-11-12): Vercel project Root Directory = `app`, so **every push to main builds and deploys from GitHub**. Manual fallback: snapshot worktree `.deploy/` → `git -C .deploy checkout --detach <commit>`; `cd .deploy; npx vercel deploy --prod --yes` (run from `.deploy`, not `.deploy/app`)
 - Integrated: tsc clean, 90/90 tests, `next build` OK (36 routes)
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
@@ -103,7 +103,7 @@
 ## Next up
 1. **Tumo decides:** live site stays mock mode (honest, labelled) or switches to chain mode (needs Vercel env: agent seed, mint, keys)
 2. **Tumo:** add GEMINI / ELEVENLABS keys to Vercel if the video or judges should see real AI answers (live `/api/health` shows all false)
-3. **Fix or disconnect the Vercel GitHub integration:** every push triggers a Git build that fails (`Can't resolve 'fs'` / `sodium-native`, `npm run vercel-build`); production is deployed by CLI and is fine, but GitHub shows red crosses on commits
+3. ~~Vercel GitHub builds failing~~ fixed 2026-11-12: project Root Directory was `.`; set to `app` (+ `turbopack.root` pinned in next.config.ts)
 4. Retake README screenshots (they show the old icons) and record the video (≤ 3 min) per `docs/demo-video-script.md`
 5. Confirm the "written 10–13 Nov" pre-existing-code dates in the README; have a first-language speaker check zu/st/af
 6. Optional: mobile performance of app pages (~65); review summary text ignores Now/After toggles; persona names differ ("Adv. Ndlovu" vs "Adv. Thandi Ndlovu"); heading font rule overrides utilities (needs design OK)
