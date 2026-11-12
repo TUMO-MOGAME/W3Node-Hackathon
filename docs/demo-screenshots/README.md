@@ -50,3 +50,15 @@ Fee payer `261pQ…sjNg` is Heirloom's fee wallet: family members, trusted peopl
 | `D2-thabo-estate-final` | The same estate from Thabo's wallet |
 
 Not in the pictures: the voice call (record it live: **Call Heirloom**, ask "How much is in the vault?").
+
+## L. Talk with Dad (legacy voice, devnet laptop)
+
+Thabo is fictional, so on the laptop demo a stock ElevenLabs voice ("Andreas", South African English) stands in for
+the voice clone a real parent records with consent (`lib/chain/demo-estate.ts`). His Legacy Book is the demo book.
+
+| Screenshot | What it shows |
+|---|---|
+| `L1-lerato-talk-with-dad` | Lerato is asked first: "Would you like to hear Dad's voice?" (opt-in, AI label with the consent date) |
+| `L2-dad-voice-on` | Dad's messages (UCT fees paid, a hard day, graduation), Ask Dad, Call in Dad's voice |
+| `L3-chat-with-dad` | Dad knows her progress (1,005 of 16,000 USD₮ tuition paid to UCT; residence 1,500 of 9,000) and encourages her in his own words; asked for money, Heirloom steps in and refuses |
+| `L4-call-in-dads-voice` | The live call connects and opens with the honest disclosure |

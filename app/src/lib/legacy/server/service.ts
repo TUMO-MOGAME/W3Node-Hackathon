@@ -178,6 +178,15 @@ export function estateFacts(snap: EstateSnapshot | null, childWallet: string | n
   for (const c of snap.claims.filter((x) => x.beneficiary === childWallet).slice(-5)) {
     out.push(`A ${formatUsdt(c.amount, { decimals: 0 })} claim to ${payee(c.payee)} is ${c.status === "Paid" ? "paid" : c.status === "Open" ? "waiting for approval" : "rejected"}.`);
   }
+  // How far the child is under each rule the parent set for them (so the voice can speak to their progress).
+  for (const r of snap.rules.filter((x) => x.beneficiary === childWallet)) {
+    const used = `${formatUsdt(r.spentTotal, { decimals: 0 })} of ${formatUsdt(r.lifetimeCap, { decimals: 0 })}`;
+    out.push(r.recurringAmount > BigInt(0) && r.fixedPayee
+      ? `${r.category}: ${formatUsdt(r.recurringAmount, { decimals: 0 })} is paid automatically to ${payee(r.fixedPayee)} on schedule; ${used} paid so far.`
+      : `${r.category}: ${used} used so far, paid straight to the institution; up to ${formatUsdt(r.maxPerClaim, { decimals: 0 })} per claim.`);
+  }
+  const car = snap.assets[0];
+  if (car) out.push(`The family car is ${car.status === "Sold" ? "sold, and the money went into the estate's vault for the children" : car.status === "Listed" ? "for sale" : "kept"}.`);
   return out;
 }
 

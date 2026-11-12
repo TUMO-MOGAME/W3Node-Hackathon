@@ -8,6 +8,9 @@ import "server-only";
 import { getSupabase } from "@/lib/supabase";
 import { sha256Hex, hashJson } from "@/lib/agent/hash";
 import type { LegacyBook } from "../schema";
+import { demoLegacyBook } from "../demo-book";
+import { chainConfig } from "@/lib/chain/config";
+import { DEVNET_DEMO_CHILDREN, DEVNET_DEMO_LEGACY_VOICE, DEVNET_DEMO_META } from "@/lib/chain/demo-estate";
 
 export const LEGACY_BUCKET = "legacy-audio";
 
@@ -34,6 +37,21 @@ const mem = {
   audio: new Map<string, { bytes: Uint8Array; mime: string }>(),
   messages: new Map<string, string>(), // `${estate}:${textSha}` → audio path
 };
+
+// Devnet laptop demo without Supabase: the fictional Mokoena family's Legacy Book and a stand-in stock voice, so
+// "Talk with Dad" works on the already-unlocked demo estate (a real book can only be written while the estate is
+// Active). Never on other clusters; with Supabase configured, the database wins.
+if (chainConfig.cluster === "devnet" && !getSupabase()) {
+  const estate = DEVNET_DEMO_META.estate;
+  mem.books.set(estate, { estate, ownerWallet: DEVNET_DEMO_META.ownerWallet, book: demoLegacyBook(DEVNET_DEMO_CHILDREN), bookSha256: "devnet-demo", optIns: {} });
+  mem.voices.set(estate, {
+    estate, ownerWallet: DEVNET_DEMO_META.ownerWallet, ownerName: DEVNET_DEMO_META.ownerName,
+    voiceId: process.env.ELEVENLABS_API_KEY ? process.env.LEGACY_DEMO_VOICE_ID || DEVNET_DEMO_LEGACY_VOICE : null,
+    agentId: null, requiresVerification: false,
+    consentText: "Demo only: a stock ElevenLabs voice stands in for a fictional parent.", consentSha256: "", consentPath: "",
+    samplePaths: [], sampleSha256: [], consentedAt: Date.UTC(2026, 10, 1),
+  });
+}
 
 function warn(what: string, err: { message: string } | null) { if (err) console.warn(`[legacy] ${what} failed: ${err.message}`); }
 /** Paths never contain names: estate hash prefix + content hash. */
