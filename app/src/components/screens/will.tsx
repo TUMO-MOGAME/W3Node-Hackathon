@@ -171,7 +171,7 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
       {/* Two aligned cards of equal height; each scrolls inside itself so chatting never pushes the page down. */}
       <div className="grid gap-5 *:min-w-0 lg:h-[max(32rem,calc(100dvh-var(--header-h)-15rem))] lg:grid-cols-[1.2fr_1fr] lg:items-stretch">
         <section aria-label={copy.eyebrow} className="flex h-[min(42rem,72dvh)] min-h-0 min-w-0 flex-col rounded-xl border border-line bg-surface shadow-card lg:h-full">
-          <div ref={log} tabIndex={0} aria-label={copy.eyebrow} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] sm:p-4">
+          <div ref={log} tabIndex={0} aria-label={copy.eyebrow} className="relative min-h-0 flex-1 overflow-y-auto p-3 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] sm:p-4">
             <div role="log" aria-live="polite" aria-relevant="additions">
               <ul className="flex flex-col gap-4">
                 {messages.map((m) => (
@@ -250,7 +250,7 @@ function Preview({ copy, draft, onStart, footer }: { copy: Copy; draft: WillDraf
         <Badge tone={done === 4 ? "ok" : "accent"}><Sparkles className="size-3.5" aria-hidden="true" />{done === 4 ? p.ready : p.live}</Badge>
       </div>
       <p className="mt-1 shrink-0 text-small text-ink-2" role="status" aria-live="polite">{draft ? fmt(p.progress, { done }) : p.emptyHint}</p>
-      <div tabIndex={0} aria-label={p.title} className="relative -mr-2 mt-3 grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]">
+      <div tabIndex={0} aria-label={p.title} className="relative -mr-2 mt-3 grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto pr-2 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]">
         <Slot icon={<UsersRound className="size-4" aria-hidden="true" />} title={p.family} filled={parts[0]} pending={p.pending}>
           <ul className="flex flex-wrap gap-1.5">
             {draft?.beneficiaries.map((b) => (
