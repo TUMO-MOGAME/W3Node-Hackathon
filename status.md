@@ -3,8 +3,8 @@
 > Read this first in any new session. The design is in [plan.md](plan.md); the on-chain contract is in [docs/program-spec.md](docs/program-spec.md).
 > Update this file at the end of every work session.
 
-**Last updated:** 2026-11-11 (night)
-**Phase:** Build. Four agents are writing code in parallel (see "In progress").
+**Last updated:** 2026-11-12 (early morning, after the pre-submission audit)
+**Phase:** Audit done, demo-ready in mock mode. Remaining: Tumo's decisions (below), video, submit.
 **Hackathon:** W3Node Node Engine, **Tether track** (confirmed). **Submit on BuilderBase by Fri 13 Nov 2026, 23:59 SAST** (public repo + README + video ≤ 3 min). Judging Sat 14 Nov: 5-min pitch + 3-min Q&A. Rubric in plan.md §0.
 
 ## Done
@@ -40,12 +40,20 @@
 - Running now: QA agent (eslint, untested flows, axe, Lighthouse, chain-mode P2P send on devnet) + docs agent (README, LICENSE, submission.md, architecture.md, pitch/video/business updates)
 - Still to do: switch production to chain mode (set Vercel env vars incl. the agent seed + Tumo's keys), final redeploy, record the video, make the repo public, submit on BuilderBase
 
-## LATEST (2026-11-11 late night): main 0381565, live
+## AUDIT (2026-11-12, 02:00 SAST): main c4ac36f, live (mock mode)
+- **All green:** tsc, eslint, **239/239 Vitest**, contrast guard, `next build`; **25/25 LiteSVM** program tests in WSL; devnet sponsored transfer re-run OK (`53NmLwMN…`, Lerato's SOL unchanged; malicious tx refused); README devnet tx links all finalized
+- **Lighthouse (live):** desktop perf 96–100 on `/`, `/chat`, `/will`; a11y 100 everywhere; CLS 0. Mobile: `/` 88–92, app pages `/chat` `/will` ~65 (React/Next hydration of the shell; open item)
+- **Fixed (16):** Plan page: retry sent message twice, review chip opened incomplete plan, Now/After choice moved to the wrong rule, page jumped on toggle, review opened scrolled down, locked view called every schedule "monthly", "Change the minimum" chip ignored; mock sends didn't show sponsored fee; payout "Try again" re-approved; CLS 0.16 → 0 on `/chat` `/will`; favicon 404; `truncate` broken by unlayered `text-wrap`; gated pages had no h1; `/estate` + `/vault` contrast (fade-in); axe roles on chat log / vault tabpanel / thinking indicator / demo badge / nav names; shell + chat home untranslated in zu/st/af; `/api/review` 500 → 400; legacy companion wrote "i am"; build script hard-coded Tumo's path (+ `.gitattributes` keeps LF)
+- **Docs:** README/submission/video script/pitch/architecture match the code and the chat-first UI; README says the live site is mock mode
+- **Open:** see "Next up"
+- Disk: ~5 GB free. `.next` was deleted and rebuilt; Edge profiles cleaned
+
+## Earlier (2026-11-11 late night): main 0381565, live
 - Plan page (`/will`, `app/src/components/screens/will.tsx`): chat card + plan card now equal height and aligned on desktop, each scrolls inside itself, composer pinned, page doesn't jump. Tumo reports **a few bugs still remain on the Plan/will page**: next session starts with a full audit (see the prompt Tumo was given)
 - Disk: C: filled up twice (headless Edge profiles in the Claude scratchpad, npm cache). Clean profiles after browser tests
 - Agent worktrees merged and removed; only `.deploy/` (Vercel snapshot) remains
 
-## CURRENT (2026-11-11 night): main 6e369ee, live
+## Earlier (2026-11-11 night): main 6e369ee, live
 - **Chat-first shell**: left sidebar (grouped nav, saved chats per persona, utilities, persona card; collapses to a rail; mobile drawer), home `/chat` with nudge cards + pinned composer (dictate, call, review a document, send money). Data layer in `app/src/lib/chat/*`
 - **Icons: Flaticon UIcons, regular rounded** via `app/src/components/ui/icons.tsx`; subset font 10.7 KB built by `npm run icons` (runs in prebuild). The free licence requires the credit line "Uicons by Flaticon" (footer + README Credits): keep it
 - Checks: 230 tests, tsc/eslint clean, mono guard OK, build OK. Live verified
@@ -92,13 +100,13 @@
 | Business | `docs/business.md`, `validation.md`, `pitch.md`, `demo-video-script.md`, `landing-facts.md` | Market research, pricing, GTM, user validation kit, pitch, video script |
 
 ## Next up
-1. **Tumo:** run the Solana toolchain install in Ubuntu (command in the chat). The auto-mode safety check blocked me from piping a remote script into bash.
-2. **Tumo:** send keys for `.env.local`: GEMINI_API_KEY, ELEVENLABS_API_KEY + ELEVENLABS_AGENT_ID, SUPABASE_URL + keys
-3. Lead: when the agents finish, integrate, then run `tsc`, the tests and `next build`; fix the Rust once the toolchain is in; first commit
-4. Build and deploy the program to devnet; run the devnet setup + seed scripts; switch the app to `NEXT_PUBLIC_DATA_MODE=chain`
-5. Deploy the app to Vercel; create the public GitHub repo
-6. **Tumo:** run the user validation kit (docs/validation.md) with about 10 people before Friday (scores in Business)
-7. README "Where Tether is used", demo video, pitch rehearsal
+1. **Tumo decides:** live site stays mock mode (honest, labelled) or switches to chain mode (needs Vercel env: agent seed, mint, keys)
+2. **Tumo:** add GEMINI / ELEVENLABS keys to Vercel if the video or judges should see real AI answers (live `/api/health` shows all false)
+3. **Fix or disconnect the Vercel GitHub integration:** every push triggers a Git build that fails (`Can't resolve 'fs'` / `sodium-native`, `npm run vercel-build`); production is deployed by CLI and is fine, but GitHub shows red crosses on commits
+4. Retake README screenshots (they show the old icons) and record the video (≤ 3 min) per `docs/demo-video-script.md`
+5. Confirm the "written 10–13 Nov" pre-existing-code dates in the README; have a first-language speaker check zu/st/af
+6. Optional: mobile performance of app pages (~65); review summary text ignores Now/After toggles; persona names differ ("Adv. Ndlovu" vs "Adv. Thandi Ndlovu"); heading font rule overrides utilities (needs design OK)
+7. Submit on BuilderBase by Fri 13 Nov 23:59 SAST
 
 ## Decisions log
 | Date | Decision | Why |
@@ -117,6 +125,7 @@
 | 2026-11-11 | **Living plans + scheduled payments**: rules can start now (owner approves while alive) and recurring payouts run automatically; the same plan continues after death | Tumo's idea: easier to demo on devnet, gives a monthly-use reason (supports the R99/month model) |
 | 2026-11-11 | Demo-friendly settings: 60 s waiting period, 60 s recurring interval, demo panel, persona switcher | Tumo: "shouldn't be too strict" for the demo; the contract still blocks rule-breaking |
 | 2026-11-11 | Devnet deployer `FHRjTDqQrPCi7QxvdaTu25RRf6gGMpj6wAhHyybX2LL5` (keypair in WSL `~/.config/solana/id.json`), funded with 5 SOL | For the program deploy |
+| 2026-11-12 | Audit before submission; live site kept in mock mode until Tumo decides | Tumo approved fixes + deploy; product changes need his OK |
 | 2026-11-11 | Toolchain: rustc 1.99.1, solana-cli 4.3.2, anchor 1.2.2 (avm); no Surfpool (LiteSVM tests instead) | Installed by Tumo + lead |
 
 ## Open questions for Tumo
@@ -125,4 +134,4 @@
 - GitHub account/repo name for the public repo
 
 ## Blockers
-- Solana toolchain (Rust, Agave CLI, Anchor, Surfpool) is not installed yet. It needs Tumo to run the install command.
+- None technical. Waiting on Tumo's decisions in "Next up" 1–2.
