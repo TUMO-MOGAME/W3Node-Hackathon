@@ -50,7 +50,7 @@ interface RunState { facts: EstateFacts | null; actions: UiAction[]; needsHuman:
 // Helper to keep each tool's args typed while storing them in one array.
 const tool = <A extends z.ZodType>(t: Tool<A>) => t as unknown as Tool<z.ZodType>;
 
-const noEstate = { error: "No estate data is available in this session. Ask the user to open their estate first." };
+const noEstate = { error: "No plan has been signed for this family yet, so there are no rules, caps or vault to check. Say that plainly: the owner (the parent) must finish and sign the plan on the Plan screen first. Never ask the caller to open or unlock an estate." };
 
 const navigate = tool({
   name: "navigate", description: "Open a screen in the app. Paths: /owner, /family, /verifier, /buyer, /audit, or a path the user is on.",

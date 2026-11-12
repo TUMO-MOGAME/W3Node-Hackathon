@@ -7,6 +7,11 @@ describe("stripVoiceTags", () => {
     expect(stripVoiceTags("Of course. [short pause] Your vault holds 23,915 USD₮.")).toBe("Of course. Your vault holds 23,915 USD₮.");
   });
 
+  it("takes the punctuation the model puts right after a tag with it", () => {
+    expect(stripVoiceTags("[Understood]. I'm checking the will and estate rules for you now.")).toBe("I'm checking the will and estate rules for you now.");
+    expect(stripVoiceTags("[Great], what can I help with?")).toBe("what can I help with?");
+  });
+
   it("keeps ordinary text and non-tag brackets", () => {
     expect(stripVoiceTags("Rule [1] pays fees.")).toBe("Rule [1] pays fees.");
     expect(stripVoiceTags("No tags here.")).toBe("No tags here.");
