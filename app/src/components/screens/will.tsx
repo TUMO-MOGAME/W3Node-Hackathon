@@ -21,6 +21,15 @@ const usd = (n: number) => formatUsdt(toBase(n), { decimals: 0 });
 const ruleKey = (r: WillDraft["rules"][number]) => `${r.beneficiaryLabel}|${r.category}|${r.recurring ? "recurring" : "claim"}`;
 const longDate =(iso: string | number) => new Date(typeof iso === "number" ? iso * 1000 : iso).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" });
 
+/** The schedule's interval as a preview word (the demo clock repeats every 60 seconds, shown as "minute"). */
+function everyKey(secs: number): keyof Copy["preview"]["every"] {
+  if (secs <= 60) return "minute";
+  if (secs <= 8 * 86400) return "week";
+  if (secs <= 32 * 86400) return "month";
+  if (secs <= 200 * 86400) return "term";
+  return "year";
+}
+
 export function WillScreen({ copy: english }: { copy: Copy }) {
   const copy = useLocalized(english, (t) => t.screens.will);
   return (
@@ -107,6 +116,14 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [view]);
+  // Switching between the conversation and the review starts at the top of the page,
+  // and coming back to the conversation shows its latest message.
+  const firstView = useRef(true);
+  useEffect(() => {
+    if (firstView.current) { firstView.current = false; return; }
+    window.scrollTo({ top: 0 });
+    if (view === "chat") requestAnimationFrame(() => stickToEnd(true));
+  }, [view, stickToEnd]);
   const scroll = useCallback(() => stickToEnd(false), [stickToEnd]);
   useEffect(() => {
     if (messages.length > 1 || pending) requestAnimationFrame(() => stickToEnd(true));
@@ -154,13 +171,15 @@ function Writer({ copy, session, onSigned }: { copy: Copy; session: WalletSessio
       {/* Two aligned cards of equal height; each scrolls inside itself so chatting never pushes the page down. */}
       <div className="grid gap-5 *:min-w-0 lg:h-[max(32rem,calc(100dvh-var(--header-h)-15rem))] lg:grid-cols-[1.2fr_1fr] lg:items-stretch">
         <section aria-label={copy.eyebrow} className="flex h-[min(42rem,72dvh)] min-h-0 min-w-0 flex-col rounded-xl border border-line bg-surface shadow-card lg:h-full">
-          <div ref={log} tabIndex={0} aria-label={copy.eyebrow} className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] sm:p-4">
-            <ul role="log" aria-live="polite" aria-relevant="additions" className="flex flex-col gap-4">
-              {messages.map((m) => (
-                <Bubble key={m.id} role={m.role} text={m.text} fresh={m.fresh} specialist={m.role === "agent" ? "WillWriter" : undefined} copy={assistant} onTick={scroll} onTyped={scroll} />
-              ))}
-              {pending && <Thinking label={copy.thinking} />}
-            </ul>
+          <div ref={log} tabIndex={0} aria-label={copy.eyebrow} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] sm:p-4">
+            <div role="log" aria-live="polite" aria-relevant="additions">
+              <ul className="flex flex-col gap-4">
+                {messages.map((m) => (
+                  <Bubble key={m.id} role={m.role} text={m.text} fresh={m.fresh} specialist={m.role === "agent" ? "WillWriter" : undefined} copy={assistant} onTick={scroll} onTyped={scroll} />
+                ))}
+                {pending && <Thinking label={copy.thinking} />}
+              </ul>
+            </div>
             {failed && (
               <Notice tone="danger" className="mt-3">
                 <p role="alert">{copy.error}</p>
@@ -231,7 +250,7 @@ function Preview({ copy, draft, onStart, footer }: { copy: Copy; draft: WillDraf
         <Badge tone={done === 4 ? "ok" : "accent"}><Sparkles className="size-3.5" aria-hidden="true" />{done === 4 ? p.ready : p.live}</Badge>
       </div>
       <p className="mt-1 shrink-0 text-small text-ink-2" role="status" aria-live="polite">{draft ? fmt(p.progress, { done }) : p.emptyHint}</p>
-      <div tabIndex={0} aria-label={p.title} className="-mr-2 mt-3 grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]">
+      <div tabIndex={0} aria-label={p.title} className="relative -mr-2 mt-3 grid min-h-0 flex-1 content-start gap-2.5 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]">
         <Slot icon={<UsersRound className="size-4" aria-hidden="true" />} title={p.family} filled={parts[0]} pending={p.pending}>
           <ul className="flex flex-wrap gap-1.5">
             {draft?.beneficiaries.map((b) => (
@@ -409,7 +428,7 @@ function Locked({ copy, snap }: { copy: Copy; snap: EstateSnapshot }) {
               <div className="min-w-0">
                 <Badge tone={rule.startsNow ? "gold" : "neutral"}>{rule.startsNow ? <Zap className="size-3.5" aria-hidden="true" /> : <Hourglass className="size-3.5" aria-hidden="true" />}{rule.startsNow ? copy.preview.now : copy.preview.later}</Badge>
                 <p className="mt-1.5">{recurring
-                  ? fmt(copy.review.recurringRule, { ...base, amount: formatUsdt(rule.recurringAmount, { decimals: 0 }), payee: snap.payees.find((x) => x.wallet === rule.fixedPayee)?.name ?? "", every: copy.preview.every[rule.intervalSecs <= 60 ? "minute" : "month"] })
+                  ? fmt(copy.review.recurringRule, { ...base, amount: formatUsdt(rule.recurringAmount, { decimals: 0 }), payee: snap.payees.find((x) => x.wallet === rule.fixedPayee)?.name ?? "", every: copy.preview.every[everyKey(rule.intervalSecs)] })
                   : fmt(copy.review.rule, base)}</p>
               </div>
             </li>
