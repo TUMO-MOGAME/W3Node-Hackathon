@@ -9,6 +9,8 @@ import { fromBase } from "../format";
 export const estateFactsSchema = z.object({
   estate: z.object({
     address: z.string(), status: z.string(), ownerName: z.string(), vaultUsdt: z.number(),
+    /** The owner's "trusted people" (verifiers): they confirm a passing and approve claims after unlock. */
+    verifierNames: z.array(z.string()).max(3).optional(),
     waitingPeriodSecs: z.number(), deathThreshold: z.number(), claimThreshold: z.number(), hardshipThreshold: z.number(),
     death: z.object({ verdict: z.string(), attestations: z.number(), pendingSince: z.number().nullable() }),
   }),
@@ -41,6 +43,7 @@ export function toEstateFacts(s: EstateSnapshot): EstateFacts {
   return {
     estate: {
       address: s.estate.address, status: s.estate.status, ownerName: s.estate.ownerName, vaultUsdt: fromBase(s.estate.vaultBalance),
+      verifierNames: s.estate.verifierNames.filter(Boolean),
       waitingPeriodSecs: s.estate.waitingPeriodSecs, deathThreshold: s.estate.deathThreshold,
       claimThreshold: s.estate.claimThreshold, hardshipThreshold: s.estate.hardshipThreshold,
       death: { verdict: s.estate.death.verdict, attestations: count(s.estate.death.attestations), pendingSince: s.estate.death.pendingSince },

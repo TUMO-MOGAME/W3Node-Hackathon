@@ -11,6 +11,9 @@ import { z } from "zod";
 
 export const DEFAULT_GEMINI_MODEL = "gemini-4-argon";
 export const geminiModel = () => process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL;
+/** Voice calls wait on every answer, so they use a fast model (about 1 s a call instead of 6–8 s). Override with GEMINI_VOICE_MODEL. */
+export const DEFAULT_GEMINI_VOICE_MODEL = "gemini-3.5-flash-lite";
+export const geminiVoiceModel = () => process.env.GEMINI_VOICE_MODEL || DEFAULT_GEMINI_VOICE_MODEL;
 export const hasGemini = () => Boolean(process.env.GEMINI_API_KEY);
 
 let ai: GoogleGenAI | null = null;
@@ -34,6 +37,8 @@ export interface CallOptions {
   config?: Omit<GenerateContentConfig, "systemInstruction" | "abortSignal">;
   timeoutMs?: number;
   thinking?: "low" | "medium" | "high";
+  /** Model id for this call; defaults to geminiModel(). */
+  model?: string;
 }
 
 const LEVEL = { low: ThinkingLevel.LOW, medium: ThinkingLevel.MEDIUM, high: ThinkingLevel.HIGH };
@@ -49,7 +54,7 @@ export async function generate(opts: CallOptions): Promise<GenerateContentRespon
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
       return await client().models.generateContent({
-        model: geminiModel(),
+        model: opts.model ?? geminiModel(),
         contents: opts.contents,
         config: {
           ...opts.config,

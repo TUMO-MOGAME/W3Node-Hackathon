@@ -10,7 +10,7 @@ import { z } from "zod";
 import type { SpecialistName } from "../voice/types";
 import type { WillChatMessage, WillDraft } from "../types";
 import type { Locale } from "../i18n/locales";
-import { generate, hasGemini, jsonSchemaOf } from "./gemini";
+import { generate, geminiVoiceModel, hasGemini, jsonSchemaOf } from "./gemini";
 import { CAR_BROKER, CLAIMS_GUIDE, COMPLIANCE, DOCUMENT_REVIEWER, ESTATE_GUIDE, replyLanguage } from "./prompts";
 import { uiActionSchema, type UiAction } from "./actions";
 import { checkClaim, type EstateFacts } from "./facts";
@@ -156,13 +156,14 @@ export async function runSpecialist(name: Exclude<SpecialistName, "Orchestrator"
   const st: RunState = { facts: input.facts, actions: [], needsHuman: [] };
   const decls: FunctionDeclaration[] = spec.tools.map((t) => ({ name: t.name, description: t.description, parametersJsonSchema: jsonSchemaOf(t.params) }));
   const contents: Content[] = toContents(input.history);
+  const voice = input.context.channel === "voice";
 
   for (let round = 0; round < 4; round++) {
     const res = await generate({
       system: `${spec.system}\n${contextLine(input)}`,
       contents,
       thinking: "low",
-      timeoutMs: 25_000,
+      ...(voice ? { model: geminiVoiceModel(), timeoutMs: 8_000 } : { timeoutMs: 25_000 }),
       config: { tools: [{ functionDeclarations: decls }] },
     });
     const calls = res.functionCalls ?? [];

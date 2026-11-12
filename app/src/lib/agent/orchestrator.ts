@@ -62,10 +62,18 @@ export async function route(input: SpecialistInput): Promise<{ specialist: Routa
   return { specialist: keywordRoute(last, input.context.role), reason: "keyword routing (fallback)" };
 }
 
+/** Voice: route by keywords (instant) instead of an extra model call, and never to WillWriter, whose structured
+ *  plan draft is too slow to wait for on a call; plan questions go to EstateGuide, which can explain the rules. */
+export function voiceRoute(input: SpecialistInput): { specialist: Routable; reason: string } {
+  const last = input.history[input.history.length - 1]?.text ?? "";
+  const k = keywordRoute(last, input.context.role);
+  return { specialist: k === "WillWriter" ? "EstateGuide" : k, reason: "keyword routing (voice)" };
+}
+
 export interface OrchestrateResult extends SpecialistResult { routedBy: string }
 
 export async function orchestrate(input: SpecialistInput, force?: Exclude<SpecialistName, "Orchestrator">): Promise<OrchestrateResult> {
-  const r = force ? { specialist: force, reason: "requested" } : await route(input);
+  const r = force ? { specialist: force, reason: "requested" } : input.context.channel === "voice" ? voiceRoute(input) : await route(input);
   const out = await runSpecialist(r.specialist, input);
   return { ...out, routedBy: r.reason };
 }
