@@ -258,6 +258,7 @@ export const af: Bundle = {
       title: "Bewys",
       body: "Elke aksie op hierdie boedel is 'n transaksie op Solana. Maak enige kwitansie oop om dit self na te gaan.",
       mockNote: "Demo-modus: hierdie kwitansies is nagemaak, so Solana Explorer sal hulle nie vind nie.",
+      simulated: "gesimuleer",
       facts: { program: "Heirloom-program (Solana devnet)", estate: "Boedelrekening", will: "Plan-vingerafdruk (SHA-256)", mint: "Aanvaarde geld (USD₮ mint)", network: "Netwerk", agent: "Agent se wallet" },
       notSigned: "Nog nie geteken nie",
       network: "Solana devnet",

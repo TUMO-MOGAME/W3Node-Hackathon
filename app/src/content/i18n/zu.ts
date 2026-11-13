@@ -258,6 +258,7 @@ export const zu: Bundle = {
       title: "Ubufakazi",
       body: "Sonke isenzo kuleli fa siwukwenziwe ku-Solana. Vula noma iyiphi irisidi ukuze uzihlolele.",
       mockNote: "Imodi ye-demo: lawa marisidi alingisiwe, ngakho i-Solana Explorer ngeke iwathole.",
+      simulated: "kulingisiwe",
       facts: { program: "Uhlelo lwe-Heirloom (Solana devnet)", estate: "I-akhawunti yefa", will: "Isigxivizo sohlelo (SHA-256)", mint: "Imali eyamukelwayo (USD₮ mint)", network: "Inethiwekhi", agent: "I-wallet ye-agent" },
       notSigned: "Akukasayinwa",
       network: "Solana devnet",

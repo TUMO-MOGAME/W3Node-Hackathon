@@ -258,6 +258,7 @@ export const st: Bundle = {
       title: "Bopaki",
       body: "Ketso e nngwe le e nngwe lefeng lena ke transaction ho Solana. Bula rasiti efe kapa efe ho e hlahloba ka bowena.",
       mockNote: "Mokgwa wa demo: dirasiti tsena di etsisitswe, kahoo Solana Explorer e ke ke ya di fumana.",
+      simulated: "e etsisitsoe",
       facts: { program: "Lenaneo la Heirloom (Solana devnet)", estate: "Akhaonto ya lefa", will: "Monwana wa moralo (SHA-256)", mint: "Chelete e amohelwang (USD₮ mint)", network: "Netweke", agent: "Wallet ya agent" },
       notSigned: "Ha e so saenwe",
       network: "Solana devnet",

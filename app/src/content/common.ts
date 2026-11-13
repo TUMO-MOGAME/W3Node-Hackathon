@@ -123,6 +123,7 @@ export const common = {
     title: "Proof",
     body: "Every action on this estate is a transaction on Solana. Open any receipt to check it yourself.",
     mockNote: "Demo mode: these receipts are simulated, so Solana Explorer will not find them.",
+    simulated: "simulated",
     facts: { program: "Heirloom program (Solana devnet)", estate: "Estate account", will: "Plan fingerprint (SHA-256)", mint: "Accepted money (USD₮ mint)", network: "Network", agent: "Agent's wallet" },
     notSigned: "Not signed yet",
     network: "Solana devnet",

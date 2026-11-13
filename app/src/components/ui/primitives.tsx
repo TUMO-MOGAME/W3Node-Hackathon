@@ -1,8 +1,8 @@
 import Link from "next/link";
 import clsx from "clsx";
 import { Children, isValidElement, type ComponentProps, type ReactNode } from "react";
-import { Check, CircleDashed, ExternalLink, Loader2, TriangleAlert } from "@/components/ui/icons";
-import { explorerTx, formatUsdt, formatZar, shortAddress } from "@/lib/format";
+import { Check, CircleDashed, Loader2, TriangleAlert } from "@/components/ui/icons";
+import { formatUsdt, formatZar } from "@/lib/format";
 
 /* ---------- Logo ---------- */
 
@@ -145,21 +145,8 @@ export function Money({ base, rate, size = "md", className }: { base: bigint; ra
   );
 }
 
-export function ExplorerLink({ signature, label, srLabel, className }: { signature: string; label: string; srLabel: string; className?: string }) {
-  return (
-    <a
-      href={explorerTx(signature)}
-      target="_blank"
-      rel="noreferrer noopener"
-      className={clsx("inline-flex min-h-11 items-center gap-1.5 text-small font-semibold text-ink underline decoration-ink decoration-1 underline-offset-4 hover:decoration-2", className)}
-    >
-      <span>{label}</span>
-      <span className="font-mono text-ink-2">{shortAddress(signature, 4)}</span>
-      <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
-      <span className="sr-only">{srLabel}</span>
-    </a>
-  );
-}
+// Real network: opens Solana Explorer. Demo mode: plain text marked "simulated" (Explorer would not find it).
+export { ExplorerLink } from "./explorer-link";
 
 /* ---------- Progress ---------- */
 
