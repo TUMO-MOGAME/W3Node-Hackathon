@@ -31,7 +31,7 @@ The plan starts today. A monthly book allowance pays the bookstore automatically
 
 Every USD₮ movement, including a "Send to family" P2P transfer, follows Tether's payment flow: address, network and token checks; balance and fee quote; review; approve; WDK signs; pending until confirmed. Payments are signed once and re-checked on reconnect, so nobody pays twice.
 
-Built during the hackathon: 27-instruction Anchor program on devnet (25 tests), a Next.js PWA (230 tests), and real WDK-signed USD₮ transfers on devnet. The rand settlement to institutions is simulated and labelled.
+Built during the hackathon: 27-instruction Anchor program on devnet (25 tests), a Next.js PWA (253 tests), and real WDK-signed USD₮ transfers on devnet. The rand settlement to institutions is simulated and labelled.
 ```
 *(about 290 words; recount after any edit with `wc -w`)*
 
