@@ -77,6 +77,8 @@
 - Demo video DONE (13 Nov ~01:00): C:Users	umomVideosHeirloom-demo-final.mp4, 2:58, 1080p, 32 MB, -16 LUFS. Tumo's
   recordings (calls + live passing) + our screenshots/Explorer proofs + 7 Unsplash photos; narration ElevenLabs "John Texas";
   music = original ElevenLabs Music instrumental (Tumo asked for a Rita Ora song: declined, copyright). Not in git (size).
+- 5-minute pitch cut DONE (13 Nov): C:Users	umomVideosHeirloom-pitch-5min.mp4, 4:59, 1080p, 45 MB, -16 LUFS
+  (plan.md §11b; daytime clips R1–R8 can be added later). Not in git.
 - Left for Tumo: upload the video (Drive, link set to anyone-with-link), add the link to README + docs/submission.md, submit on BuilderBase by 13 Nov 23:59.
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
