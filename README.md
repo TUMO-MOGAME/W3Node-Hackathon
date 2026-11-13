@@ -14,7 +14,7 @@ nothing makes sure it is spent on the children.
 | | |
 |---|---|
 | **Live demo** | **https://heirloom-one-iota.vercel.app** *(works on a phone; installable as an app)*. Runs in **mock mode**: the whole story is simulated in your browser with "Simulated" badges, and the agent gives labelled canned answers (no Gemini or ElevenLabs keys on the hosted demo). The on-chain proof is in the devnet links below |
-| **Demo video (≤ 3 min)** | <!-- VIDEO_URL --> *(link added at submission)* |
+| **Demo video (≤ 3 min)** | [Watch on YouTube](https://youtu.be/N67LrkpVAmw) (2:58) |
 | **Pitch deck** | [`docs/pitch.md`](docs/pitch.md) |
 | **Program on devnet** | [`b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY`](https://explorer.solana.com/address/b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY?cluster=devnet) |
 | **Real WDK USD₮ transfer** | [`nNUMsVDq…D6DvBEpKSCj`](https://explorer.solana.com/tx/nNUMsVDqmAbHxKYqTVXz1kggi2wfYXJawGod7gsXFpsysXFxBpnKG1vdL7m26UCm7hxwLc7cnDxpD6DvBEpKSCj?cluster=devnet) |

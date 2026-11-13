@@ -60,7 +60,7 @@ Heirloom is mobile money for families, built on USD₮ and Tether WDK. Every rol
 |---|---|
 | GitHub repo (public) | https://github.com/TUMO-MOGAME/W3Node-Hackathon |
 | Live demo (mock mode: simulated in the browser, labelled) | https://heirloom-one-iota.vercel.app |
-| Demo video (≤ 3 min) | <!-- VIDEO_URL --> |
+| Demo video (≤ 3 min) | https://youtu.be/N67LrkpVAmw (2:58) |
 | Program on Solana Explorer (devnet) | https://explorer.solana.com/address/b3PBVwkLnyx7eyLPNtc5J3Ds3os3cenqCVRHaCJM7FY?cluster=devnet |
 | Example WDK-signed USD₮ transfer | https://explorer.solana.com/tx/nNUMsVDqmAbHxKYqTVXz1kggi2wfYXJawGod7gsXFpsysXFxBpnKG1vdL7m26UCm7hxwLc7cnDxpD6DvBEpKSCj?cluster=devnet |
 | Demo estate | https://explorer.solana.com/address/JBdsDy67YBfpV8YAc2H1h7w95h8uJ2XUzTDh9vt34G9E?cluster=devnet |
@@ -80,7 +80,7 @@ None. All code was written during the hackathon (10–13 November 2026). It uses
 **Repo**
 - [ ] Repo is **public** (github.com/TUMO-MOGAME/W3Node-Hackathon); open it in a private window while logged out
 - [ ] `README.md` renders: Mermaid diagram draws, tables fit, no broken links (click every Explorer link)
-- [ ] `<!-- VIDEO_URL -->` replaced in README and here (the live URL and team are already filled)
+- [x] Video link added in README and here (the live URL and team are already filled)
 - [ ] `LICENSE` present (MIT, 2026 Tumo Mogame)
 - [ ] Final commit pushed to `main`; commit author is the right identity
 
@@ -98,7 +98,7 @@ None. All code was written during the hackathon (10–13 November 2026). It uses
 - [ ] Install as app (Add to Home Screen) works on Android Chrome and iOS Safari
 
 **Video**
-- [ ] ≤ 3:00; shows one payment from review to receipt, a contract block, and WDK/USD₮ proof on Explorer
+- [x] ≤ 3:00 (2:58); shows one payment from review to receipt, a contract block, and WDK/USD₮ proof on Explorer
 - [ ] Simulated parts labelled on screen
 - [ ] Link permission: **public or unlisted, anyone with the link can view** (test in a logged-out private window)
 
