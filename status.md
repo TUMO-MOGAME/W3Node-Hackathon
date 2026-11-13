@@ -79,7 +79,8 @@
   music = original ElevenLabs Music instrumental (Tumo asked for a Rita Ora song: declined, copyright). Not in git (size).
 - 5-minute pitch cut DONE (13 Nov): C:Users	umomVideosHeirloom-pitch-5min.mp4, 4:59, 1080p, 45 MB, -16 LUFS
   (plan.md §11b; daytime clips R1–R8 can be added later). Not in git.
-- Left for Tumo: upload the video (Drive, link set to anyone-with-link), add the link to README + docs/submission.md, submit on BuilderBase by 13 Nov 23:59.
+- Video on YouTube: https://youtu.be/N67LrkpVAmw (2:58, public; link in README + docs/submission.md). Repo is public.
+- Left for Tumo: submit on BuilderBase by 13 Nov 23:59 (fields in docs/submission.md), save the confirmation.
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs
