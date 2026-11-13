@@ -4,7 +4,7 @@
 > Update this file at the end of every work session.
 
 **Last updated:** 2026-11-13 (00:30: full devnet demo run by Claude with screenshots and Explorer proofs)
-**Phase:** Audit done, demo-ready in mock mode. Remaining: Tumo's decisions (below), video, submit.
+**Phase:** SUBMITTED (13 Nov 11:04 SAST). Now: pitch prep for judging on Sat 14 Nov.
 **Hackathon:** W3Node Node Engine, **Tether track** (confirmed). **Submit on BuilderBase by Fri 13 Nov 2026, 23:59 SAST** (public repo + README + video ≤ 3 min). Judging Sat 14 Nov: 5-min pitch + 3-min Q&A. Rubric in plan.md §0.
 
 ## Done
@@ -80,7 +80,8 @@
 - 5-minute pitch cut DONE (13 Nov): C:Users	umomVideosHeirloom-pitch-5min.mp4, 4:59, 1080p, 45 MB, -16 LUFS
   (plan.md §11b; daytime clips R1–R8 can be added later). Not in git.
 - Video on YouTube: https://youtu.be/N67LrkpVAmw (2:58, public; link in README + docs/submission.md). Repo is public.
-- Left for Tumo: submit on BuilderBase by 13 Nov 23:59 (fields in docs/submission.md), save the confirmation.
+- **SUBMITTED on BuilderBase: 2026-11-13 11:04 SAST** (09:04:41 UTC), locked in; edits allowed until the deadline.
+- Next: README screenshots refresh, live smoke test, pitch slides + Q&A prep, choose live-demo setup for Sat 14 Nov.
 
 ## AUDIT (2026-11-12, 02:00 SAST): main dd5ef34, live (mock mode)
 - 2026-11-12 afternoon: **Live voice agent done and tested.** ElevenLabs agent "Heirloom" (`agent_1601m77rrhfse7pb04ct3wztkew8`, voice Katlego, private/auth, webhook → live `/api/agent/orchestrate` with workspace secret `heirloom_tool_secret`, 4 client tools). Vercel Production env: `GEMINI_API_KEY`, `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, `ELEVENLABS_TOOL_SECRET`. Call sends the screen's estate facts as `{{facts}}`; voice answers ~2 s (keyword routing + `gemini-3.5-flash-lite`) instead of ~20 s; facts now include trusted people; agent opens Send money on request; tone tags hidden from transcript. Tested: live WebSocket session (6 questions, all correct) + in-app call on the live site (connects, greets, speaks, no CSP errors, ends). Tumo's `.env.local` still has the OLD agent id ("Emma"): update it to the Heirloom id for local runs
