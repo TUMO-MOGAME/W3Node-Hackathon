@@ -198,7 +198,7 @@ function RuleCard({ rule, snap, copy, rate, now }: { rule: Rule; snap: EstateSna
           <span aria-hidden="true">{rule.startsNow ? copy.rules.now : copy.rules.later}</span>
         </Badge>
       </div>
-      <p className="mt-3 text-small"><span className="font-medium">{fmt(copy.rules.paidTo, { kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase() })}</span> · {fmt(copy.rules.perClaim, { amount: formatUsdt(rule.maxPerClaim, { decimals: 0 }) })}</p>
+      <p className="mt-3 text-small"><span className="font-medium">{rule.allowedPayeeKind === "Other" ? copy.rules.paidToOther : fmt(copy.rules.paidTo, { kind: common.status.payeeKind[rule.allowedPayeeKind].toLowerCase() })}</span> · {fmt(copy.rules.perClaim, { amount: formatUsdt(rule.maxPerClaim, { decimals: 0 }) })}</p>
       <div className="mt-3">
         <Meter value={used} label={fmt(copy.rules.meter, { category: common.status.category[rule.category], name: who })} tone={used >= 1 ? "brass" : "accent"} />
         <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-small">

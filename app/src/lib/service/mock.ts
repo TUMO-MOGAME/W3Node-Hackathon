@@ -859,9 +859,9 @@ export function createMockService(): MockService {
       const out: CarValuation = {
         suggestedAskingUsdt: mid, lowUsdt: Math.round(mid * 0.92 / 50) * 50, highUsdt: Math.round(mid * 1.06 / 50) * 50,
         comparables: [
-          { title: `${year} ${make} ${model}, ${(mileageKm + 9000).toLocaleString("en-ZA")} km, Johannesburg`, priceZar: round(baseZar * 0.97), source: "AutoTrader" },
-          { title: `${year} ${make} ${model}, ${(mileageKm - 14000).toLocaleString("en-ZA")} km, Pretoria`, priceZar: round(baseZar * 1.05), source: "Cars.co.za" },
-          { title: `${year + 1} ${make} ${model}, ${(mileageKm + 2000).toLocaleString("en-ZA")} km, Soweto`, priceZar: round(baseZar * 1.02), source: "WeBuyCars" },
+          { title: `${year} ${make} ${model}, ${(mileageKm + 9000).toLocaleString("en-ZA")} km, Johannesburg`, priceZar: round(baseZar * 0.97), source: "AutoTrader · demo example" },
+          { title: `${year} ${make} ${model}, ${(mileageKm - 14000).toLocaleString("en-ZA")} km, Pretoria`, priceZar: round(baseZar * 1.05), source: "Cars.co.za · demo example" },
+          { title: `${year + 1} ${make} ${model}, ${(mileageKm + 2000).toLocaleString("en-ZA")} km, Soweto`, priceZar: round(baseZar * 1.02), source: "WeBuyCars · demo example" },
         ],
         rationale: `Three similar ${make} ${model}s are advertised between R ${round(baseZar * 0.97).toLocaleString("en-ZA")} and R ${round(baseZar * 1.05).toLocaleString("en-ZA")}. Private sales usually close a little under the advertised price, so a fair asking price is about ${mid.toLocaleString("en-ZA")} USD₮. Your minimum price is yours to set; it is what the contract enforces.`,
       };

@@ -105,6 +105,7 @@ export const screens = {
       empty: "No rules yet.",
       forWho: "For {name}",
       paidTo: "Paid only to a {kind}",
+      paidToOther: "Paid only to an approved payee",
       perClaim: "Up to {amount} per claim",
       used: "{spent} of {cap} used",
       left: "{amount} left",

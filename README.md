@@ -49,7 +49,7 @@ person, collapses to an icon rail on desktop and becomes a drawer on phones.
 
 ## Screenshots
 
-Phone width (360px), pure black and white, light and dark:
+Phone width (360px), pure black and white, light and dark (the public site in demo mode, 13 Nov 2026):
 
 | Chat home | Estate dashboard | Payment review | Payment confirmed |
 |---|---|---|---|
@@ -58,6 +58,16 @@ Phone width (360px), pure black and white, light and dark:
 | Claims | Talk to Heirloom | Dark mode | Desktop |
 |---|---|---|---|
 | <img src="docs/screenshots/claims-360-light.png" width="200" alt="Claim over the per-claim cap, blocked by the contract with a plain-language reason"> | <img src="docs/screenshots/agent-call-360-light.png" width="200" alt="Talk to Heirloom: voice call sheet"> | <img src="docs/screenshots/estate-360-dark.png" width="200" alt="Estate dashboard in dark mode"> | <img src="docs/screenshots/chat-1440-light.png" width="200" alt="Desktop: sidebar with grouped navigation and saved chats, chat home"> |
+
+### The whole story on Solana devnet, with proof
+
+Run on the real program on 12–13 Nov 2026 (laptop in chain mode): every step has a screenshot and the Explorer page of
+its transaction (status Success, the Heirloom instruction in the logs, fee paid by Heirloom's sponsor wallet).
+Index with links: [docs/demo-screenshots](docs/demo-screenshots/README.md).
+
+| The AI catches a hidden instruction | Claim paid straight to UCT | Car sold through escrow | Lerato talks with Dad |
+|---|---|---|---|
+| <img src="docs/demo-screenshots/C1-trick-document-rejected.png" width="220" alt="Fee statement with a hidden instruction to the AI: not accepted, 99%"> | <img src="docs/demo-screenshots/C2-proof-explorer-claim-paid.png" width="220" alt="Solana Explorer: ExecuteClaim, Success, fee paid by Heirloom"> | <img src="docs/demo-screenshots/C7-car-sold.png" width="220" alt="Car sold for 9,500 USD₮; title and USD₮ swapped in one transaction"> | <img src="docs/demo-screenshots/L3-chat-with-dad.png" width="220" alt="Dad's AI voice knows her fee progress and refuses a money request"> |
 
 ---
 
