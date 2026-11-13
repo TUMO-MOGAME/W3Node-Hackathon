@@ -31,3 +31,6 @@ Thumbs.db
 
 # Agent worktrees
 .claude/worktrees/
+
+# Stock photos used only for the demo video (kept locally, not in the repo)
+/*-unsplash.jpg
